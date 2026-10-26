@@ -1,0 +1,39 @@
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de données locale
+db.sqlite3
+
+# Variables d'environnement
+.env
+
+# Fichiers systèmes / IDE
+.DS_Store
+.vscode/
+.idea/# Environnements virtuels
+.venv/
+env/
+venv/
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Base de données locale
+db.sqlite3
+
+# Variables d'environnement
+.env
+
+# Fichiers systèmes / IDE
+.DS_Store
+.vscode/
+.idea/

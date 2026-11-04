@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background-color: white;">
+            <h2 class="text-center mb-4 fw-bold" style="color: #6a1b9a;">Connexion</h2>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Display form errors if any -->
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        Nom d'utilisateur ou mot de passe incorrect.
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Nom d'utilisateur</label>
+                    <input type="text" name="username" id="id_username" class="form-control" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="id_password" class="form-label">Mot de passe</label>
+                    <input type="password" name="password" id="id_password" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">Se connecter</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

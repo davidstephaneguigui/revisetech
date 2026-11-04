@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ classe.name }} - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour aux classes
+            </a>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 class="mb-1">{{ classe.name }}</h2>
+                <p class="text-muted">{{ classe.level }} - {{ classe.specialty }}</p>
+            </div>
+        </div>
+
+        <!-- Code d'invitation -->
+        <div class="alert alert-primary d-flex justify-content-between align-items-center mb-4" style="border-radius: 12px;">
+            <div>
+                <strong>Code d'invitation :</strong>
+                <span class="fs-5 ms-2 font-monospace">{{ classe.code_invitation }}</span>
+            </div>
+            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="navigator.clipboard.writeText('{{ classe.code_invitation }}'); alert('Code copié !');">Copier</button>
+        </div>
+
+        <!-- Section Matières -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Matières associées</h4>
+            <button class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addSubjectModal">+ Ajouter</button>
+        </div>
+
+        <div class="d-grid gap-2 mb-5">
+            {% for subject in subjects %}
+                <div class="card py-2 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ subject.color_hex }} !important;">
+                    <span class="fw-bold text-dark">{{ subject.name }}</span>
+                </div>
+            {% empty %}
+                <div class="alert alert-info py-2">
+                    Aucune matière associée à cette classe.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Section Élèves -->
+        <h4 class="mb-3">Élèves inscrits ({{ students|length }})</h4>
+
+        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+            <ul class="list-group list-group-flush">
+                {% for student in students %}
+                    <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
+                        <a href="{% url 'student_results' student.id %}" class="fw-bold text-decoration-none" style="color: #6a1b9a;">
+                            {{ student.username }}
+                        </a>
+                        <span class="text-muted small">{{ student.first_name }} {{ student.last_name }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item py-3 text-muted text-center">
+                        Aucun élève n'est inscrit dans cette classe pour le moment.
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Fenêtre Modale pour ajouter une matière -->
+<div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="addSubjectModalLabel">Ajouter une matière</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="{{ form.matiere.id_for_label }}" class="form-label">{{ form.matiere.label }}</label>
+                        {{ form.matiere }}
+                        {% if form.matiere.errors %}
+                            <div class="text-danger small">{{ form.matiere.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Rejoindre une classe - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'student_home' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour
+            </a>
+        </div>
+
+        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background-color: white;">
+            <h2 class="mb-3 fw-bold" style="color: #6a1b9a;">Rejoindre une classe</h2>
+            <p class="text-muted mb-4">Saisis le code d'invitation fourni par ton professeur.</p>
+
+            <!-- Display Django messages (success, error) -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="{{ form.code_invitation.id_for_label }}" class="form-label">{{ form.code_invitation.label }}</label>
+                    {{ form.code_invitation }}
+                    {% if form.code_invitation.errors %}
+                        <div class="text-danger small mt-1">{{ form.code_invitation.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">Rejoindre la classe</button>
+            </form>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

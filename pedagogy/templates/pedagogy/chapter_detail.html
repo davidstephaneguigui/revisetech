@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ chapter.name }} - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <!-- Bouton retour stylisé -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'subject_detail' chapter.matiere.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour
+            </a>
+        </div>
+
+        <h2 class="mb-3" style="color: {{ chapter.matiere.color_hex }};">{{ chapter.name }}</h2>
+        <p class="text-muted mb-4">Choisis une séquence</p>
+
+        <div class="d-grid gap-2">
+            {% for sequence in sequences %}
+                <a href="{% url 'sequence_detail' sequence.id %}" class="text-decoration-none">
+                    <div class="card py-3 px-3 shadow-sm border-0" 
+                         style="border-left: 6px solid {{ chapter.matiere.color_hex }}; border-radius: 12px; background-color: white;">
+                        <span class="text-dark">{{ sequence.name }}</span>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    Aucune séquence n'est disponible pour ce chapitre.
+                </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

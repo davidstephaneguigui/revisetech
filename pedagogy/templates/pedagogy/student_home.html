@@ -1,56 +1,35 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReviseTaTechno</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f7;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            color: #333;
-            margin-top: 30px;
-        }
-        .subjects-container {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .subject-card {
-            padding: 20px;
-            border-radius: 12px;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-    </style>
-</head>
-<body>
-    <h1>ReviseTaTechno</h1>
-    <p>Choisis une matière pour commencer</p>
+{% extends 'base.html' %}
 
-    <div class="subjects-container">
-        <!-- Django loop to display each subject -->
-        {% for subject in subjects %}
-            <a href="#" class="subject-card" style="background-color: {{ subject.color_hex }};">
-                {{ subject.name }}
+{% block title %}Accueil - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6 text-center">
+        
+        <p class="text-muted mt-2 mb-4">Choisis une matière pour commencer</p>
+
+        <div class="d-grid gap-2">
+            {% for subject in subjects %}
+                <a href="{% url 'subject_detail' subject.id %}" class="text-decoration-none">
+                    <div class="card text-white py-3 px-3" 
+                         style="background-color: {{ subject.color_hex }}; border-radius: 16px; border: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.1s;">
+                        {{ subject.name }}
+                    </div>
+                </a>
+            {% empty %}
+                <div class="alert alert-info" role="alert">
+                    Aucune matière disponible pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Bouton pour rejoindre une classe -->
+        <div class="mt-5">
+            <a href="{% url 'join_class' %}" class="btn btn-outline-primary rounded-pill px-4">
+                Rejoindre une classe
             </a>
-        {% empty %}
-            <p>Aucune matière disponible pour le moment.</p>
-        {% endfor %}
+        </div>
+        
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

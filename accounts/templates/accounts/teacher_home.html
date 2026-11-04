@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Espace Enseignant - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Mes classes</h2>
+            <!-- Bouton pour ouvrir la fenêtre modale -->
+            <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addClasseModal">
+                + Nouvelle classe
+            </button>
+        </div>
+
+        <!-- Liste des classes -->
+        <div class="d-grid gap-2">
+            {% for classe in classes %}
+                <a href="{% url 'class_detail' classe.id %}" class="text-decoration-none">
+                    <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white;">
+                        <div class="fw-bold fs-5 text-dark">{{ classe.name }}</div>
+                        <div class="text-muted small">{{ classe.level }} - {{ classe.specialty }}</div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="alert alert-info">
+                    Vous n'avez aucune classe pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+
+<!-- Fenêtre Modale (Popup) pour créer une classe -->
+<div class="modal fade" id="addClasseModal" tabindex="-1" aria-labelledby="addClasseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="addClasseModalLabel">Nouvelle classe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

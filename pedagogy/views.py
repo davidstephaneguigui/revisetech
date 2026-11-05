@@ -1,25 +1,37 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Matiere, Chapter, Sequence, Session, Activity, Choice, Result
+from .models import Matiere, Chapter, Sequence, Session, Activity, Suggestion, Choice, Result
 
 
 @login_required
 def student_home(request):
     """
     Display the main dashboard for students, showing only subjects 
-    associated with their classes.
+    associated with their classes and unread suggestions.
     """
-    # Get the classes the student is enrolled in
     student_classes = request.user.student_classes.all()
-    
-    # Filter subjects that are linked to these classes
     subjects = Matiere.objects.filter(classes__in=student_classes).distinct()
     
+    # Fetch unread suggestions for the student
+    suggestions = Suggestion.objects.filter(student=request.user, is_read=False).order_by('-created_at')
+    
     context = {
-        'subjects': subjects
+        'subjects': subjects,
+        'suggestions': suggestions
     }
     
     return render(request, 'pedagogy/student_home.html', context)
+
+
+@login_required
+def mark_suggestion_read(request, suggestion_id):
+    """
+    Marks a suggestion as read and redirects the student to the activity.
+    """
+    suggestion = get_object_or_404(Suggestion, id=suggestion_id, student=request.user)
+    suggestion.is_read = True
+    suggestion.save()
+    return redirect('activity_detail', activity_id=suggestion.activity.id)
 
 
 @login_required

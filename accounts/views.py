@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from pedagogy.models import Classe, Matiere, Result
-from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm
+from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm, SuggestionForm
 
 
 @login_required
@@ -110,7 +110,7 @@ def join_class(request):
 @login_required
 def student_results(request, student_id):
     """
-    Display the results of a specific student for the teacher.
+    Display the results of a specific student and handle sending suggestions.
     """
     User = get_user_model()
     student = get_object_or_404(User, id=student_id)
@@ -121,12 +121,26 @@ def student_results(request, student_id):
         messages.error(request, "Vous n'avez pas accès aux résultats de cet élève.")
         return redirect('teacher_dashboard')
 
-    # Fetch all results for this student, ordered by most recent
+    # Fetch all results for this student
     results = Result.objects.filter(student=student).order_by('-date_attempt')
+    
+    # Handle suggestion form submission
+    if request.method == 'POST':
+        form = SuggestionForm(request.POST)
+        if form.is_valid():
+            suggestion = form.save(commit=False)
+            suggestion.teacher = request.user
+            suggestion.student = student
+            suggestion.save()
+            messages.success(request, f"La suggestion a bien été envoyée à {student.username}.")
+            return redirect('student_results', student_id=student.id)
+    else:
+        form = SuggestionForm()
     
     context = {
         'student': student,
-        'results': results
+        'results': results,
+        'form': form
     }
     
     return render(request, 'accounts/student_results.html', context)

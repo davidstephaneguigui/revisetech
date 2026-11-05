@@ -13,8 +13,16 @@
             </a>
         </div>
 
-        <h2 class="mb-1">Résultats de l'élève</h2>
-        <p class="text-muted fs-5 mb-4">{{ student.username }}</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Résultats de l'élève</h2>
+                <p class="text-muted fs-5 mb-0">{{ student.username }}</p>
+            </div>
+            <!-- Bouton pour ouvrir la modale de suggestion -->
+            <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#suggestionModal">
+                + Suggérer une activité
+            </button>
+        </div>
 
         <div class="d-grid gap-3">
             {% for result in results %}
@@ -39,6 +47,36 @@
             {% endfor %}
         </div>
         
+    </div>
+</div>
+
+<!-- Fenêtre Modale pour envoyer une suggestion -->
+<div class="modal fade" id="suggestionModal" tabindex="-1" aria-labelledby="suggestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="suggestionModalLabel">Suggérer une révision</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Envoyer</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

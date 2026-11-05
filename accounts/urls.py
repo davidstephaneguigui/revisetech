@@ -8,4 +8,6 @@ urlpatterns = [
     path('teacher/classe/<int:class_id>/', views.class_detail, name='class_detail'),
     path('join/', views.join_class, name='join_class'),
     path('teacher/student/<int:student_id>/results/', views.student_results, name='student_results'),
+    path('designer/', views.designer_dashboard, name='designer_dashboard'),
+    path('designer/sequence/<int:sequence_id>/', views.manage_sequence, name='manage_sequence'),
 ]

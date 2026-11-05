@@ -4,10 +4,122 @@
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-12 col-md-8">
+    <div class="col-12 col-md-10 col-lg-8">
+        
         <h2 class="mb-4">Espace Concepteur</h2>
-        <div class="alert alert-info">
-            Bienvenue <strong>{{ user.username }}</strong>. Ce tableau de bord est en construction.
+
+        <!-- Affichage des messages de succès/erreur -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row">
+            <!-- Colonne des Matières et Chapitres -->
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm border-0 mb-3" style="border-radius: 12px; background-color: white;">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h5 class="fw-bold mb-0">Mes Matières</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for subject in subjects %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold" style="color: {{ subject.color_hex }};">{{ subject.name }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">Aucune matière.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0" style="border-radius: 12px; background-color: white;">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h5 class="fw-bold mb-0">Mes Chapitres</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for chapter in chapters %}
+                                <li class="list-group-item px-0 text-dark small">
+                                    <strong>{{ chapter.name }}</strong> <br>
+                                    <span class="text-muted">{{ chapter.matiere.name }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">Aucun chapitre.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne des Séquences -->
+            <div class="col-md-8 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Mes Séquences</h5>
+                    <!-- Bouton pour ouvrir la modale de séquence -->
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSequenceModal">+ Nouvelle séquence</button>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    {% for sequence in sequences %}
+                        <a href="{% url 'manage_sequence' sequence.id %}" class="text-decoration-none">
+                            <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
+                                        <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                    </div>
+                                    <div>
+                                        <span class="badge {% if sequence.status == 'DRAFT' %}bg-secondary{% elif sequence.status == 'PENDING' %}bg-warning text-dark{% elif sequence.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                                            {{ sequence.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="alert alert-info">
+                            Vous n'avez créé aucune séquence pour le moment.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Fenêtre Modale pour ajouter une séquence -->
+<div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="addSequenceModalLabel">Nouvelle séquence</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Créer</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

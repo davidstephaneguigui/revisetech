@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sequence.name }} - Espace Concepteur{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'designer_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour aux séquences
+            </a>
+        </div>
+
+        <!-- Affichage des messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">{{ sequence.name }}</h2>
+                <p class="text-muted mb-0">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</p>
+            </div>
+            <!-- Bouton pour ouvrir la modale -->
+            <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Nouvelle séance</button>
+        </div>
+
+        <h4 class="mb-3">Séances</h4>
+
+        <div class="d-grid gap-2">
+            {% for session in sessions %}
+                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-bold text-dark">{{ session.name }}</div>
+                        <span class="badge {% if session.status == 'DRAFT' %}bg-secondary{% elif session.status == 'PENDING' %}bg-warning text-dark{% elif session.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                            {{ session.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info">
+                    Aucune séance n'est disponible dans cette séquence.
+                </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+
+<!-- Fenêtre Modale pour ajouter une séance -->
+<div class="modal fade" id="addSessionModal" tabindex="-1" aria-labelledby="addSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="addSessionModalLabel">Nouvelle séance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

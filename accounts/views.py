@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from pedagogy.models import Classe, Matiere, Result
+from pedagogy.models import Classe, Matiere, Chapter, Sequence, Result
+from pedagogy.forms import SequenceForm, SessionForm
 from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm, SuggestionForm
 
 
@@ -40,7 +41,7 @@ def dashboard_redirect(request):
     if user.groups.filter(name='Enseignant').exists():
         return redirect('teacher_dashboard')
     elif user.groups.filter(name='Concepteur').exists():
-        return render(request, 'accounts/designer_home.html')
+        return redirect('designer_dashboard')
     elif user.groups.filter(name='Administrateur').exists():
         return redirect('/admin/')
     else:
@@ -144,3 +145,72 @@ def student_results(request, student_id):
     }
     
     return render(request, 'accounts/student_results.html', context)
+
+
+@login_required
+def designer_dashboard(request):
+    """
+    Display the dashboard for designers, showing their subjects, chapters, 
+    and sequences, and handle sequence creation.
+    """
+    # Fetch subjects created by this designer
+    subjects = Matiere.objects.filter(teacher=request.user)
+    
+    # Fetch chapters linked to these subjects
+    chapters = Chapter.objects.filter(matiere__in=subjects).order_by('matiere__name', 'name')
+    
+    # Fetch sequences linked to these chapters
+    sequences = Sequence.objects.filter(chapter__in=chapters).order_by('chapter__name', 'name')
+    
+    # Handle sequence creation
+    if request.method == 'POST':
+        form = SequenceForm(request.POST)
+        # Only allow adding sequences to the designer's own chapters
+        form.fields['chapter'].queryset = chapters
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "La séquence a été créée avec succès.")
+            return redirect('designer_dashboard')
+    else:
+        form = SequenceForm()
+        form.fields['chapter'].queryset = chapters
+    
+    context = {
+        'subjects': subjects,
+        'chapters': chapters,
+        'sequences': sequences,
+        'form': form
+    }
+    
+    return render(request, 'accounts/designer_home.html', context)
+
+
+@login_required
+def manage_sequence(request, sequence_id):
+    """
+    Display the sessions of a specific sequence and handle session creation.
+    """
+    sequence = get_object_or_404(Sequence, id=sequence_id, chapter__matiere__teacher=request.user)
+    sessions = sequence.sessions.all()
+    
+    if request.method == 'POST':
+        form = SessionForm(request.POST)
+        if form.is_valid():
+            session = form.save(commit=False)
+            session.sequence = sequence # Link the session to the current sequence
+            session.save()
+            messages.success(request, "La séance a été créée avec succès.")
+            return redirect('manage_sequence', sequence_id=sequence.id)
+    else:
+        form = SessionForm()
+    
+    context = {
+        'sequence': sequence,
+        'sessions': sessions,
+        'form': form
+    }
+    
+    return render(request, 'accounts/manage_sequence.html', context)
+
+

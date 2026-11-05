@@ -1,5 +1,5 @@
 from django import forms
-from .models import Sequence, Chapter, Session
+from .models import Sequence, Chapter, Session, Activity
 
 
 class ChapterForm(forms.ModelForm):
@@ -39,4 +39,24 @@ class SessionForm(forms.ModelForm):
         }
         labels = {
             'name': 'Nom de la séance',
+        }
+
+
+class ActivityForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = ['title', 'activity_type', 'content', 'external_url', 'file_upload']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Exercice de conversion'}),
+            'activity_type': forms.Select(attrs={'class': 'form-select'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Contenu du cours ou consignes...'}),
+            'external_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://...'}),
+            'file_upload': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'title': 'Titre de l\'activité',
+            'activity_type': 'Type d\'activité',
+            'content': 'Contenu textuel',
+            'external_url': 'Lien externe (optionnel)',
+            'file_upload': 'Fichier joint (optionnel)',
         }

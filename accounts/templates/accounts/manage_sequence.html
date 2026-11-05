@@ -32,18 +32,31 @@
             <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Nouvelle séance</button>
         </div>
 
+        <!-- Bouton de soumission (visible seulement si en brouillon) -->
+        {% if sequence.status == 'DRAFT' %}
+            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-4" style="border-radius: 12px;">
+                <div>
+                    <strong>Cette séquence est en brouillon.</strong><br>
+                    Soumettez-la au référent pour validation une fois qu'elle est prête.
+                </div>
+                <a href="{% url 'submit_sequence' sequence.id %}" class="btn btn-warning rounded-pill px-3 fw-bold">Soumettre</a>
+            </div>
+        {% endif %}
+
         <h4 class="mb-3">Séances</h4>
 
         <div class="d-grid gap-2">
             {% for session in sessions %}
-                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="fw-bold text-dark">{{ session.name }}</div>
-                        <span class="badge {% if session.status == 'DRAFT' %}bg-secondary{% elif session.status == 'PENDING' %}bg-warning text-dark{% elif session.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
-                            {{ session.get_status_display }}
-                        </span>
+                <a href="{% url 'manage_session' session.id %}" class="text-decoration-none">
+                    <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="fw-bold text-dark">{{ session.name }}</div>
+                            <span class="badge {% if session.status == 'DRAFT' %}bg-secondary{% elif session.status == 'PENDING' %}bg-warning text-dark{% elif session.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
+                                {{ session.get_status_display }}
+                            </span>
+                        </div>
                     </div>
-                </div>
+                </a>
             {% empty %}
                 <div class="alert alert-info">
                     Aucune séance n'est disponible dans cette séquence.

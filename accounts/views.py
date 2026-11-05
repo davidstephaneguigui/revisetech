@@ -2,10 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from pedagogy.models import Classe, Matiere, Chapter, Sequence, Result
-from pedagogy.forms import SequenceForm, SessionForm
+from pedagogy.models import Classe, Matiere, Chapter, Sequence, Session, Activity, Result
+from pedagogy.forms import SequenceForm, SessionForm, ActivityForm
 from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm, SuggestionForm
-
 
 @login_required
 def teacher_dashboard(request):
@@ -42,6 +41,8 @@ def dashboard_redirect(request):
         return redirect('teacher_dashboard')
     elif user.groups.filter(name='Concepteur').exists():
         return redirect('designer_dashboard')
+    elif user.groups.filter(name='Référent').exists():
+        return redirect('referee_dashboard')
     elif user.groups.filter(name='Administrateur').exists():
         return redirect('/admin/')
     else:
@@ -214,3 +215,61 @@ def manage_sequence(request, sequence_id):
     return render(request, 'accounts/manage_sequence.html', context)
 
 
+@login_required
+def submit_sequence(request, sequence_id):
+    """
+    Allows the designer to submit a sequence for validation.
+    """
+    sequence = get_object_or_404(Sequence, id=sequence_id, chapter__matiere__teacher=request.user)
+    
+    if sequence.status == 'DRAFT':
+        sequence.status = 'PENDING'
+        sequence.save()
+        messages.success(request, "La séquence a été soumise pour validation.")
+    
+    return redirect('manage_sequence', sequence_id=sequence.id)
+
+
+@login_required
+def referee_dashboard(request):
+    """
+    Display the dashboard for referees, showing sequences pending validation.
+    """
+    # Fetch all sequences waiting for validation
+    pending_sequences = Sequence.objects.filter(status='PENDING').order_by('chapter__matiere__name', 'name')
+    
+    context = {
+        'pending_sequences': pending_sequences
+    }
+    
+    return render(request, 'accounts/referee_home.html', context)
+
+
+@login_required
+def manage_session(request, session_id):
+    """
+    Display the activities of a specific session and handle activity creation.
+    """
+    session = get_object_or_404(Session, id=session_id, sequence__chapter__matiere__teacher=request.user)
+    activities = session.activities.all()
+    
+    if request.method == 'POST':
+        # request.FILES is required for file uploads
+        form = ActivityForm(request.POST, request.FILES)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.save()
+            # Link the activity to the current session (ManyToMany)
+            activity.sessions.add(session)
+            messages.success(request, "L'activité a été créée avec succès.")
+            return redirect('manage_session', session_id=session.id)
+    else:
+        form = ActivityForm()
+    
+    context = {
+        'session': session,
+        'activities': activities,
+        'form': form
+    }
+    
+    return render(request, 'accounts/manage_session.html', context)

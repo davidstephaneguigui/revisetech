@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from pedagogy.models import Classe, Matiere, Chapter, Sequence, Session, Activity, Result
-from pedagogy.forms import SequenceForm, SessionForm, ActivityForm
+from pedagogy.models import Matiere
+from classroom.models import Classe
+from learning.models import Result
 from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm, SuggestionForm
 
 @login_required
@@ -61,7 +62,7 @@ def class_detail(request, class_id):
     if request.method == 'POST':
         form = AddSubjectToClassForm(request.POST)
         # Only show subjects created by this specific teacher
-        form.fields['matiere'].queryset = Matiere.objects.filter(teacher=request.user)
+        form.fields['matiere'].queryset = Matiere.objects.all()
         
         if form.is_valid():
             matiere = form.cleaned_data['matiere']
@@ -70,7 +71,7 @@ def class_detail(request, class_id):
             return redirect('class_detail', class_id=classe.id)
     else:
         form = AddSubjectToClassForm()
-        form.fields['matiere'].queryset = Matiere.objects.filter(teacher=request.user)
+        form.fields['matiere'].queryset = Matiere.objects.all()
     
     context = {
         'classe': classe,
@@ -146,130 +147,3 @@ def student_results(request, student_id):
     }
     
     return render(request, 'accounts/student_results.html', context)
-
-
-@login_required
-def designer_dashboard(request):
-    """
-    Display the dashboard for designers, showing their subjects, chapters, 
-    and sequences, and handle sequence creation.
-    """
-    # Fetch subjects created by this designer
-    subjects = Matiere.objects.filter(teacher=request.user)
-    
-    # Fetch chapters linked to these subjects
-    chapters = Chapter.objects.filter(matiere__in=subjects).order_by('matiere__name', 'name')
-    
-    # Fetch sequences linked to these chapters
-    sequences = Sequence.objects.filter(chapter__in=chapters).order_by('chapter__name', 'name')
-    
-    # Handle sequence creation
-    if request.method == 'POST':
-        form = SequenceForm(request.POST)
-        # Only allow adding sequences to the designer's own chapters
-        form.fields['chapter'].queryset = chapters
-        
-        if form.is_valid():
-            form.save()
-            messages.success(request, "La séquence a été créée avec succès.")
-            return redirect('designer_dashboard')
-    else:
-        form = SequenceForm()
-        form.fields['chapter'].queryset = chapters
-    
-    context = {
-        'subjects': subjects,
-        'chapters': chapters,
-        'sequences': sequences,
-        'form': form
-    }
-    
-    return render(request, 'accounts/designer_home.html', context)
-
-
-@login_required
-def manage_sequence(request, sequence_id):
-    """
-    Display the sessions of a specific sequence and handle session creation.
-    """
-    sequence = get_object_or_404(Sequence, id=sequence_id, chapter__matiere__teacher=request.user)
-    sessions = sequence.sessions.all()
-    
-    if request.method == 'POST':
-        form = SessionForm(request.POST)
-        if form.is_valid():
-            session = form.save(commit=False)
-            session.sequence = sequence # Link the session to the current sequence
-            session.save()
-            messages.success(request, "La séance a été créée avec succès.")
-            return redirect('manage_sequence', sequence_id=sequence.id)
-    else:
-        form = SessionForm()
-    
-    context = {
-        'sequence': sequence,
-        'sessions': sessions,
-        'form': form
-    }
-    
-    return render(request, 'accounts/manage_sequence.html', context)
-
-
-@login_required
-def submit_sequence(request, sequence_id):
-    """
-    Allows the designer to submit a sequence for validation.
-    """
-    sequence = get_object_or_404(Sequence, id=sequence_id, chapter__matiere__teacher=request.user)
-    
-    if sequence.status == 'DRAFT':
-        sequence.status = 'PENDING'
-        sequence.save()
-        messages.success(request, "La séquence a été soumise pour validation.")
-    
-    return redirect('manage_sequence', sequence_id=sequence.id)
-
-
-@login_required
-def referee_dashboard(request):
-    """
-    Display the dashboard for referees, showing sequences pending validation.
-    """
-    # Fetch all sequences waiting for validation
-    pending_sequences = Sequence.objects.filter(status='PENDING').order_by('chapter__matiere__name', 'name')
-    
-    context = {
-        'pending_sequences': pending_sequences
-    }
-    
-    return render(request, 'accounts/referee_home.html', context)
-
-
-@login_required
-def manage_session(request, session_id):
-    """
-    Display the activities of a specific session and handle activity creation.
-    """
-    session = get_object_or_404(Session, id=session_id, sequence__chapter__matiere__teacher=request.user)
-    activities = session.activities.all()
-    
-    if request.method == 'POST':
-        # request.FILES is required for file uploads
-        form = ActivityForm(request.POST, request.FILES)
-        if form.is_valid():
-            activity = form.save(commit=False)
-            activity.save()
-            # Link the activity to the current session (ManyToMany)
-            activity.sessions.add(session)
-            messages.success(request, "L'activité a été créée avec succès.")
-            return redirect('manage_session', session_id=session.id)
-    else:
-        form = ActivityForm()
-    
-    context = {
-        'session': session,
-        'activities': activities,
-        'form': form
-    }
-    
-    return render(request, 'accounts/manage_session.html', context)

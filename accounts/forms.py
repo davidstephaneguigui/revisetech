@@ -1,5 +1,6 @@
 from django import forms
-from pedagogy.models import Classe, Matiere, Suggestion
+from pedagogy.models import Matiere
+from classroom.models import Classe, Suggestion
 
 
 class ClasseForm(forms.ModelForm):

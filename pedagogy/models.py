@@ -1,9 +1,6 @@
 from django.db import models
 from django.conf import settings
-import uuid
 
-
-# Common choices for validation workflow
 STATUS_CHOICES = [
     ('DRAFT', 'Brouillon'),
     ('PENDING', 'En attente de validation'),
@@ -12,50 +9,17 @@ STATUS_CHOICES = [
     ('REJECTED', 'Rejeté'),
 ]
 
-
-class Classe(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Nom de la classe")
-    level = models.CharField(max_length=50, verbose_name="Niveau (ex: Première)")
-    specialty = models.CharField(max_length=50, verbose_name="Spécialité (ex: STI2D)")
-    code_invitation = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name="Code d'invitation")
-    main_teacher = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name="main_classes", 
-        verbose_name="Professeur principal"
-    )
-    students = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, 
-        related_name="student_classes", 
-        blank=True, 
-        verbose_name="Élèves"
-    )
-    
-    def save(self, *args, **kwargs):
-        if not self.code_invitation:
-            # Generate a short, unique code (8 characters)
-            self.code_invitation = str(uuid.uuid4())[:8].upper()
-        super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name = "Classe"
-        verbose_name_plural = "Classes"
-
-    def __str__(self):
-        return f"{self.name} ({self.level} {self.specialty})"
-
-
 class Matiere(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom de la matière")
     color_hex = models.CharField(max_length=7, default="#333333", verbose_name="Couleur (hex)")
-    teacher = models.ForeignKey(
+    creator = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
-        related_name="subjects", 
-        verbose_name="Enseignant"
+        related_name="created_subjects", 
+        verbose_name="Concepteur"
     )
     classes = models.ManyToManyField(
-        Classe, 
+        'classroom.Classe', 
         related_name="subjects", 
         blank=True, 
         verbose_name="Classes associées"
@@ -68,16 +32,10 @@ class Matiere(models.Model):
     def __str__(self):
         return self.name
 
-
 class Chapter(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom du chapitre/module")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
-    matiere = models.ForeignKey(
-        Matiere, 
-        on_delete=models.CASCADE, 
-        related_name="chapters", 
-        verbose_name="Matière"
-    )
+    matiere = models.ForeignKey(Matiere, on_delete=models.CASCADE, related_name="chapters", verbose_name="Matière")
     
     class Meta:
         verbose_name = "Chapitre / Module"
@@ -86,16 +44,10 @@ class Chapter(models.Model):
     def __str__(self):
         return f"{self.matiere.name} - {self.name}"
 
-
 class Sequence(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom de la séquence")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
-    chapter = models.ForeignKey(
-        Chapter, 
-        on_delete=models.CASCADE, 
-        related_name="sequences", 
-        verbose_name="Chapitre"
-    )
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name="sequences", verbose_name="Chapitre")
     
     class Meta:
         verbose_name = "Séquence"
@@ -104,16 +56,10 @@ class Sequence(models.Model):
     def __str__(self):
         return self.name
 
-
 class Session(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom de la séance")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
-    sequence = models.ForeignKey(
-        Sequence, 
-        on_delete=models.CASCADE, 
-        related_name="sessions", 
-        verbose_name="Séquence"
-    )
+    sequence = models.ForeignKey(Sequence, on_delete=models.CASCADE, related_name="sessions", verbose_name="Séquence")
     
     class Meta:
         verbose_name = "Séance"
@@ -121,7 +67,6 @@ class Session(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Activity(models.Model):
     ACTIVITY_TYPES = [
@@ -147,15 +92,8 @@ class Activity(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_activity_type_display()})"
 
-
 class Question(models.Model):
-    activity = models.ForeignKey(
-        Activity, 
-        on_delete=models.CASCADE, 
-        related_name="questions", 
-        limit_choices_to={'activity_type': 'QUIZ'},
-        verbose_name="Activité (Quiz)"
-    )
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="questions", limit_choices_to={'activity_type': 'QUIZ'}, verbose_name="Activité (Quiz)")
     text = models.TextField(verbose_name="Question")
     order = models.IntegerField(default=1, verbose_name="Ordre d'apparition")
 
@@ -166,7 +104,6 @@ class Question(models.Model):
 
     def __str__(self):
         return f"{self.activity.title} - Q{self.order}"
-
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices", verbose_name="Question")
@@ -179,34 +116,3 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.text
-
-
-class Result(models.Model):
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="results", verbose_name="Élève")
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="results", verbose_name="Activité")
-    score = models.IntegerField(verbose_name="Score obtenu")
-    max_score = models.IntegerField(verbose_name="Score maximum")
-    date_attempt = models.DateTimeField(auto_now_add=True, verbose_name="Date de la tentative")
-
-    class Meta:
-        verbose_name = "Résultat"
-        verbose_name_plural = "Résultats"
-
-    def __str__(self):
-        return f"{self.student.username} - {self.activity.title} : {self.score}/{self.max_score}"
-
-
-class Suggestion(models.Model):
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_suggestions", verbose_name="Enseignant")
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_suggestions", verbose_name="Élève")
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, verbose_name="Activité suggérée")
-    message = models.TextField(blank=True, null=True, verbose_name="Message personnalisé")
-    is_read = models.BooleanField(default=False, verbose_name="Lu par l'élève")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
-
-    class Meta:
-        verbose_name = "Suggestion"
-        verbose_name_plural = "Suggestions"
-
-    def __str__(self):
-        return f"Suggestion pour {self.student.username} - {self.activity.title}"

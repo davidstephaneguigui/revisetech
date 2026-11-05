@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Matiere, Chapter, Sequence, Session, Activity, Suggestion, Choice, Result
+from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
+from classroom.models import Suggestion
+from learning.models import Result
 
 
 @login_required

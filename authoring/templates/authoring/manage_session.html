@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
+{% block container_class %}container-fluid px-4{% endblock %}
 
 {% block title %}{{ session.name }} - Espace Concepteur{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-12 col-md-8 col-lg-6">
+    <div class="col-12">
         
         <!-- Bouton retour -->
         <div class="mb-4 mt-2">

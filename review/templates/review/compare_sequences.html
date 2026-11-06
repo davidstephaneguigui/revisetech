@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block container_class %}container-fluid px-4{% endblock %}
+
+{% block title %}Comparer les séquences - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'referee_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour au tableau de bord
+            </a>
+        </div>
+
+        <h2 class="mb-4">Comparer les séquences</h2>
+
+        <!-- Formulaire de recherche et sélection -->
+        <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card-body">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="q" class="form-label fw-bold">Rechercher (nom, tag, matière...)</label>
+                        <input type="text" name="q" id="q" class="form-control" value="{{ query }}" placeholder="Ex: binaire, SIN, logique">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="compare_with" class="form-label fw-bold">Sélectionner la séquence à comparer</label>
+                        <select name="compare_with" id="compare_with" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Choisir une séquence --</option>
+                            {% for seq in other_sequences %}
+                                <option value="{{ seq.id }}" {% if sequence_id_2 == seq.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ seq.name }} ({{ seq.chapter.matiere.name }}) - {{ seq.get_status_display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Affichage côte à côte -->
+        <div class="row">
+            <!-- Colonne Séquence 1 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-top: 5px solid {{ sequence1.chapter.matiere.color_hex }} !important;">
+                    <div class="card-header bg-white border-0 pt-3">
+                        <h4 class="mb-1">{{ sequence1.name }}</h4>
+                        <p class="text-muted small mb-0">{{ sequence1.chapter.name }} ({{ sequence1.chapter.matiere.name }})</p>
+                        <span class="badge {% if sequence1.status == 'DRAFT' %}bg-secondary{% elif sequence1.status == 'PENDING' %}bg-warning text-dark{% elif sequence1.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} mt-2">{{ sequence1.get_status_display }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary">Tags</h6>
+                            <p class="mb-0">{{ sequence1.tags|default:"Aucun" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary">Objectifs</h6>
+                            <p class="mb-0">{{ sequence1.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <h6 class="fw-bold text-primary">Modalités</h6>
+                            <p class="mb-0">{{ sequence1.modalities|linebreaksbr|default:"Non renseigné" }}</p>
+                        </div>
+                        <div class="mb-0">
+                            <h6 class="fw-bold text-primary">Séances prévisionnelles</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for planned in sequence1.planned_sessions.all %}
+                                    <li class="list-group-item px-0 py-2 small">
+                                        <strong>S{{ planned.order }} : {{ planned.name }}</strong> <span class="badge bg-light text-dark border ms-1">{{ planned.get_session_type_display }}</span><br>
+                                        {{ planned.objective }}
+                                    </li>
+                                {% empty %}
+                                    <li class="list-group-item px-0 text-muted small">Aucune séance.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne Séquence 2 -->
+            <div class="col-md-6 mb-4">
+                {% if sequence2 %}
+                    <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-top: 5px solid {{ sequence2.chapter.matiere.color_hex }} !important;">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <h4 class="mb-1">{{ sequence2.name }}</h4>
+                            <p class="text-muted small mb-0">{{ sequence2.chapter.name }} ({{ sequence2.chapter.matiere.name }})</p>
+                            <span class="badge {% if sequence2.status == 'DRAFT' %}bg-secondary{% elif sequence2.status == 'PENDING' %}bg-warning text-dark{% elif sequence2.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} mt-2">{{ sequence2.get_status_display }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-primary">Tags</h6>
+                                <p class="mb-0">{{ sequence2.tags|default:"Aucun" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-primary">Objectifs</h6>
+                                <p class="mb-0">{{ sequence2.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-primary">Modalités</h6>
+                                <p class="mb-0">{{ sequence2.modalities|linebreaksbr|default:"Non renseigné" }}</p>
+                            </div>
+                            <div class="mb-0">
+                                <h6 class="fw-bold text-primary">Séances prévisionnelles</h6>
+                                <ul class="list-group list-group-flush">
+                                    {% for planned in sequence2.planned_sessions.all %}
+                                        <li class="list-group-item px-0 py-2 small">
+                                            <strong>S{{ planned.order }} : {{ planned.name }}</strong> <span class="badge bg-light text-dark border ms-1">{{ planned.get_session_type_display }}</span><br>
+                                            {{ planned.objective }}
+                                        </li>
+                                    {% empty %}
+                                        <li class="list-group-item px-0 text-muted small">Aucune séance.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="card h-100 shadow-sm border-0 d-flex justify-content-center align-items-center text-center p-4" style="border-radius: 12px; background-color: #f8f9fa;">
+                        <p class="text-muted mb-0">Recherchez et sélectionnez une séquence dans le menu déroulant ci-dessus pour la comparer.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

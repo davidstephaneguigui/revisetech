@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 
+
 STATUS_CHOICES = [
     ('DRAFT', 'Brouillon'),
     ('PENDING', 'En attente de validation'),
@@ -8,6 +9,7 @@ STATUS_CHOICES = [
     ('PUBLISHED', 'Publié'),
     ('REJECTED', 'Rejeté'),
 ]
+
 
 class Matiere(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom de la matière")
@@ -32,6 +34,7 @@ class Matiere(models.Model):
     def __str__(self):
         return self.name
 
+
 class Chapter(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom du chapitre/module")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
@@ -44,11 +47,19 @@ class Chapter(models.Model):
     def __str__(self):
         return f"{self.matiere.name} - {self.name}"
 
+
 class Sequence(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom de la séquence")
+    # Field introduced to index the sequence 
+    tags = models.CharField(max_length=255, blank=True, help_text="Mots-clés séparés par des virgules (ex: binaire, logique, SIN)")
+    #  Fields for the "Intention" phase
+    objectives = models.TextField(blank=True, null=True, verbose_name="Objectifs de la séquence")
+    modalities = models.TextField(blank=True, null=True, verbose_name="Modalités et place dans la progression")
+    # Other fields concerning the Sequence
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name="sequences", verbose_name="Chapitre")
-    
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_sequences", verbose_name="Concepteur", null=True, blank=True)
+
     class Meta:
         verbose_name = "Séquence"
         verbose_name_plural = "Séquences"
@@ -56,17 +67,55 @@ class Sequence(models.Model):
     def __str__(self):
         return self.name
 
+
+class PlannedSession(models.Model):
+    SESSION_TYPES = [
+        ('COURSE', 'Cours'),
+        ('TD', 'Travaux Dirigés'),
+        ('TP', 'Travaux Pratiques'),
+        ('EVAL', 'Évaluation'),
+        ('PROJECT', 'Projet'),
+    ]
+
+    sequence = models.ForeignKey(Sequence, on_delete=models.CASCADE, related_name="planned_sessions", verbose_name="Séquence")
+    order = models.IntegerField(default=1, verbose_name="Numéro")
+    name = models.CharField(max_length=200, verbose_name="Titre de la séance")
+    objective = models.TextField(verbose_name="Objectif de la séance", blank=True)
+    session_type = models.CharField(max_length=20, choices=SESSION_TYPES, default='COURSE', verbose_name="Type de séance")
+
+    class Meta:
+        verbose_name = "Séance prévisionnelle"
+        verbose_name_plural = "Séances prévisionnelles"
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Séance {self.order} : {self.name}"
+
+
 class Session(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Nom de la séance")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
+    SESSION_TYPES = [
+        ('COURSE', 'Cours'),
+        ('TD', 'Travaux Dirigés'),
+        ('TP', 'Travaux Pratiques'),
+        ('EVAL', 'Évaluation'),
+        ('PROJECT', 'Projet'),
+    ]
+
     sequence = models.ForeignKey(Sequence, on_delete=models.CASCADE, related_name="sessions", verbose_name="Séquence")
+    order = models.IntegerField(default=1, verbose_name="Numéro de la séance")
+    name = models.CharField(max_length=200, verbose_name="Titre de la séance")
+    objective = models.TextField(verbose_name="Objectif de la séance", blank=True)
+    session_type = models.CharField(max_length=20, choices=SESSION_TYPES, default='COURSE', verbose_name="Type de séance")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
     
     class Meta:
         verbose_name = "Séance"
         verbose_name_plural = "Séances"
+        ordering = ['order'] # Trie automatiquement par numéro
 
     def __str__(self):
-        return self.name
+        return f"Séance {self.order} : {self.name}"
+
 
 class Activity(models.Model):
     ACTIVITY_TYPES = [
@@ -92,6 +141,7 @@ class Activity(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_activity_type_display()})"
 
+
 class Question(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="questions", limit_choices_to={'activity_type': 'QUIZ'}, verbose_name="Activité (Quiz)")
     text = models.TextField(verbose_name="Question")
@@ -104,6 +154,7 @@ class Question(models.Model):
 
     def __str__(self):
         return f"{self.activity.title} - Q{self.order}"
+
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices", verbose_name="Question")

@@ -1,3 +1,4 @@
+{% load static %}
 {% load auth_extras %}
 
 <!DOCTYPE html>
@@ -7,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Revisetech{% endblock %}</title>
     
-    <!-- Google Fonts : Roboto -->
+        <!-- Google Fonts : Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -15,27 +16,8 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <style>
-        /* Charte graphique Revisetech */
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f7;
-            color: #333333;
-        }
-        .btn-primary {
-            background-color: #6a1b9a;
-            border-color: #6a1b9a;
-        }
-        .btn-primary:hover {
-            background-color: #4a148c;
-            border-color: #4a148c;
-        }
-        .card {
-            border-radius: 12px;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-    </style>
+    <!-- Custom CSS (Must be loaded AFTER Bootstrap) -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
     <!-- En-tête (Header) -->
@@ -58,7 +40,7 @@
     </header>
     
     <!-- Le contenu spécifique de chaque page viendra s'insérer ici -->
-        <div class="container mt-4 pb-5 mb-5">
+    <div class="{% block container_class %}container{% endblock %} mt-4 pb-5 mb-5">
         {% block content %}
         {% endblock %}
     </div>

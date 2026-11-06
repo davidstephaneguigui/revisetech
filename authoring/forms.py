@@ -1,5 +1,22 @@
 from django import forms
-from pedagogy.models import Sequence, Session, Activity
+from pedagogy.models import Sequence, Session, Activity, PlannedSession
+
+
+class SequenceIntentionForm(forms.ModelForm):
+    class Meta:
+        model = Sequence
+        fields = ['tags', 'objectives', 'modalities']
+        widgets = {
+            'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: binaire, logique, SIN, Arduino'}),
+            'objectives': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Objectifs pédagogiques de la séquence...'}),
+            'modalities': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Place dans la progression, prérequis...'}),
+        }
+        labels = {
+            'tags': 'Mots-clés (Tags)',
+            'objectives': 'Objectifs de la séquence',
+            'modalities': 'Modalités et place dans la progression',
+        }
+
 
 class SequenceForm(forms.ModelForm):
     class Meta:
@@ -14,6 +31,25 @@ class SequenceForm(forms.ModelForm):
             'chapter': 'Chapitre parent',
         }
 
+
+class PlannedSessionForm(forms.ModelForm):
+    class Meta:
+        model = PlannedSession
+        fields = ['order', 'name', 'objective', 'session_type']
+        widgets = {
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 80px;'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Découverte du binaire'}),
+            'objective': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Objectif principal...'}),
+            'session_type': forms.Select(attrs={'class': 'form-select'}),
+        }
+        labels = {
+            'order': 'N°',
+            'name': 'Titre',
+            'objective': 'Objectif',
+            'session_type': 'Type',
+        }
+
+
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
@@ -24,6 +60,7 @@ class SessionForm(forms.ModelForm):
         labels = {
             'name': 'Nom de la séance',
         }
+
 
 class ActivityForm(forms.ModelForm):
     class Meta:

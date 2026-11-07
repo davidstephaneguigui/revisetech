@@ -66,8 +66,17 @@
                         <h4 class="alert-heading fw-bold mb-2">Quiz terminé !</h4>
                         <p class="fs-3 mb-0">Ton score : <strong>{{ score }} / {{ max_score }}</strong></p>
                     </div>
-                    <div class="mt-4 text-center">
-                        <a href="{% url 'session_detail' activity.sessions.first.id %}" class="btn btn-outline-primary rounded-pill px-4">Retour aux activités</a>
+                    <!-- Retour vers la séance (ou l'accueil si pas de séance) -->
+                    <div class="mb-4 mt-2">
+                        {% if activity.sessions.first %}
+                            <a href="{% url 'session_detail' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                &larr; Retour à la séance
+                            </a>
+                        {% else %}
+                            <a href="{% url 'student_home' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                &larr; Retour à l'accueil
+                            </a>
+                        {% endif %}
                     </div>
                 {% else %}
                     <!-- Formulaire du quiz -->

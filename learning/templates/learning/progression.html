@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Ma Progression - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <h2 class="mt-4 mb-4 text-center">Ma Progression</h2>
+
+        <!-- Main Card: Global Progress -->
+        <div class="card p-4 shadow-sm border-0 mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #6a1b9a, #9c27b0); color: white;">
+            <div class="text-center mb-3">
+                <h5 class="mb-0">Modules terminés</h5>
+                <h1 class="display-4 fw-bold">{{ badges|length }} / {{ total_sequences }}</h1>
+            </div>
+            <div class="progress" style="height: 10px; border-radius: 5px; background-color: rgba(255,255,255,0.3);">
+                <!-- Calculate percentage dynamically -->
+                {% widthratio badges|length total_sequences 100 as percentage %}
+                <div class="progress-bar bg-white" role="progressbar" style="width: {{ percentage }}%; border-radius: 5px;" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+
+        <!-- Badges Section -->
+        <h4 class="mb-3">Mes Badges obtenus</h4>
+        
+        <div class="row g-3">
+            {% for badge in badges %}
+                <div class="col-6 col-md-4">
+                    <div class="card h-100 text-center p-3 shadow-sm border-0" style="border-radius: 12px; background-color: white;">
+                        <div class="fs-1 mb-2">🏆</div>
+                        <h6 class="fw-bold text-dark mb-1">{{ badge.sequence.name }}</h6>
+                        <small class="text-muted" style="font-size: 0.75rem;">Obtenu le {{ badge.date_obtained|date:"d/m/Y" }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        Tu n'as pas encore obtenu de badge. Continue à faire tes quiz pour en gagner !
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

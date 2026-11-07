@@ -1,5 +1,5 @@
 from django import forms
-from pedagogy.models import Matiere
+from pedagogy.models import Matiere, Sequence
 from .models import Classe, Suggestion
 
 
@@ -17,6 +17,14 @@ class ClasseForm(forms.ModelForm):
             'level': 'Niveau',
             'specialty': 'Spécialité',
         }
+
+
+class AddStudentForm(forms.Form):
+    username = forms.CharField(
+        max_length=150, 
+        label="Nom d'utilisateur de l'élève",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: jean.dupont'})
+    )
 
 
 class JoinClassForm(forms.Form):
@@ -47,3 +55,11 @@ class SuggestionForm(forms.ModelForm):
             'activity': 'Activité à suggérer',
             'message': 'Message (optionnel)',
         }
+
+
+class AddSequenceToClassForm(forms.Form):
+    sequences = forms.ModelMultipleChoiceField(
+        queryset=Sequence.objects.none(), # We'll populate this in the view
+        label="Choisir les séquences",
+        widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': '10'})
+    )

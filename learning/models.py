@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
-from pedagogy.models import Activity
+from pedagogy.models import Activity, Sequence
+
 
 class Result(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="results", verbose_name="Élève")
@@ -15,3 +16,18 @@ class Result(models.Model):
 
     def __str__(self):
         return f"{self.student.username} - {self.activity.title} : {self.score}/{self.max_score}"
+
+
+class Badge(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="badges", verbose_name="Élève")
+    sequence = models.ForeignKey(Sequence, on_delete=models.CASCADE, related_name="badges", verbose_name="Séquence")
+    date_obtained = models.DateTimeField(auto_now_add=True, verbose_name="Date d'obtention")
+
+    class Meta:
+        verbose_name = "Badge"
+        verbose_name_plural = "Badges"
+        # Ensure a student can only have one badge per sequence
+        unique_together = ('student', 'sequence')
+
+    def __str__(self):
+        return f"{self.student.username} - {self.sequence.name}"

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Suggestions - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'student_home' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour à l'accueil
+            </a>
+        </div>
+
+        <h2 class="mb-4">Mes Suggestions</h2>
+
+        <div class="d-grid gap-3">
+            {% for suggestion in suggestions %}
+                <div class="card p-4 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid #6a1b9a !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="text-muted small">
+                            <strong>{{ suggestion.teacher.username }}</strong> te suggère de réviser :
+                        </div>
+                        <div class="text-muted small">{{ suggestion.created_at|date:"d/m/Y" }}</div>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-2">{{ suggestion.activity.title }}</h5>
+                    
+                    {% if suggestion.message %}
+                        <div class="p-3 bg-light rounded mb-3" style="font-style: italic;">
+                            "{{ suggestion.message }}"
+                        </div>
+                    {% endif %}
+
+                    <div class="text-end">
+                        <a href="{% url 'activity_detail' suggestion.activity.id %}" class="btn btn-primary btn-sm rounded-pill px-4">Aller à l'activité</a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info text-center">
+                    Tu n'as reçu aucune suggestion pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

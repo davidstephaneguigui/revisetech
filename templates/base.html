@@ -29,6 +29,17 @@
             
             {% if user.is_authenticated %}
                 <div class="d-flex align-items-center gap-3">
+                    <!-- Suggestion Bell -->
+                    {% get_unread_suggestions_count user as unread_count %}
+                    <a href="{% url 'suggestion_list' %}" class="text-decoration-none position-relative me-2" style="color: #333;">
+                        <span class="fs-4">🔔</span>
+                        {% if unread_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+
                     <span class="text-muted small d-none d-md-inline">{{ user.username }}</span>
                     <form action="{% url 'logout' %}" method="post" class="m-0">
                         {% csrf_token %}
@@ -57,7 +68,7 @@
                     <span class="d-block fs-4">🏠</span>
                     <span class="small">Accueil</span>
                 </a>
-                <a href="#" class="text-decoration-none text-center text-muted">
+                <a href="{% url 'student_progression' %}" class="text-decoration-none text-center text-muted">
                     <span class="d-block fs-4">📈</span>
                     <span class="small">Progression</span>
                 </a>

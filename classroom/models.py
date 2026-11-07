@@ -21,6 +21,12 @@ class Classe(models.Model):
         blank=True, 
         verbose_name="Élèves"
     )
+    sequences = models.ManyToManyField(
+        'pedagogy.Sequence', 
+        related_name="classes", 
+        blank=True, 
+        verbose_name="Séquences au programme"
+    )
     
     def save(self, *args, **kwargs):
         if not self.code_invitation:

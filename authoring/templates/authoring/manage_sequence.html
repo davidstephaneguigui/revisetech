@@ -49,6 +49,11 @@
                             <div class="mb-3">
                                 <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
                                 {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ field.errors.0 }}
+                                    </div>
+                                {% endif %}
                             </div>
                         {% endfor %}
 
@@ -73,6 +78,15 @@
                                 </thead>
                                 <tbody id="session-formset-body">
                                     {% for form in planned_sessions_formset %}
+                                        <!-- Affichage des erreurs pour cette ligne -->
+                                        {% if form.errors %}
+                                            <tr>
+                                                <td colspan="5" class="text-danger small bg-danger bg-opacity-10">
+                                                    Erreur dans cette ligne : {{ form.errors }}
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                        
                                         <tr>
                                             <td>{{ form.id }}{{ form.order }}</td>
                                             <td>{{ form.name }}</td>
@@ -146,6 +160,9 @@
         {% if sequence.status == 'VALIDATED' %}
             <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
                 <h4 class="mb-0">Séances à remplir</h4>
+                {% if sequence.status == 'VALIDATED' %}
+                    <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Nouvelle séance</button>
+                {% endif %}
             </div>
 
             <div class="d-grid gap-2">
@@ -182,5 +199,36 @@
     </div>
 </div>
 
+
+<!-- Modal to add a new session -->
+<div class="modal fade" id="addSessionModal" tabindex="-1" aria-labelledby="addSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="addSessionModalLabel">Nouvelle séance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>Attention :</strong> L'ajout d'une séance sera notifié au référent car il modifie la structure de la séquence, l'ajout de plusieurs séances peut entrainer
+                            une nouvelle demande de validation de l'intention par le référent.
+                    </div>
+                    {% for field in session_form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" name="add_session" class="btn btn-primary rounded-pill px-4">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script src="{% static 'js/authoring/sequence_formset.js' %}"></script>
 {% endblock %}

@@ -2,27 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
 from classroom.models import Suggestion
-from learning.models import Result
-
-
-@login_required
-def student_home(request):
-    """
-    Display the main dashboard for students, showing only subjects 
-    associated with their classes and unread suggestions.
-    """
-    student_classes = request.user.student_classes.all()
-    subjects = Matiere.objects.filter(classes__in=student_classes).distinct()
-    
-    # Fetch unread suggestions for the student
-    suggestions = Suggestion.objects.filter(student=request.user, is_read=False).order_by('-created_at')
-    
-    context = {
-        'subjects': subjects,
-        'suggestions': suggestions
-    }
-    
-    return render(request, 'pedagogy/student_home.html', context)
+from learning.models import Result, Badge
 
 
 @login_required
@@ -133,6 +113,42 @@ def activity_detail(request, activity_id):
                 score=score,
                 max_score=questions.count()
             )
+
+            # --- BADGE LOGIC ---
+            if activity.activity_type == 'QUIZ' and activity.sessions.exists():
+                # Get the sequence this quiz belongs to
+                sequence = activity.sessions.first().sequence
+                
+                # Get all quiz activities in this sequence
+                sequence_quizzes = Activity.objects.filter(sessions__sequence=sequence, activity_type='QUIZ').distinct()
+                
+                # Get the best score for each quiz for this student
+                total_best_score = 0
+                total_max_score = 0
+                has_done_all_quizzes = True
+                
+                for quiz in sequence_quizzes:
+                    best_result = Result.objects.filter(student=request.user, activity=quiz).order_by('-score').first()
+                    if best_result:
+                        total_best_score += best_result.score
+                        total_max_score += best_result.max_score
+                    else:
+                        # The student hasn't done this quiz yet
+                        has_done_all_quizzes = False
+                        break
+                
+                # If the student has done all quizzes, calculate the average
+                if has_done_all_quizzes and total_max_score > 0:
+                    average = total_best_score / total_max_score
+                    
+                    # Check if average is >= 0.7 (which is 3.5/5 or 7/10)
+                    if average >= 0.7:
+                        # Give the badge (get_or_create avoids duplicate errors)
+                        Badge.objects.get_or_create(student=request.user, sequence=sequence)
+                    else:
+                        # Revoke the badge if the average dropped
+                        Badge.objects.filter(student=request.user, sequence=sequence).delete()
+
     
     context = {
         'activity': activity,

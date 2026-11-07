@@ -6,22 +6,6 @@ from django.db.models import Q
 
 
 @login_required
-def submit_sequence(request, sequence_id):
-    """
-    Allows the designer to submit a sequence for validation.
-    """
-    # Remplace l'ancienne ligne par celle-ci :
-    sequence = get_object_or_404(Sequence, id=sequence_id, creator=request.user)
-    
-    if sequence.status == 'VALIDATED':
-        sequence.status = 'CONTENT_PENDING'
-        sequence.save()
-        messages.success(request, "La séquence a été soumise au référent pour validation.")
-    
-    return redirect('manage_sequence', sequence_id=sequence.id)
-
-
-@login_required
 def submit_content(request, sequence_id):
     """
     Allows the designer to submit the filled sequence content to the referee.
@@ -56,14 +40,10 @@ def validate_content(request, sequence_id):
             
             # Check if all sequences in the chapter are now content-validated
             chapter = sequence.chapter
-            all_validated = True
-            for seq in chapter.sequences.all():
-                if seq.status != 'CONTENT_VALIDATED':
-                    all_validated = False
-                    break
+            all_validated = chapter.sequences.filter(status='CONTENT_VALIDATED').count() == chapter.sequences.count()
             
             if all_validated:
-                chapter.status = 'PENDING' # PENDING_INSPECTION
+                chapter.status = 'PENDING_INSPECTION' # <-- Correction ici
                 chapter.save()
                 messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour l'inspection.")
                 
@@ -74,18 +54,25 @@ def validate_content(request, sequence_id):
 def referee_dashboard(request):
     """
     Display the dashboard for referees, showing pending intentions, 
-    pending content, and validated sequences.
+    pending contents, validated sequences, and content validated.
     """
+    # 1. Intentions waiting for validation
     pending_sequences = Sequence.objects.filter(status='PENDING').order_by('chapter__matiere__name', 'name')
+    
+    # 2. Sequences waiting for content validation
     content_pending_sequences = Sequence.objects.filter(status='CONTENT_PENDING').order_by('chapter__matiere__name', 'name')
+    
+    # 3. Sequences validated (currently filling content)
     validated_sequences = Sequence.objects.filter(status='VALIDATED').order_by('-id')
+    
+    # 4. Content validated (waiting for publication)
     content_validated_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('-id')
     
     context = {
         'pending_sequences': pending_sequences,
         'content_pending_sequences': content_pending_sequences,
         'validated_sequences': validated_sequences,
-        'content_validated_sequences': content_validated_sequences,
+        'content_validated_sequences': content_validated_sequences
     }
     
     return render(request, 'review/referee_home.html', context)
@@ -154,7 +141,13 @@ def validate_sequence(request, sequence_id):
     
     if request.user.groups.filter(name='Référent').exists():
         if sequence.status == 'PENDING':
+            # Get the comment from the form
+            comment = request.POST.get('referee_comment', '')
+            if comment:
+                sequence.referee_comment = comment
+                
             sequence.status = 'VALIDATED'
+            sequence.needs_second_review = False # Reset the flag
             sequence.save()
             
             # Generate or update real Sessions from PlannedSessions
@@ -167,22 +160,8 @@ def validate_sequence(request, sequence_id):
                         'name': planned.name,
                         'objective': planned.objective,
                         'session_type': planned.session_type,
-                        # On ne met pas 'status' dans defaults pour ne pas écraser le travail déjà fait
                     }
                 )
-            
-            # Check if all sequences in the chapter are now validated
-            chapter = sequence.chapter
-            all_validated = True
-            for seq in chapter.sequences.all():
-                if seq.status != 'VALIDATED':
-                    all_validated = False
-                    break
-            
-            if all_validated:
-                chapter.status = 'PENDING' # PENDING_INSPECTION
-                chapter.save()
-                messages.success(request, f"Le chapitre '{chapter.name}' est maintenant complet et prêt pour l'inspection.")
             
             messages.success(request, f"L'intention de la séquence '{sequence.name}' a été validée. Le squelette des séances a été généré.")
     
@@ -263,4 +242,23 @@ def publish_sequence(request, sequence_id):
             else:
                 messages.success(request, f"La séquence '{sequence.name}' a été publiée. Le chapitre est en attente de publication des autres séquences.")
                 
+    return redirect('inspector_dashboard')
+
+
+@login_required
+def request_second_review(request, sequence_id):
+    """
+    Allows an inspector to request a second review from another referee.
+    """
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    
+    if request.user.groups.filter(name='Inspecteur').exists():
+        if sequence.status == 'CONTENT_VALIDATED':
+            # Set the flag to true
+            sequence.needs_second_review = True
+            # Change status so it appears in the referees' pending list
+            sequence.status = 'PENDING' 
+            sequence.save()
+            messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
+            
     return redirect('inspector_dashboard')

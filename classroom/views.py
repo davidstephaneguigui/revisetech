@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from pedagogy.models import Matiere
+from pedagogy.models import Sequence
 from learning.models import Result
-from .models import Classe
-from .forms import ClasseForm, JoinClassForm, AddSubjectToClassForm, SuggestionForm
+from .models import Classe, Suggestion
+from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm
+
 
 @login_required
 def teacher_dashboard(request):
@@ -30,35 +31,57 @@ def teacher_dashboard(request):
     
     return render(request, 'classroom/teacher_home.html', context)
 
+
 @login_required
 def class_detail(request, class_id):
     """
-    Display the details of a specific class and handle adding subjects.
+    Display the details of a specific class and handle adding sequences or students.
     """
     classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
     students = classe.students.all()
     
+    sequence_form = AddSequenceToClassForm()
+    student_form = AddStudentForm()
+    
     if request.method == 'POST':
-        form = AddSubjectToClassForm(request.POST)
-        form.fields['matiere'].queryset = Matiere.objects.all()
+        # Check if the user is adding a student
+        if 'add_student' in request.POST:
+            student_form = AddStudentForm(request.POST)
+            if student_form.is_valid():
+                username = student_form.cleaned_data['username']
+                User = get_user_model()
+                try:
+                    student = User.objects.get(username=username)
+                    classe.students.add(student)
+                    messages.success(request, f"L'élève {username} a été ajouté à la classe.")
+                    return redirect('class_detail', class_id=classe.id)
+                except User.DoesNotExist:
+                    student_form.add_error('username', "Cet utilisateur n'existe pas.")
         
-        if form.is_valid():
-            matiere = form.cleaned_data['matiere']
-            classe.subjects.add(matiere)
-            messages.success(request, f"La matière {matiere.name} a été ajoutée à la classe.")
-            return redirect('class_detail', class_id=classe.id)
+        # Check if the user is adding sequences
+        elif 'add_sequences' in request.POST:
+            sequence_form = AddSequenceToClassForm(request.POST)
+            sequence_form.fields['sequences'].queryset = Sequence.objects.filter(status='PUBLISHED')
+            if sequence_form.is_valid():
+                sequences = sequence_form.cleaned_data['sequences']
+                classe.sequences.add(*sequences)
+                messages.success(request, "Les séquences ont été ajoutées à la classe.")
+                return redirect('class_detail', class_id=classe.id)
+                
     else:
-        form = AddSubjectToClassForm()
-        form.fields['matiere'].queryset = Matiere.objects.all()
+        # For GET requests, populate the sequence form
+        sequence_form.fields['sequences'].queryset = Sequence.objects.filter(status='PUBLISHED')
     
     context = {
         'classe': classe,
         'students': students,
-        'form': form,
-        'subjects': classe.subjects.all()
+        'sequence_form': sequence_form,
+        'student_form': student_form,
+        'class_sequences': classe.sequences.all()
     }
     
     return render(request, 'classroom/class_detail.html', context)
+
 
 @login_required
 def join_class(request):
@@ -84,6 +107,7 @@ def join_class(request):
     }
     
     return render(request, 'classroom/join_class.html', context)
+
 
 @login_required
 def student_results(request, student_id):
@@ -119,3 +143,22 @@ def student_results(request, student_id):
     }
     
     return render(request, 'classroom/student_results.html', context)
+
+
+@login_required
+def suggestion_list(request):
+    """
+    Display all suggestions received by the student.
+    """
+    # Fetch all suggestions for the student, most recent first
+    suggestions = Suggestion.objects.filter(student=request.user).order_by('-created_at')
+    
+    # Mark all as read when the student opens the list
+    unread_suggestions = suggestions.filter(is_read=False)
+    unread_suggestions.update(is_read=True)
+    
+    context = {
+        'suggestions': suggestions
+    }
+    
+    return render(request, 'classroom/suggestion_list.html', context)

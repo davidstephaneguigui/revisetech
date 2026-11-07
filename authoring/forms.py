@@ -17,6 +17,13 @@ class SequenceIntentionForm(forms.ModelForm):
             'modalities': 'Modalités et place dans la progression',
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make all fields required
+        self.fields['tags'].required = True
+        self.fields['objectives'].required = True
+        self.fields['modalities'].required = True
+
 
 class SequenceForm(forms.ModelForm):
     class Meta:

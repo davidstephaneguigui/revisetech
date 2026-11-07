@@ -5,6 +5,7 @@ from django.forms import inlineformset_factory
 from pedagogy.models import Matiere, Chapter, Sequence, Session, PlannedSession
 from .forms import SequenceForm, SessionForm, ActivityForm, SequenceIntentionForm, PlannedSessionForm
 
+
 @login_required
 def designer_dashboard(request):
     """
@@ -48,12 +49,11 @@ def designer_dashboard(request):
 @login_required
 def manage_sequence(request, sequence_id):
     """
-    Display the sequence details and handle intention submission (with planned sessions) or session creation.
+    Display the sequence details and handle intention submission or session creation.
     """
     sequence = get_object_or_404(Sequence, id=sequence_id, creator=request.user)
     sessions = sequence.sessions.all()
     
-    # Create the formset for planned sessions
     PlannedSessionFormSet = inlineformset_factory(
         Sequence, 
         PlannedSession, 
@@ -67,7 +67,7 @@ def manage_sequence(request, sequence_id):
     session_form = SessionForm()
     
     if request.method == 'POST':
-        # Handle saving or submitting the intention + planned sessions
+        # 1. Handle intention submission
         if 'save_intention' in request.POST or 'submit_intention' in request.POST:
             intention_form = SequenceIntentionForm(request.POST, instance=sequence)
             planned_sessions_formset = PlannedSessionFormSet(request.POST, instance=sequence)
@@ -83,17 +83,23 @@ def manage_sequence(request, sequence_id):
                 planned_sessions_formset.save()
                 return redirect('manage_sequence', sequence_id=sequence.id)
                 
-        # Handle creating a new real session (only if intention is validated)
-        elif 'create_session' in request.POST:
+        # 2. Handle adding a new session after intention validation
+        elif 'add_session' in request.POST:
             session_form = SessionForm(request.POST)
             if session_form.is_valid():
                 session = session_form.save(commit=False)
                 session.sequence = sequence
+                
                 # Auto-increment the order
                 last_session = sequence.sessions.order_by('-order').first()
                 session.order = (last_session.order + 1) if last_session else 1
                 session.save()
-                messages.success(request, "La séance a été créée avec succès.")
+                
+                # Change sequence status back to PENDING to notify the referee
+                sequence.status = 'PENDING'
+                sequence.save()
+                
+                messages.warning(request, "La séance a été ajoutée. La séquence a été renvoyée au référent pour valider cette nouvelle structure.")
                 return redirect('manage_sequence', sequence_id=sequence.id)
     
     context = {

@@ -8,7 +8,10 @@ STATUS_CHOICES = [
     ('VALIDATED', 'Intention validée (en cours de remplissage)'),
     ('CONTENT_PENDING', 'Contenu en attente de validation'),
     ('CONTENT_VALIDATED', 'Contenu validé'),
+    ('PENDING_INSPECTION', "En attente d'inspection"),
     ('PUBLISHED', 'Publié'),
+    ('UNPUBLISHED', 'Dépublié'),
+    ('ARCHIVED', 'Archivé'),
     ('REJECTED', 'Rejeté'),
 ]
 
@@ -52,6 +55,7 @@ class Chapter(models.Model):
 
 class Sequence(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nom de la séquence")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     # Field introduced to index the sequence 
     tags = models.CharField(max_length=255, blank=True, help_text="Mots-clés séparés par des virgules (ex: binaire, logique, SIN)")
     #  Fields for the "Intention" phase
@@ -62,6 +66,7 @@ class Sequence(models.Model):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name="sequences", verbose_name="Chapitre")
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_sequences", verbose_name="Concepteur", null=True, blank=True)
     referee_comment = models.TextField(blank=True, null=True, verbose_name="Commentaire du référent")
+    needs_second_review = models.BooleanField(default=False, verbose_name="Nécessite une seconde validation")
 
     class Meta:
         verbose_name = "Séquence"

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block container_class %}container-fluid px-4{% endblock %}
+
+{% block title %}Espace Inspecteur - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-lg-10">
+        
+        <h2 class="mb-4">Espace Inspecteur</h2>
+
+        <h4 class="mb-3">Séquences en attente de publication</h4>
+
+        <div class="d-grid gap-3">
+            {% for sequence in sequences_to_publish %}
+                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
+                            <div class="text-muted small">
+                                {{ sequence.chapter.matiere.name }} > {{ sequence.chapter.name }}<br>
+                                Concepteur : {{ sequence.creator.username }}
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{% url 'publish_sequence' sequence.id %}" class="btn btn-success rounded-pill px-4">Publier cette séquence</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-success">
+                    Aucune séquence n'est en attente de publication pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

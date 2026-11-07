@@ -27,7 +27,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="mb-1">{{ sequence.name }} <span class="badge {% if sequence.status == 'DRAFT' %}bg-secondary{% elif sequence.status == 'PENDING' %}bg-warning text-dark{% elif sequence.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} fs-6">{{ sequence.get_status_display }}</span></h2>
+                <h2 class="mb-1">{{ sequence.name }} <span class="badge {% if sequence.status == 'DRAFT' %}bg-secondary{% elif sequence.status == 'PENDING' %}bg-warning text-dark{% elif sequence.status == 'VALIDATED' or sequence.status == 'CONTENT_VALIDATED' %}bg-success{% else %}bg-info{% endif %} fs-6">{{ sequence.get_status_display }}</span></h2>
                 <p class="text-muted mb-0">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</p>
             </div>
         </div>
@@ -120,13 +120,22 @@
                     </form>
 
                 {% elif sequence.status == 'VALIDATED' %}
-                    <!-- AFFICHAGE LECTURE SEULE (Validé) -->
+                    <!-- AFFICHAGE LECTURE SEULE (Intention Validée) -->
                     <div class="mb-3">
                         <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
                         <p class="mb-0 fs-5">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
                     </div>
-                    <div class="alert alert-success mt-3 mb-0">
-                        L'intention a été validée par le référent. Vous pouvez maintenant remplir le contenu des séances ci-dessous.
+                    <div class="alert alert-success mt-3 d-flex justify-content-between align-items-center">
+                        <span>L'intention a été validée. Vous pouvez remplir les séances ci-dessous.</span>
+                        <a href="{% url 'submit_content' sequence.id %}" class="btn btn-success rounded-pill px-4">Soumettre le contenu au Référent</a>
+                    </div>
+                {% elif sequence.status == 'CONTENT_PENDING' %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        Le contenu de cette séquence est en attente de validation par le référent.
+                    </div>
+                {% elif sequence.status == 'CONTENT_VALIDATED' %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        Le contenu a été validé par le référent. Il est en attente de publication par l'Inspecteur.
                     </div>
                 {% endif %}
 
@@ -141,16 +150,27 @@
 
             <div class="d-grid gap-2">
                 {% for session in sessions %}
-                    <a href="{% url 'manage_session' session.id %}" class="text-decoration-none">
-                        <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="fw-bold text-dark">Séance {{ session.order }} : {{ session.name }}</div>
-                                <span class="badge {% if session.status == 'DRAFT' %}bg-secondary{% elif session.status == 'PENDING' %}bg-warning text-dark{% elif session.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
-                                    {{ session.get_status_display }}
-                                </span>
-                            </div>
-                        </div>
-                    </a>
+                    <div class="card py-3 px-3 shadow-sm border-0 d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                        
+                        <!-- Lien vers la séance (prend toute la place restante) -->
+                        <a href="{% url 'manage_session' session.id %}" class="text-decoration-none flex-grow-1 d-flex justify-content-between align-items-center me-3">
+                            <div class="fw-bold text-dark">Séance {{ session.order }} : {{ session.name }}</div>
+                            <span class="badge 
+                                {% if session.status == 'DRAFT' %}bg-secondary
+                                {% elif session.status == 'PENDING' %}bg-warning text-dark
+                                {% elif session.status == 'VALIDATED' %}bg-success
+                                {% else %}bg-info{% endif %} rounded-pill ms-2">
+                                {{ session.get_status_display }}
+                            </span>
+                        </a>
+
+                        <!-- Bouton supprimer (seulement si en brouillon) -->
+                        {% if sequence.status == 'VALIDATED' and session.status == 'DRAFT' %}
+                        <a href="{% url 'delete_session' session.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance et tout son contenu ?');">
+                            Supprimer
+                        </a>
+                        {% endif %}
+                    </div>
                 {% empty %}
                     <div class="alert alert-info">
                         Aucune séance n'a pu être générée.

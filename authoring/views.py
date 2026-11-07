@@ -133,3 +133,21 @@ def manage_session(request, session_id):
     }
     
     return render(request, 'authoring/manage_session.html', context)
+
+
+@login_required
+def delete_session(request, session_id):
+    """
+    Allows the designer to delete a session (and its activities).
+    """
+    session = get_object_or_404(Session, id=session_id, sequence__creator=request.user)
+    sequence_id = session.sequence.id
+    
+    # Only allow deletion if the sequence is not in a pending validation state
+    if session.sequence.status in ['VALIDATED', 'DRAFT']:
+        session.delete()
+        messages.success(request, "La séance a été supprimée avec succès.")
+    else:
+        messages.error(request, "Vous ne pouvez pas supprimer une séance dont le contenu est en cours de validation ou validé.")
+        
+    return redirect('manage_sequence', sequence_id=sequence_id)

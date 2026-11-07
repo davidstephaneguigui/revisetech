@@ -1,16 +1,35 @@
 {% extends 'base.html' %}
+{% load auth_extras %}
 
 {% block title %}{{ activity.title }} - Revisetech{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6">
+    <div class="col-12">
         
-        <!-- Bouton retour stylisé -->
+        <!-- Bouton retour intelligent selon le rôle -->
         <div class="mb-4 mt-2">
-            <a href="{% url 'session_detail' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                &larr; Retour
-            </a>
+            {% if from_sequence %}
+                <a href="{% url 'referee_dashboard' %}#collapseContent{{ from_sequence }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour au contenu
+                </a>
+            {% elif user|has_group:'Référent' %}
+                <a href="{% url 'referee_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à l'espace Référent
+                </a>
+            {% elif user|has_group:'Inspecteur' %}
+                <a href="{% url 'inspector_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à l'espace Inspecteur
+                </a>
+            {% elif user|has_group:'Concepteur' %}
+                <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à la gestion de la séance
+                </a>
+            {% else %}
+                <a href="{% url 'student_home' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à l'accueil
+                </a>
+            {% endif %}
         </div>
 
         <h2 class="mb-2" style="color: {{ activity.sessions.first.sequence.chapter.matiere.color_hex }};">{{ activity.title }}</h2>

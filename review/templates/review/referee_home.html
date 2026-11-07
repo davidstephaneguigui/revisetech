@@ -1,22 +1,23 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block container_class %}container-fluid px-4{% endblock %}
 
 {% block title %}Espace Référent - Revisetech{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-4">
-    <div class="col-12">
+    <div class="col-12 col-lg-10">
         
         <h2 class="mb-4">Espace Référent</h2>
 
-        <!-- SECTION 1 : Séquences en attente -->
-        <h4 class="mb-3">Séquences en attente de validation</h4>
+        <!-- SECTION 1 : Intentions en attente -->
+        <h4 class="mb-3">Intentions en attente de validation</h4>
 
-        <div class="accordion mb-5" id="accordionPending">
+        <div class="accordion mb-5" id="accordionPendingIntent">
             {% for sequence in pending_sequences %}
                 <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-                    <h2 class="accordion-header" id="heading{{ sequence.id }}">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ sequence.id }}" aria-expanded="false" aria-controls="collapse{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
+                    <h2 class="accordion-header" id="headingIntent{{ sequence.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIntent{{ sequence.id }}" aria-expanded="false" aria-controls="collapseIntent{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
                             <div class="d-flex w-100 justify-content-between align-items-center pe-3">
                                 <div>
                                     <strong class="fs-5">{{ sequence.name }}</strong><br>
@@ -25,7 +26,7 @@
                             </div>
                         </button>
                     </h2>
-                    <div id="collapse{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ sequence.id }}" data-bs-parent="#accordionPending">
+                    <div id="collapseIntent{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingIntent{{ sequence.id }}" data-bs-parent="#accordionPendingIntent">
                         <div class="accordion-body">
                             
                             <div class="mb-3">
@@ -64,13 +65,75 @@
                 </div>
             {% empty %}
                 <div class="alert alert-success">
-                    Aucune séquence n'est en attente de validation pour le moment.
+                    Aucune intention en attente de validation pour le moment.
                 </div>
             {% endfor %}
         </div>
 
-        <!-- SECTION 2 : Séquences validées -->
-        <h4 class="mb-3 mt-5">Séquences validées</h4>
+        <!-- SECTION 2 : Contenus en attente -->
+        <h4 class="mb-3 mt-5">Contenus en attente de validation</h4>
+
+        <div class="accordion mb-5" id="accordionPendingContent">
+            {% for sequence in content_pending_sequences %}
+                <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                    <h2 class="accordion-header" id="headingContent{{ sequence.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContent{{ sequence.id }}" aria-expanded="false" aria-controls="collapseContent{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
+                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                                <div>
+                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
+                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapseContent{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingContent{{ sequence.id }}" data-bs-parent="#accordionPendingContent">
+                        <div class="accordion-body">
+                            <p class="text-muted mb-4">Le concepteur a soumis le contenu final. Vous pouvez consulter chaque activité avant de valider.</p>
+                            
+                            <ul class="list-group list-group-flush mb-4">
+                                {% for session in sequence.sessions.all %}
+                                    <li class="list-group-item px-0">
+                                        <strong>Séance {{ session.order }} : {{ session.name }}</strong>
+                                        <ul class="list-group list-group-flush mt-2">
+                                            {% for activity in session.activities.all %}
+                                                <li class="list-group-item px-3 py-1 border-0">
+                                                    <a href="{% url 'activity_detail' activity.id %}?from_sequence={{ sequence.id }}" class="text-decoration-none">
+                                                        {{ activity.title }} ({{ activity.get_activity_type_display }})
+                                                    </a>
+                                                </li>
+                                            {% empty %}
+                                                <li class="list-group-item px-3 py-1 border-0 text-muted">Aucune activité.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </li>
+                                {% empty %}
+                                    <li class="list-group-item px-0 text-muted">Aucune séance.</li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <form method="post" action="{% url 'validate_content' sequence.id %}">
+                                {% csrf_token %}
+                                <div class="mb-4 mt-4">
+                                    <label for="referee_comment_{{ sequence.id }}" class="form-label fw-bold">Commentaire de validation (visible par l'Inspecteur)</label>
+                                    <textarea name="referee_comment" id="referee_comment_{{ sequence.id }}" class="form-control" rows="3" required placeholder="Ex: Contenu conforme, bonne progression pédagogique..."></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                                    <a href="#" class="btn btn-outline-danger rounded-pill px-4">Rejeter le contenu</a>
+                                    <button type="submit" class="btn btn-success rounded-pill px-4">Valider le contenu</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info">
+                    Aucun contenu en attente de validation pour le moment.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- SECTION 3 : Séquences validées (Intention) -->
+        <h4 class="mb-3 mt-5">Séquences (Intention validée, en cours de remplissage)</h4>
         <div class="d-grid gap-3 mb-5">
             {% for sequence in validated_sequences %}
                 <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
@@ -87,11 +150,35 @@
                 </div>
             {% empty %}
                 <div class="alert alert-info">
-                    Aucune séquence validée pour le moment.
+                    Aucune séquence en cours de remplissage.
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- SECTION 4 : Contenus validés -->
+        <h4 class="mb-3 mt-5">Contenus validés (En attente de publication)</h4>
+        <div class="d-grid gap-3 mb-5">
+            {% for sequence in content_validated_sequences %}
+                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
+                            <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'invalidate_sequence' sequence.id %}" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="return confirm('Êtes-vous sûr de vouloir annuler la validation de cette séquence ? Elle repassera en brouillon.');">Annuler la validation</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-info">
+                    Aucun contenu validé en attente de publication.
                 </div>
             {% endfor %}
         </div>
         
     </div>
 </div>
+
+<script src="{% static 'js/review/referee_home.js' %}"></script>
 {% endblock %}

@@ -138,7 +138,8 @@ def activity_detail(request, activity_id):
         'activity': activity,
         'questions': questions,
         'score': score,
-        'max_score': questions.count() if questions else 0
+        'max_score': questions.count() if questions else 0,
+        'from_sequence': request.GET.get('from_sequence', ''),
     }
     
     return render(request, 'pedagogy/activity_detail.html', context)

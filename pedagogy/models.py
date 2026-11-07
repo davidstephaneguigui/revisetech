@@ -4,8 +4,10 @@ from django.conf import settings
 
 STATUS_CHOICES = [
     ('DRAFT', 'Brouillon'),
-    ('PENDING', 'En attente de validation'),
-    ('VALIDATED', 'Validé'),
+    ('PENDING', 'Intention en attente de validation'),
+    ('VALIDATED', 'Intention validée (en cours de remplissage)'),
+    ('CONTENT_PENDING', 'Contenu en attente de validation'),
+    ('CONTENT_VALIDATED', 'Contenu validé'),
     ('PUBLISHED', 'Publié'),
     ('REJECTED', 'Rejeté'),
 ]
@@ -59,6 +61,7 @@ class Sequence(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, related_name="sequences", verbose_name="Chapitre")
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_sequences", verbose_name="Concepteur", null=True, blank=True)
+    referee_comment = models.TextField(blank=True, null=True, verbose_name="Commentaire du référent")
 
     class Meta:
         verbose_name = "Séquence"

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.forms import inlineformset_factory
 from pedagogy.models import Matiere, Chapter, Sequence, Session, PlannedSession, Activity, Question, Choice
@@ -179,15 +180,6 @@ def manage_quiz_questions(request, activity_id):
         messages.error(request, "Cette activité n'est pas un quiz.")
         return redirect('manage_session', session_id=activity.sessions.first().id)
     
-    # Create a formset for choices
-    ChoiceFormSet = inlineformset_factory(
-        Question, 
-        Choice, 
-        form=ChoiceForm, 
-        extra=4, # 4 empty choices by default
-        can_delete=True
-    )
-    
     # Create a formset for questions
     QuestionFormSet = inlineformset_factory(
         Activity,
@@ -199,15 +191,19 @@ def manage_quiz_questions(request, activity_id):
     
     if request.method == 'POST':
         question_formset = QuestionFormSet(request.POST, instance=activity)
+        
+        # Hack to ignore completely empty forms (extra forms) in the formset
+        for form in question_formset.forms:
+            if not form.has_changed() and not form.instance.pk:
+                form.empty_permitted = True
+        
         if question_formset.is_valid():
-            questions = question_formset.save()
-            
-            # Handle choices for each question (simplified approach)
-            # In a real nested scenario, you'd handle the choice formsets in the template,
-            # but for simplicity, we'll process them if they exist in the POST.
-            
+            question_formset.save()
             messages.success(request, "Les questions ont été mises à jour avec succès.")
             return redirect('manage_quiz_questions', activity_id=activity.id)
+        else:
+            # Print errors to the terminal for debugging
+            print(question_formset.errors)
     else:
         question_formset = QuestionFormSet(instance=activity)
         
@@ -250,3 +246,17 @@ def manage_question_choices(request, question_id):
     }
     
     return render(request, 'authoring/manage_question_choices.html', context)
+
+
+@require_POST
+@login_required
+@is_designer
+def delete_question(request, question_id):
+    """
+    Delete a specific question and its choices.
+    """
+    question = get_object_or_404(Question, id=question_id, activity__sessions__sequence__creator=request.user)
+    activity_id = question.activity.id
+    question.delete()
+    messages.success(request, "La question a été supprimée.")
+    return redirect('manage_quiz_questions', activity_id=activity_id)

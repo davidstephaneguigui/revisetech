@@ -28,11 +28,11 @@
                         
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="fw-bold mb-0">Question</h5>
-                            {% if question_formset.can_delete %}
-                                <div class="form-check">
-                                    {{ form.DELETE }}
-                                    <label class="form-check-label text-danger small" for="{{ form.DELETE.id_for_label }}">Supprimer</label>
-                                </div>
+                            {% if form.instance.pk %}
+                                <form method="post" action="{% url 'delete_question' form.instance.id %}" class="m-0" onsubmit="return confirm('Supprimer cette question ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Supprimer</button>
+                                </form>
                             {% endif %}
                         </div>
 

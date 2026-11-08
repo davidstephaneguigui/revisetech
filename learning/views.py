@@ -12,7 +12,12 @@ def student_home(request):
     associated with their classes and unread suggestions.
     """
     student_classes = request.user.student_classes.all()
-    subjects = Matiere.objects.filter(classes__in=student_classes).distinct()
+    
+    # Find all sequences assigned to these classes AND that are published
+    assigned_sequences = Sequence.objects.filter(classes__in=student_classes, status='PUBLISHED').distinct()
+    
+    # Find the subjects that contain these sequences
+    subjects = Matiere.objects.filter(chapters__sequences__in=assigned_sequences).distinct()
     
     # Fetch unread suggestions for the student
     suggestions = Suggestion.objects.filter(student=request.user, is_read=False).order_by('-created_at')
@@ -30,12 +35,12 @@ def student_progression(request):
     """
     Display the student's progression, including badges and average scores.
     """
-    # Fetch badges obtained by the student
+   
     badges = Badge.objects.filter(student=request.user).order_by('-date_obtained')
     
-    # Calculate total badges available (total sequences in the student's classes)
     student_classes = request.user.student_classes.all()
-    total_sequences = Sequence.objects.filter(chapter__matiere__classes__in=student_classes).distinct().count()
+    # Calculate total badges available (only published sequences)
+    total_sequences = Sequence.objects.filter(classes__in=student_classes, status='PUBLISHED').distinct().count()
     
     context = {
         'badges': badges,

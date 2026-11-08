@@ -1,5 +1,5 @@
 from django import forms
-from pedagogy.models import Sequence, Session, Activity, PlannedSession
+from pedagogy.models import Sequence, Session, Activity, PlannedSession, Question, Choice
 
 
 class SequenceIntentionForm(forms.ModelForm):
@@ -86,4 +86,32 @@ class ActivityForm(forms.ModelForm):
             'content': 'Contenu textuel',
             'external_url': 'Lien externe (optionnel)',
             'file_upload': 'Fichier joint (optionnel)',
+        }
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['text', 'order']
+        widgets = {
+            'text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Texte de la question'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control', 'style': 'width: 80px;'}),
+        }
+        labels = {
+            'text': 'Question',
+            'order': 'N°',
+        }
+
+
+class ChoiceForm(forms.ModelForm):
+    class Meta:
+        model = Choice
+        fields = ['text', 'is_correct']
+        widgets = {
+            'text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Texte du choix'}),
+            'is_correct': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'text': 'Choix',
+            'is_correct': 'Correct ?',
         }

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block container_class %}container-fluid px-4{% endblock %}
+
+{% block title %}Questions : {{ activity.title }} - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-12 col-lg-8">
+        
+        <!-- Bouton retour -->
+        <div class="mb-4 mt-2">
+            <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                &larr; Retour à la séance
+            </a>
+        </div>
+
+        <h2 class="mb-4">Questions du Quiz : {{ activity.title }}</h2>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ question_formset.management_form }}
+
+            <div id="questions-container">
+                {% for form in question_formset %}
+                    <div class="card mb-3 shadow-sm border-0 p-3 question-row" style="border-radius: 12px;">
+                        {{ form.id }}
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Question</h5>
+                            {% if question_formset.can_delete %}
+                                <div class="form-check">
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label text-danger small" for="{{ form.DELETE.id_for_label }}">Supprimer</label>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <label class="form-label">{{ form.order.label }}</label>
+                                {{ form.order }}
+                            </div>
+                            <div class="col-md-10">
+                                <label class="form-label">{{ form.text.label }}</label>
+                                {{ form.text }}
+                            </div>
+                        </div>
+
+                        <!-- If the question is already saved, link to manage its choices -->
+                        {% if form.instance.pk %}
+                            <div class="text-end">
+                                <a href="{% url 'manage_question_choices' form.instance.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Gérer les choix</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Hidden empty form template for JS cloning -->
+            <template id="empty-form-template">
+                <div class="card mb-3 shadow-sm border-0 p-3 question-row" style="border-radius: 12px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Nouvelle question</h5>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label class="form-label">N°</label>
+                            {{ question_formset.empty_form.order }}
+                        </div>
+                        <div class="col-md-10">
+                            <label class="form-label">Question</label>
+                            {{ question_formset.empty_form.text }}
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="button" class="btn btn-outline-primary rounded-pill px-3" id="add-question-btn">+ Ajouter une question</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4">Enregistrer les questions</button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+<script src="{% static 'js/authoring/manage_quiz_questions.js' %}"></script>
+{% endblock %}

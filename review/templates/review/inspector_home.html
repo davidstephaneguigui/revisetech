@@ -80,10 +80,16 @@
 
                             <!-- Action Buttons -->
                             <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                                <a href="{% url 'request_second_review' sequence.id %}" class="btn btn-outline-warning rounded-pill px-4" onclick="return confirm('Voulez-vous vraiment demander une seconde validation à un autre référent ?');">Demander un avis</a>
-                                <a href="{% url 'publish_sequence' sequence.id %}" class="btn btn-success rounded-pill px-4" onclick="return confirm('Êtes-vous sûr de vouloir publier cette séquence ?');">Publier la séquence</a>
+                                <form method="post" action="{% url 'request_second_review' sequence.id %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment demander une seconde validation à un autre référent ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-warning rounded-pill px-4">Demander un avis</button>
+                                </form>
+                                
+                                <form method="post" action="{% url 'publish_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir publier cette séquence ?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success rounded-pill px-4">Publier la séquence</button>
+                                </form>
                             </div>
-
                         </div>
                     </div>
                 </div>

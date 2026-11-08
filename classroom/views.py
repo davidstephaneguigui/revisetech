@@ -6,9 +6,10 @@ from pedagogy.models import Sequence
 from learning.models import Result
 from .models import Classe, Suggestion
 from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm
-
+from accounts.decorators import is_teacher
 
 @login_required
+@is_teacher
 def teacher_dashboard(request):
     """
     Display the dashboard for teachers and handle class creation.
@@ -33,6 +34,7 @@ def teacher_dashboard(request):
 
 
 @login_required
+@is_teacher
 def class_detail(request, class_id):
     """
     Display the details of a specific class and handle adding sequences or students.
@@ -110,6 +112,7 @@ def join_class(request):
 
 
 @login_required
+@is_teacher
 def student_results(request, student_id):
     """
     Display the results of a specific student and handle sending suggestions.

@@ -1,11 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from pedagogy.models import Sequence, Session, Chapter
+from django.views.decorators.http import require_POST
+from pedagogy.models import Sequence, Session
 from django.db.models import Q
+from accounts.decorators import role_required
+from accounts.decorators import is_designer, is_referee, is_inspector
 
 
+@require_POST
 @login_required
+@is_designer
 def submit_content(request, sequence_id):
     """
     Allows the designer to submit the filled sequence content to the referee.
@@ -20,37 +25,45 @@ def submit_content(request, sequence_id):
     return redirect('manage_sequence', sequence_id=sequence.id)
 
 
+@require_POST
 @login_required
+@is_referee
 def validate_content(request, sequence_id):
     """
     Allows a referee to validate the final content of a sequence with a comment.
+    Handles both first validation and second reviews.
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
+    comment = request.POST.get('referee_comment', '')
     
-    if request.user.groups.filter(name='Référent').exists():
-        if sequence.status == 'CONTENT_PENDING':
-            # Get the comment from the form
-            comment = request.POST.get('referee_comment', '')
+    # Case 1: First validation of the content
+    if sequence.status == 'CONTENT_PENDING':
+        sequence.status = 'CONTENT_VALIDATED'
+        sequence.referee_comment = comment
+        sequence.save()
+        
+        messages.success(request, f"Le contenu de la séquence '{sequence.name}' a été validé.")
+        
+        chapter = sequence.chapter
+        all_validated = chapter.sequences.filter(status='CONTENT_VALIDATED').count() == chapter.sequences.count()
+        
+        if all_validated:
+            chapter.status = 'PENDING_INSPECTION'
+            chapter.save()
+            messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour l'inspection.")
             
-            sequence.status = 'CONTENT_VALIDATED'
-            sequence.referee_comment = comment
-            sequence.save()
+    # Case 2: Second review requested by the Inspector
+    elif sequence.status == 'CONTENT_VALIDATED' and sequence.needs_second_review:
+        sequence.referee_comment += f"\n\n--- Second avis ---\n{comment}"
+        sequence.needs_second_review = False
+        sequence.save()
+        messages.success(request, f"Votre second avis sur la séquence '{sequence.name}' a été enregistré.")
             
-            messages.success(request, f"Le contenu de la séquence '{sequence.name}' a été validé.")
-            
-            # Check if all sequences in the chapter are now content-validated
-            chapter = sequence.chapter
-            all_validated = chapter.sequences.filter(status='CONTENT_VALIDATED').count() == chapter.sequences.count()
-            
-            if all_validated:
-                chapter.status = 'PENDING_INSPECTION' # <-- Correction ici
-                chapter.save()
-                messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour l'inspection.")
-                
     return redirect('referee_dashboard')
 
 
 @login_required
+@is_referee
 def referee_dashboard(request):
     """
     Display the dashboard for referees, showing pending intentions, 
@@ -67,18 +80,24 @@ def referee_dashboard(request):
     
     # 4. Content validated (waiting for publication)
     content_validated_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('-id')
+
+    # 5. Content which need a second validation
+    second_review_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).order_by('-id')
+
     
     context = {
         'pending_sequences': pending_sequences,
         'content_pending_sequences': content_pending_sequences,
         'validated_sequences': validated_sequences,
-        'content_validated_sequences': content_validated_sequences
+        'content_validated_sequences': content_validated_sequences,
+        'second_review_sequences': second_review_sequences,
     }
     
     return render(request, 'review/referee_home.html', context)
 
 
 @login_required
+@is_inspector
 def inspector_dashboard(request):
     """
     Display the dashboard for inspectors, showing sequences ready to be published.
@@ -94,6 +113,7 @@ def inspector_dashboard(request):
 
 
 @login_required
+@is_referee
 def compare_sequences(request, sequence_id_1):
     """
     Allows a referee to compare two sequences side-by-side, with search functionality.
@@ -132,7 +152,9 @@ def compare_sequences(request, sequence_id_1):
     return render(request, 'review/compare_sequences.html', context)
 
 
+@require_POST
 @login_required
+@is_referee
 def validate_sequence(request, sequence_id):
     """
     Allows a referee to validate a sequence and generates the session skeleton.
@@ -168,7 +190,9 @@ def validate_sequence(request, sequence_id):
     return redirect('referee_dashboard')
 
 
+@require_POST
 @login_required
+@is_referee
 def reject_sequence(request, sequence_id):
     """
     Allows a referee to reject a sequence, sending it back to draft.
@@ -181,7 +205,9 @@ def reject_sequence(request, sequence_id):
     return redirect('referee_dashboard')
 
 
+@require_POST
 @login_required
+@is_referee
 def invalidate_sequence(request, sequence_id):
     """
     Allows a referee to cancel a validation.
@@ -213,7 +239,9 @@ def invalidate_sequence(request, sequence_id):
     return redirect('referee_dashboard')
 
 
+@require_POST
 @login_required
+@is_inspector
 def publish_sequence(request, sequence_id):
     """
     Allows an inspector to publish a specific sequence. 
@@ -221,44 +249,46 @@ def publish_sequence(request, sequence_id):
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
-    if request.user.groups.filter(name='Inspecteur').exists():
-        if sequence.status == 'CONTENT_VALIDATED':
-            sequence.status = 'PUBLISHED'
-            sequence.save()
+    if sequence.status == 'CONTENT_VALIDATED':
+        # 1. Publish the sequence itself
+        sequence.status = 'PUBLISHED'
+        sequence.save()
+        
+        # 2. Publish all sessions and activities inside this sequence
+        for session in sequence.sessions.all():
+            session.status = 'PUBLISHED'
+            session.save()
+            for activity in session.activities.all():
+                activity.status = 'PUBLISHED'
+                activity.save()
+        
+        # 3. Check if all sequences in the chapter are now published
+        chapter = sequence.chapter
+        all_published = chapter.sequences.exclude(status='PUBLISHED').count() == 0
+        
+        if all_published:
+            chapter.status = 'PUBLISHED'
+            chapter.save()
+            messages.success(request, f"La séquence '{sequence.name}' a été publiée. Toutes les séquences du chapitre étant publiées, le chapitre '{chapter.name}' est désormais publié.")
+        else:
+            messages.success(request, f"La séquence '{sequence.name}' a été publiée. Le chapitre est en attente de publication des autres séquences.")
             
-            chapter = sequence.chapter
-            
-            # Check if all sequences in the chapter are now published
-            all_published = True
-            for seq in chapter.sequences.all():
-                if seq.status != 'PUBLISHED':
-                    all_published = False
-                    break
-            
-            if all_published:
-                chapter.status = 'PUBLISHED'
-                chapter.save()
-                messages.success(request, f"La séquence '{sequence.name}' a été publiée. Toutes les séquences du chapitre étant publiées, le chapitre '{chapter.name}' est désormais publié.")
-            else:
-                messages.success(request, f"La séquence '{sequence.name}' a été publiée. Le chapitre est en attente de publication des autres séquences.")
-                
     return redirect('inspector_dashboard')
 
 
+@require_POST
 @login_required
+@is_inspector
 def request_second_review(request, sequence_id):
     """
     Allows an inspector to request a second review from another referee.
+    The status remains CONTENT_VALIDATED but the flag is raised.
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
-    if request.user.groups.filter(name='Inspecteur').exists():
-        if sequence.status == 'CONTENT_VALIDATED':
-            # Set the flag to true
-            sequence.needs_second_review = True
-            # Change status so it appears in the referees' pending list
-            sequence.status = 'PENDING' 
-            sequence.save()
-            messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
+    if sequence.status == 'CONTENT_VALIDATED':
+        sequence.needs_second_review = True
+        sequence.save()
+        messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
             
     return redirect('inspector_dashboard')

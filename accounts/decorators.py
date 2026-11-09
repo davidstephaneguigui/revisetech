@@ -9,8 +9,8 @@ ROLE_HIERARCHY = {
     'Enseignant': ['Enseignant'],
     'Concepteur': ['Concepteur', 'Enseignant'],
     'Référent': ['Référent', 'Concepteur', 'Enseignant'],
-    'Inspecteur': ['Inspecteur', 'Référent', 'Concepteur', 'Enseignant'],
-    'Administrateur': ['Administrateur', 'Inspecteur', 'Référent', 'Concepteur', 'Enseignant'],
+    'Superviseur': ['Superviseur', 'Référent', 'Concepteur', 'Enseignant'],
+    'Administrateur': ['Administrateur', 'Superviseur', 'Référent', 'Concepteur', 'Enseignant'],
 }
 
 
@@ -64,4 +64,4 @@ def role_required(allowed_roles):
 is_teacher = role_required(['Enseignant'])
 is_designer = role_required(['Concepteur'])
 is_referee = role_required(['Référent'])
-is_inspector = role_required(['Inspecteur'])
+is_supervisor = role_required(['Superviseur'])

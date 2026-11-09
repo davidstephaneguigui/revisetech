@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from pedagogy.models import Sequence, Session
 from django.db.models import Q
 from accounts.decorators import role_required
-from accounts.decorators import is_designer, is_referee, is_inspector
+from accounts.decorators import is_designer, is_referee
 
 
 @require_POST
@@ -52,7 +52,7 @@ def validate_content(request, sequence_id):
             chapter.save()
             messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour l'inspection.")
             
-    # Case 2: Second review requested by the Inspector
+    # Case 2: Second review requested by the supervisor
     elif sequence.status == 'CONTENT_VALIDATED' and sequence.needs_second_review:
         sequence.referee_comment += f"\n\n--- Second avis ---\n{comment}"
         sequence.needs_second_review = False
@@ -105,31 +105,6 @@ def referee_dashboard(request):
     }
     
     return render(request, 'review/referee_home.html', context)
-
-
-@login_required
-@is_inspector
-def inspector_dashboard(request):
-    """
-    Display the dashboard for inspectors.
-    Shows sequences in preparation, ready to be published, and already published.
-    """
-    # Sequences in preparation (intention validated, content being filled)
-    sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
-    
-    # Sequences ready for publication
-    sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
-    
-    # Published sequences
-    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
-    
-    context = {
-        'sequences_in_preparation': sequences_in_preparation,
-        'sequences_to_publish': sequences_to_publish,
-        'published_sequences': published_sequences,
-    }
-    
-    return render(request, 'review/inspector_home.html', context)
 
 
 @login_required
@@ -258,57 +233,3 @@ def invalidate_sequence(request, sequence_id):
                 
     return redirect('referee_dashboard')
 
-
-@require_POST
-@login_required
-@is_inspector
-def publish_sequence(request, sequence_id):
-    """
-    Allows an inspector to publish a specific sequence. 
-    If all sequences in the chapter are published, the chapter is published too.
-    """
-    sequence = get_object_or_404(Sequence, id=sequence_id)
-    
-    if sequence.status == 'CONTENT_VALIDATED':
-        # 1. Publish the sequence itself
-        sequence.status = 'PUBLISHED'
-        sequence.save()
-        
-        # 2. Publish all sessions and activities inside this sequence
-        for session in sequence.sessions.all():
-            session.status = 'PUBLISHED'
-            session.save()
-            for activity in session.activities.all():
-                activity.status = 'PUBLISHED'
-                activity.save()
-        
-        # 3. Check if all sequences in the chapter are now published
-        chapter = sequence.chapter
-        all_published = chapter.sequences.exclude(status='PUBLISHED').count() == 0
-        
-        if all_published:
-            chapter.status = 'PUBLISHED'
-            chapter.save()
-            messages.success(request, f"La séquence '{sequence.name}' a été publiée. Toutes les séquences du chapitre étant publiées, le chapitre '{chapter.name}' est désormais publié.")
-        else:
-            messages.success(request, f"La séquence '{sequence.name}' a été publiée. Le chapitre est en attente de publication des autres séquences.")
-            
-    return redirect('inspector_dashboard')
-
-
-@require_POST
-@login_required
-@is_inspector
-def request_second_review(request, sequence_id):
-    """
-    Allows an inspector to request a second review from another referee.
-    The status remains CONTENT_VALIDATED but the flag is raised.
-    """
-    sequence = get_object_or_404(Sequence, id=sequence_id)
-    
-    if sequence.status == 'CONTENT_VALIDATED':
-        sequence.needs_second_review = True
-        sequence.save()
-        messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
-            
-    return redirect('inspector_dashboard')

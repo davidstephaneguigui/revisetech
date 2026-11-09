@@ -26,7 +26,7 @@ The goal is to provide a simple tool for students (usable on iOS and Android wit
 *   Create sequences and sessions.
 *   Create activities (Courses, Practical Work, Quizzes) with the ability to upload files (SCORM, H5P, PDF).
 
-### For Referees and Inspectors
+### For Referees and Supervisors
 *   Validation workflow: submission, validation, and rejection of sequences and chapters.
 
 ## 🏗️ Architecture
@@ -36,7 +36,7 @@ The project follows the principles of **Domain-Driven Design (DDD)**. Each Djang
 *   `accounts`: Identity management, users, and role-based routing (Django Groups).
 *   `pedagogy`: The pure data repository (Subject, Chapter, Sequence, Session, Activity, Question). *No business views here.*
 *   `authoring`: The Designer's workshop (content creation).
-*   `review`: The Referee and Inspector's office (validation workflow).
+*   `review`: The Referee and Supervisor's office (validation workflow).
 *   `classroom`: The Teacher's space (class management and suggestions).
 *   `learning`: The Student's space (navigation and results).
 
@@ -105,7 +105,7 @@ The admin panel is available at `http://127.0.0.1:8000/admin/`.
 
 ## 🗺️ Roadmap
 
-- [ ] Finalize the validation workflow (Referee / Inspector).
+- [ ] Finalize the validation workflow (Referee / Supervisor).
 - [ ] Fix the display of Inlines in the Django admin.
 - [ ] Transform the application into a PWA (Progressive Web App).
 - [ ] Integrate React islands for interactive components (Quizzes, Dashboards).

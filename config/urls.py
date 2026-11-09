@@ -35,4 +35,5 @@ urlpatterns = [
     path('', include('classroom.urls')),
     path('', include('pedagogy.urls')),
     path('review/', include('review.urls')),
+    path('publishing/', include('publishing.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

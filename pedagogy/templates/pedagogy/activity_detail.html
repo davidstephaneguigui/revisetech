@@ -17,9 +17,9 @@
                 <a href="{% url 'referee_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
                     &larr; Retour à l'espace Référent
                 </a>
-            {% elif user|has_group:'Inspecteur' %}
-                <a href="{% url 'inspector_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                    &larr; Retour à l'espace Inspecteur
+            {% elif user|has_group:'Superviseur' %}
+                <a href="{% url 'supervisor_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à l'espace Superviseur
                 </a>
             {% elif user|has_group:'Concepteur' %}
                 <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">

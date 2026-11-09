@@ -18,9 +18,9 @@ def can_view_unpublished(user):
     if user.is_staff or user.is_superuser:
         return True
     
-    # Teachers, designers, referees, inspectors can see unpublished content
+    # Teachers, designers, referees, supervisors can see unpublished content
     user_roles = get_user_roles(user)
-    privileged_roles = {'Enseignant', 'Concepteur', 'Référent', 'Inspecteur', 'Administrateur'}
+    privileged_roles = {'Enseignant', 'Concepteur', 'Référent', 'Superviseur', 'Administrateur'}
     return bool(user_roles & privileged_roles)
 
 

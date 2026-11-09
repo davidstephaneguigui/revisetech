@@ -15,8 +15,8 @@ def dashboard_redirect(request):
         return redirect('designer_dashboard')
     elif user.groups.filter(name='Référent').exists():
         return redirect('referee_dashboard')
-    elif user.groups.filter(name='Inspecteur').exists():
-            return redirect('inspector_dashboard')
+    elif user.groups.filter(name='Superviseur').exists():
+            return redirect('supervisor_dashboard')
     elif user.groups.filter(name='Administrateur').exists():
         return redirect('/admin/')
     else:

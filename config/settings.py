@@ -38,12 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts',
-    'pedagogy',
     'authoring',
-    'review',  
     'classroom',
-    'learning',
     'core',
+    'learning',
+    'pedagogy',
+    'publishing',
+    'review',
 ]
 
 MIDDLEWARE = [

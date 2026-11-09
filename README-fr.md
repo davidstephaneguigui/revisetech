@@ -27,7 +27,7 @@ L'objectif est de fournir un outil simple pour les élèves (utilisable sur iOS 
 *   Création de séquences et de séances.
 *   Création d'activités (Cours, TP, Quiz) avec possibilité d'uploader des fichiers (SCORM, H5P, PDF).
 
-### Pour les Référents et Inspecteurs
+### Pour les Référents et Superviseurs
 *   Workflow de validation : soumission, validation et rejet des séquences et des chapitres.
 
 ## 🏗️ Architecture
@@ -37,7 +37,7 @@ Le projet suit les principes du **Domain-Driven Design (DDD)**. Chaque applicati
 *   `accounts` : Gestion de l'identité, des utilisateurs et du routage selon les rôles (Groupes Django).
 *   `pedagogy` : Le référentiel de données pur (Matière, Chapitre, Séquence, Séance, Activité, Question). *Aucune vue métier ici.*
 *   `authoring` : L'atelier du Concepteur (création de contenu).
-*   `review` : Le bureau du Référent et de l'Inspecteur (workflow de validation).
+*   `review` : Le bureau du Référent et de le Superviseur (workflow de validation).
 *   `classroom` : L'espace Enseignant (gestion des classes et suggestions).
 *   `learning` : L'espace Élève (navigation et résultats).
 

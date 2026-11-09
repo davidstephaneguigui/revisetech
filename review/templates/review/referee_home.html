@@ -41,7 +41,7 @@
                                         <div class="accordion-body">
                                             {% if sequence.needs_second_review %}
                                                 <div class="alert alert-warning mb-4">
-                                                    <strong>⚠️ Seconde validation demandée par l'Inspecteur.</strong><br>
+                                                    <strong>⚠️ Seconde validation demandée par le Superviseur.</strong><br>
                                                     Veuillez relire attentivement cette séquence.
                                                 </div>
                                             {% endif %}
@@ -325,7 +325,7 @@
                                     <div id="collapseSecond{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingSecond{{ sequence.id }}" data-bs-parent="#accordionSecondReview">
                                         <div class="accordion-body">
                                             <div class="alert alert-warning mb-4">
-                                                <strong>⚠️ L'Inspecteur a demandé un second avis sur cette séquence.</strong><br>
+                                                <strong>⚠️ Le Superviseur a demandé un second avis sur cette séquence.</strong><br>
                                                 Voici le premier commentaire de validation :
                                                 <div class="mt-2 p-2 bg-white rounded border">
                                                     {{ sequence.referee_comment|linebreaksbr }}

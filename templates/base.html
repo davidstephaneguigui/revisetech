@@ -70,7 +70,7 @@
     
     
     <!-- Barre de navigation mobile (uniquement pour les élèves) -->
-    {% if user.is_authenticated and not user|has_group:'Enseignant' and not user|has_group:'Concepteur' and not user|has_group:'Référent' and not user|has_group:'Inspecteur' and not user|has_group:'Administrateur' %}
+    {% if user.is_authenticated and not user|has_group:'Enseignant' and not user|has_group:'Concepteur' and not user|has_group:'Référent' and not user|has_group:'Superviseur' and not user|has_group:'Administrateur' %}
         <nav class="navbar fixed-bottom bg-white border-top d-md-none">
             <div class="container-fluid justify-content-around">
                 <a href="{% url 'student_home' %}" class="text-decoration-none text-center" style="color: #6a1b9a;">

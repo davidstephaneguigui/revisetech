@@ -12,8 +12,8 @@ def dashboard_home(request):
     
     if user.groups.filter(name='Administrateur').exists():
         context['role'] = 'Administrateur'
-    elif user.groups.filter(name='Inspecteur').exists():
-        context['role'] = 'Inspecteur'
+    elif user.groups.filter(name='Superviseur').exists():
+        context['role'] = 'Superviseur'
     elif user.groups.filter(name='Référent').exists():
         context['role'] = 'Référent'
     elif user.groups.filter(name='Concepteur').exists():

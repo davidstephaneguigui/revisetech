@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from pedagogy.models import Sequence, Session
 from django.db.models import Q
-from accounts.decorators import role_required
 from accounts.decorators import is_designer, is_referee
+from .forms import DevalidationForm
 
 
 @require_POST
@@ -48,9 +48,9 @@ def validate_content(request, sequence_id):
         all_validated = chapter.sequences.filter(status='CONTENT_VALIDATED').count() == chapter.sequences.count()
         
         if all_validated:
-            chapter.status = 'PENDING_INSPECTION'
+            chapter.status = 'PENDING_PUBLISHING'
             chapter.save()
-            messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour l'inspection.")
+            messages.success(request, f"Le chapitre '{chapter.name}' est complet et prêt pour la publication.")
             
     # Case 2: Second review requested by the supervisor
     elif sequence.status == 'CONTENT_VALIDATED' and sequence.needs_second_review:
@@ -94,6 +94,7 @@ def referee_dashboard(request):
         for sess in sessions_with_flags:
             sess.is_new = sess.order not in planned_orders
         seq.sessions_with_flags = sessions_with_flags
+        deval_form = DevalidationForm()
     
     context = {
         'pending_sequences': pending_sequences,
@@ -102,6 +103,7 @@ def referee_dashboard(request):
         'content_validated_sequences': content_validated_sequences,
         'second_review_sequences': second_review_sequences,
         'published_sequences': published_sequences,
+        'deval_form': deval_form,
     }
     
     return render(request, 'review/referee_home.html', context)
@@ -190,13 +192,27 @@ def validate_sequence(request, sequence_id):
 @is_referee
 def reject_sequence(request, sequence_id):
     """
-    Allows a referee to reject a sequence, sending it back to draft.
+    Allows a referee to reject a sequence with a mandatory reason and comment.
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
-    if request.user.groups.filter(name='Référent').exists():
-        sequence.status = 'DRAFT'
-        sequence.save()
-        messages.warning(request, f"La séquence '{sequence.name}' a été rejetée et repassée en brouillon.")
+    
+    if sequence.status == 'PENDING':
+        form = DevalidationForm(request.POST)
+        if form.is_valid():
+            # Save the review action for history
+            action = form.save(commit=False)
+            action.sequence = sequence
+            action.user = request.user
+            action.action_type = 'REJECT_INTENT'
+            action.save()
+            
+            # Change status back to draft
+            sequence.status = 'DRAFT'
+            sequence.save()
+            messages.warning(request, f"La séquence '{sequence.name}' a été rejetée.")
+        else:
+            messages.error(request, "Vous devez obligatoirement justifier votre rejet par un commentaire.")
+    
     return redirect('referee_dashboard')
 
 
@@ -205,31 +221,30 @@ def reject_sequence(request, sequence_id):
 @is_referee
 def invalidate_sequence(request, sequence_id):
     """
-    Allows a referee to cancel a validation.
-    - If intention was validated: sends back to DRAFT.
-    - If content was submitted/validated: sends back to VALIDATED (intention remains good).
+    Allows a referee to cancel a validation with a mandatory reason and comment.
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
-    if request.user.groups.filter(name='Référent').exists():
+    form = DevalidationForm(request.POST)
+    if form.is_valid():
+        action = form.save(commit=False)
+        action.sequence = sequence
+        action.user = request.user
         
-        # Case 1: Annulation de la validation de l'intention
+        # Case 1: Cancelling intention validation
         if sequence.status == 'VALIDATED':
+            action.action_type = 'INVALIDATE_INTENT'
             sequence.status = 'DRAFT'
-            sequence.save()
-            messages.warning(request, f"La validation de l'intention de la séquence '{sequence.name}' a été annulée. Elle est repassée en brouillon.")
             
-        # Case 2: Annulation de la validation du contenu
+        # Case 2: Cancelling content validation
         elif sequence.status in ['CONTENT_PENDING', 'CONTENT_VALIDATED']:
+            action.action_type = 'INVALIDATE_CONTENT'
             sequence.status = 'VALIDATED'
-            sequence.save()
-            messages.warning(request, f"La validation du contenu de la séquence '{sequence.name}' a été annulée. Le concepteur peut maintenant le modifier.")
             
-        # If the chapter was pending inspection, send it back to draft
-        chapter = sequence.chapter
-        if chapter.status == 'PENDING':
-            chapter.status = 'DRAFT'
-            chapter.save()
-                
+        action.save()
+        sequence.save()
+        messages.warning(request, f"La validation de la séquence '{sequence.name}' a été annulée.")
+    else:
+        messages.error(request, "Vous devez obligatoirement justifier cette annulation par un commentaire.")
+            
     return redirect('referee_dashboard')
-

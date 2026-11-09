@@ -10,6 +10,16 @@
             
             <h3 class="mb-4 fw-bold text-muted">Espace Référent</h3>
 
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             <!-- SECTION 1: Pending intentions -->
             <div class="card mb-4 border-0 {% if pending_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
                 <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapsePendingIntent" aria-expanded="false" style="cursor: pointer;">
@@ -86,14 +96,44 @@
                                                     </div>
                                                     <div class="d-flex justify-content-end gap-2">
                                                         <a href="{% url 'compare_sequences' sequence.id %}" class="btn btn-outline-info rounded-pill px-4 me-auto">Comparer</a>
-                                                        <form method="post" action="{% url 'reject_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment rejeter cette intention ?');">
-                                                            {% csrf_token %}
-                                                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4">Rejeter</button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-outline-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#rejectModal{{ sequence.id }}">
+                                                            Rejeter
+                                                        </button>
                                                         <button type="submit" class="btn btn-success rounded-pill px-4">Valider l'intention</button>
                                                     </div>
                                                 </form>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Modal for rejecting intention -->
+                                <div class="modal fade" id="rejectModal{{ sequence.id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ sequence.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="border-radius: 16px;">
+                                            <div class="modal-header border-0">
+                                                <h5 class="modal-title fw-bold" id="rejectModalLabel{{ sequence.id }}">Rejeter l'intention</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'reject_sequence' sequence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="alert alert-warning">
+                                                        Vous êtes sur le point de rejeter cette intention. Le concepteur sera notifié.
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="{{ deval_form.reason.id_for_label }}" class="form-label fw-bold">{{ deval_form.reason.label }}</label>
+                                                        {{ deval_form.reason }}
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="{{ deval_form.comment.id_for_label }}" class="form-label fw-bold">{{ deval_form.comment.label }}</label>
+                                                        {{ deval_form.comment }}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0">
+                                                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                                                    <button type="submit" class="btn btn-danger rounded-pill px-4">Confirmer le rejet</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -185,10 +225,41 @@
 
                                             <div class="d-flex justify-content-end gap-2 border-top pt-3">
                                                 <a href="{% url 'compare_sequences' sequence.id %}" class="btn btn-sm btn-outline-info rounded-pill px-3">Comparer</a>
-                                                <form method="post" action="{% url 'invalidate_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler la validation de cette séquence ? Elle repassera en brouillon.');">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3">Annuler la validation</button>
-                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#invalidateIntentModal{{ sequence.id }}">
+                                                    Annuler la validation
+                                                </button>
+
+                                                <!-- Modal for invalidating intention validation -->
+                                                <div class="modal fade" id="invalidateIntentModal{{ sequence.id }}" tabindex="-1" aria-labelledby="invalidateIntentModalLabel{{ sequence.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content" style="border-radius: 16px;">
+                                                            <div class="modal-header border-0">
+                                                                <h5 class="modal-title fw-bold" id="invalidateIntentModalLabel{{ sequence.id }}">Annuler la validation</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}">
+                                                                {% csrf_token %}
+                                                                <div class="modal-body">
+                                                                    <div class="alert alert-warning">
+                                                                        La séquence repassera en brouillon. Le concepteur sera notifié.
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label for="{{ deval_form.reason.id_for_label }}" class="form-label fw-bold">{{ deval_form.reason.label }}</label>
+                                                                        {{ deval_form.reason }}
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label for="{{ deval_form.comment.id_for_label }}" class="form-label fw-bold">{{ deval_form.comment.label }}</label>
+                                                                        {{ deval_form.comment }}
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer border-0">
+                                                                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                                                                    <button type="submit" class="btn btn-warning rounded-pill px-4">Confirmer</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -197,6 +268,38 @@
                                 <div class="alert alert-info mb-0">
                                     Aucune séquence en cours de remplissage.
                                 </div>
+                                <!-- Modal for invalidating intention validation -->
+                                <div class="modal fade" id="invalidateIntentModal{{ sequence.id }}" tabindex="-1" aria-labelledby="invalidateIntentModalLabel{{ sequence.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="border-radius: 16px;">
+                                            <div class="modal-header border-0">
+                                                <h5 class="modal-title fw-bold" id="invalidateIntentModalLabel{{ sequence.id }}">Annuler la validation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="alert alert-warning">
+                                                        La séquence repassera en brouillon. Le concepteur sera notifié.
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="{{ deval_form.reason.id_for_label }}" class="form-label fw-bold">{{ deval_form.reason.label }}</label>
+                                                        {{ deval_form.reason }}
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="{{ deval_form.comment.id_for_label }}" class="form-label fw-bold">{{ deval_form.comment.label }}</label>
+                                                        {{ deval_form.comment }}
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-0">
+                                                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                                                    <button type="submit" class="btn btn-warning rounded-pill px-4">Confirmer</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
                             {% endfor %}
                         </div>
                     </div>
@@ -296,7 +399,7 @@
             </div>
 
             <!-- SECTION 4: Second Reviews Requested -->
-            <div class="card mb-4 border-0 border-start border-5 border-warning {% if second_review_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+            <div class="card mb-4 border-0 {% if second_review_sequences %}shadow bg-white border-start border-5 border-warning{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
                 <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseSecondReview" aria-expanded="false" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Seconde validation</span>
@@ -418,10 +521,9 @@
                                             <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler la validation de cette séquence ? Elle repassera en brouillon.');">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3">Annuler la validation</button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#invalidateIntentModal{{ sequence.id }}">
+                                                Annuler la validation
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -457,20 +559,46 @@
                                             <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
                                             <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
                                         </div>
-                                        <div class="text-end">
-                                            <!-- Utilization indicator -->
-                                            <span class="badge bg-success rounded-pill mb-1">
-                                                <i class="bi bi-people-fill"></i> Utilisée dans {{ sequence.classes.count }} classe(s)
+                                        <div class="d-flex align-items-center gap-2">
+                                            
+                                            <!-- Badge cliquable -->
+                                            <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}">
+                                                <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
                                             </span>
-                                            {% if sequence.classes.count == 0 %}
-                                                <br><small class="text-muted" style="font-size: 0.7rem;">Pas encore adoptée</small>
-                                            {% endif %}
+
+                                            <!-- Bouton annuler validation -->
+                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler la validation de cette séquence ? Elle repassera en brouillon.');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3">Annuler la validation</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
-                            {% empty %}
-                                <div class="alert alert-info mb-0">
-                                    Aucune séquence publiée pour le moment.
+
+                                <!-- Modal for classes list -->
+                                <div class="modal fade" id="classesModalRef{{ sequence.id }}" tabindex="-1" aria-labelledby="classesModalLabelRef{{ sequence.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="border-radius: 16px;">
+                                            <div class="modal-header border-0">
+                                                <h5 class="modal-title fw-bold" id="classesModalLabelRef{{ sequence.id }}">Classes utilisant cette séquence</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <ul class="list-group list-group-flush">
+                                                    {% for classe in sequence.classes.all %}
+                                                        <li class="list-group-item px-0">
+                                                            <strong>{{ classe.name }}</strong> <span class="text-muted small">({{ classe.level }} - {{ classe.specialty }})</span>
+                                                        </li>
+                                                    {% empty %}
+                                                        <li class="list-group-item px-0 text-muted">Aucune classe n'utilise cette séquence.</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer border-0">
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>

@@ -59,7 +59,7 @@
                 </div>
                 <div id="collapseToPublish" class="collapse">
                     <div class="card-body">
-                        <div class="accordion" id="accordionInspection">
+                        <div class="accordion" id="accordionPublishing">
                             {% for sequence in sequences_to_publish %}
                                 <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                                     <h2 class="accordion-header" id="headingInspect{{ sequence.id }}">
@@ -72,7 +72,7 @@
                                             </div>
                                         </button>
                                     </h2>
-                                    <div id="collapseInspect{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingInspect{{ sequence.id }}" data-bs-parent="#accordionInspection">
+                                    <div id="collapseInspect{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingInspect{{ sequence.id }}" data-bs-parent="#accordionPublishing">
                                         <div class="accordion-body">
                                             
                                             <div class="mb-4">

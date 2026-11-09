@@ -8,7 +8,7 @@ STATUS_CHOICES = [
     ('VALIDATED', 'Intention validée'),
     ('CONTENT_PENDING', 'Contenu à valider'),
     ('CONTENT_VALIDATED', 'Contenu validé'),
-    ('PENDING_INSPECTION', "Contenu à publier"),
+    ('PENDING_PUBLISHING', "Contenu à publier"),
     ('PUBLISHED', 'Publié'),
     ('UNPUBLISHED', 'Dépublié'),
     ('ARCHIVED', 'Archivé'),

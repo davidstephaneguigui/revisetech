@@ -98,9 +98,13 @@ def manage_sequence(request, sequence_id):
                 # Flag the sequence as having changes that need review, without blocking the designer
                 sequence.has_unreviewed_changes = True
                 sequence.save()
+
+                
                 
                 messages.warning(request, "La séance a été ajoutée. Le référent sera notifié de cette modification lors de sa prochaine lecture.")
                 return redirect('manage_sequence', sequence_id=sequence.id)
+
+    review_actions = sequence.review_actions.all()    
     
     context = {
         'sequence': sequence,
@@ -108,9 +112,28 @@ def manage_sequence(request, sequence_id):
         'intention_form': intention_form,
         'planned_sessions_formset': planned_sessions_formset,
         'session_form': session_form,
+        'review_actions' : review_actions,
     }
     
     return render(request, 'authoring/manage_sequence.html', context)
+
+
+@require_POST
+@login_required
+@is_designer
+def delete_sequence(request, sequence_id):
+    """
+    Allows the designer to delete a sequence ONLY if it is in DRAFT status.
+    """
+    sequence = get_object_or_404(Sequence, id=sequence_id, creator=request.user)
+    
+    if sequence.status == 'DRAFT':
+        sequence.delete()
+        messages.success(request, "La séquence a été supprimée définitivement.")
+        return redirect('designer_dashboard')
+    else:
+        messages.error(request, "Vous ne pouvez pas supprimer une séquence qui est déjà engagée dans le processus de validation.")
+        return redirect('manage_sequence', sequence_id=sequence.id)
 
 
 @login_required
@@ -167,23 +190,56 @@ def edit_session(request, session_id):
     return render(request, 'authoring/edit_session.html', context)
 
 
+@require_POST
+@login_required
+@is_designer
+def move_session(request, session_id, direction):
+    """
+    Moves a session up or down by swapping its order with its neighbor.
+    """
+    session = get_object_or_404(Session, id=session_id, sequence__creator=request.user)
+    
+    if direction == 'up':
+        # Find the session with the next smaller order
+        neighbor = Session.objects.filter(sequence=session.sequence, order__lt=session.order).order_by('-order').first()
+    else:
+        # Find the session with the next larger order
+        neighbor = Session.objects.filter(sequence=session.sequence, order__gt=session.order).order_by('order').first()
+    
+    if neighbor:
+        # Swap orders
+        session.order, neighbor.order = neighbor.order, session.order
+        session.save()
+        neighbor.save()
+        
+    return redirect('manage_sequence', sequence_id=session.sequence.id)
+
+
+@require_POST
 @login_required
 @is_designer
 def delete_session(request, session_id):
     """
-    Allows the designer to delete a session (and its activities).
+    Deletes a session and renumbers the remaining sessions to avoid gaps.
     """
     session = get_object_or_404(Session, id=session_id, sequence__creator=request.user)
-    sequence_id = session.sequence.id
+    sequence = session.sequence
     
-    # Only allow deletion if the sequence is not in a pending validation state
-    if session.sequence.status in ['VALIDATED', 'DRAFT']:
+    if session.status == 'DRAFT':
         session.delete()
-        messages.success(request, "La séance a été supprimée avec succès.")
-    else:
-        messages.error(request, "Vous ne pouvez pas supprimer une séance dont le contenu est en cours de validation ou validé.")
         
-    return redirect('manage_sequence', sequence_id=sequence_id)
+        # Renumber the remaining sessions
+        remaining_sessions = sequence.sessions.order_by('order')
+        for index, sess in enumerate(remaining_sessions, start=1):
+            if sess.order != index:
+                sess.order = index
+                sess.save()
+                
+        messages.success(request, "La séance a été supprimée et les numéros ont été mis à jour.")
+    else:
+        messages.error(request, "Vous ne pouvez pas supprimer une séance qui a déjà été validée.")
+        
+    return redirect('manage_sequence', sequence_id=sequence.id)
 
 
 @login_required

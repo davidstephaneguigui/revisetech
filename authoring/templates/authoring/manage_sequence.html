@@ -37,11 +37,70 @@
             </div>
         </div>
 
-            <!-- SECTION 1 : CARACTÉRISTIQUES DE LA SÉQUENCE -->
-            <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px;">
+        <div class="d-flex align-items-center gap-2">
+            
+            {% if sequence.status == 'DRAFT' %}
+                <form method="post" action="{% url 'delete_sequence' sequence.id %}" class="m-0" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette séquence ? Cette action est irréversible.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Supprimer</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- History of review actions -->
+        {% if review_actions %}
+            <div class="card mb-4 shadow-sm border-0 border-start border-5 border-warning" style="border-radius: 12px;">
                 <div class="card-header bg-white border-0 pt-3 pb-0">
-                    <h5 class="fw-bold">Caractéristiques de la séquence</h5>
+                    <h5 class="fw-bold text-warning">Historique des révisions</h5>
                 </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for action in review_actions %}
+                            <li class="list-group-item px-0 py-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge bg-danger mb-2">{{ action.get_action_type_display }}</span><br>
+                                        <strong class="text-dark">Motif :</strong> {{ action.get_reason_display }}<br>
+                                        <span class="text-muted">{{ action.comment|linebreaksbr }}</span>
+                                    </div>
+                                    <small class="text-muted text-end" style="min-width: 120px;">
+                                        Par {{ action.user.username|default:"Inconnu" }}<br>
+                                        le {{ action.created_at|date:"d/m/Y à H:i" }}
+                                    </small>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- SECTION 1 : CARACTÉRISTIQUES DE LA SÉQUENCE -->
+        <div class="card mb-4 shadow-sm border-0" style="border-radius: 12px;">
+            
+            <!-- Header cliquable avec bouton intégré -->
+            <div class="card-header bg-white border-0 pt-3 pb-3 d-flex justify-content-between align-items-center">
+                
+                <!-- Partie gauche : Titre cliquable -->
+                <div class="d-flex align-items-center" 
+                     data-bs-toggle="collapse" data-bs-target="#collapseCharacteristics" 
+                     aria-expanded="{% if sequence.status == 'DRAFT' or sequence.status == 'PENDING' %}true{% else %}false{% endif %}" 
+                     style="cursor: pointer;">
+                    <h5 class="fw-bold mb-0 me-3">Caractéristiques de la séquence</h5>
+                    <span class="text-muted fs-5">▼</span>
+                </div>
+
+                <!-- Partie droite : Bouton Soumettre (si VALIDATED) -->
+                {% if sequence.status == 'VALIDATED' %}
+                    <form method="post" action="{% url 'submit_content' sequence.id %}" class="m-0" onclick="event.stopPropagation();">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success rounded-pill px-4">Soumettre</button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <!-- Contenu repliable (Formulaire ou lecture seule) -->
+            <div id="collapseCharacteristics" class="collapse {% if sequence.status == 'DRAFT' or sequence.status == 'PENDING' %}show{% endif %}">
                 <div class="card-body">
                     
                     {% if sequence.status == 'DRAFT' or sequence.status == 'PENDING' %}
@@ -54,11 +113,6 @@
                                 <div class="mb-3">
                                     <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
                                     {{ field }}
-                                    {% if field.errors %}
-                                        <div class="text-danger small mt-1">
-                                            {{ field.errors.0 }}
-                                        </div>
-                                    {% endif %}
                                 </div>
                             {% endfor %}
 
@@ -138,77 +192,75 @@
                             {% endif %}
                         </form>
 
-                    {% elif sequence.status == 'VALIDATED' %}
-                        <!-- AFFICHAGE LECTURE SEULE (Intention Validée) -->
+                    {% elif sequence.status == 'VALIDATED' or sequence.status == 'CONTENT_PENDING' or sequence.status == 'CONTENT_VALIDATED' or sequence.status == 'PUBLISHED' %}
+                        <!-- AFFICHAGE LECTURE SEULE -->
                         <div class="mb-3">
                             <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
                             <p class="mb-0 fs-5">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
-                        </div>
-                        <div class="alert alert-success mt-3 d-flex justify-content-between align-items-center">
-                            <span>L'intention a été validée. Vous pouvez remplir les séances ci-dessous.</span>
-                            <form method="post" action="{% url 'submit_content' sequence.id %}" class="m-0">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success rounded-pill px-4">Soumettre le contenu</button>
-                            </form>
-                        </div>
-                    {% elif sequence.status == 'CONTENT_PENDING' %}
-                        <div class="alert alert-warning mt-3 mb-0">
-                            Le contenu de cette séquence est en attente de validation par le référent.
-                        </div>
-                    {% elif sequence.status == 'CONTENT_VALIDATED' %}
-                        <div class="alert alert-info mt-3 mb-0">
-                            Le contenu a été validé par le référent. Il est en attente de publication par le superviseur.
                         </div>
                     {% endif %}
 
                 </div>
             </div>
+        </div>
 
-            <!-- SECTION 2 : SÉANCES RÉELLES (Seulement si validée) -->
-            {% if sequence.status == 'VALIDATED' %}
-                <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
-                    <h4 class="mb-0">Séances à remplir</h4>
-                    {% if sequence.status == 'VALIDATED' %}
-                        <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Nouvelle séance</button>
-                    {% endif %}
-                </div>
+        <!-- SECTION 2 : SÉANCES RÉELLES (Seulement si validée) -->
+        {% if sequence.status == 'VALIDATED' %}
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+                <h4 class="mb-0">Séances à remplir</h4>
+                {% if sequence.status == 'VALIDATED' %}
+                    <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addSessionModal">+ Nouvelle séance</button>
+                {% endif %}
+            </div>
 
-                <div class="d-grid gap-2">
-                    {% for session in sessions %}
-                        <div class="card py-3 px-3 shadow-sm border-0 d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+            <div class="d-grid gap-2">
+                {% for session in sessions %}
+                    <div class="card py-3 px-3 shadow-sm border-0 d-flex flex-row justify-content-between align-items-center" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                        
+                        <!-- Lien vers la séance (titre + badge) -->
+                        <a href="{% url 'manage_session' session.id %}" class="text-decoration-none flex-grow-1 d-flex align-items-center me-3">
+                            <div class="fw-bold text-dark">Séance {{ session.order }} : {{ session.name }}</div>
+                            <span class="badge 
+                                {% if session.status == 'DRAFT' %}bg-secondary
+                                {% elif session.status == 'PENDING' %}bg-warning text-dark
+                                {% elif session.status == 'VALIDATED' %}bg-success
+                                {% else %}bg-info{% endif %} rounded-pill ms-3">
+                                {{ session.get_status_display }}
+                            </span>
+                        </a>
+
+                        <!-- Boutons d'action -->
+                        <div class="d-flex gap-2 align-items-center">
                             
-                            <!-- Lien vers la séance (titre + badge) -->
-                            <a href="{% url 'manage_session' session.id %}" class="text-decoration-none flex-grow-1 d-flex align-items-center me-3">
-                                <div class="fw-bold text-dark">Séance {{ session.order }} : {{ session.name }}</div>
-                                <span class="badge 
-                                    {% if session.status == 'DRAFT' %}bg-secondary
-                                    {% elif session.status == 'PENDING' %}bg-warning text-dark
-                                    {% elif session.status == 'VALIDATED' %}bg-success
-                                    {% else %}bg-info{% endif %} rounded-pill ms-3">
-                                    {{ session.get_status_display }}
-                                </span>
-                            </a>
+                            <!-- Boutons Monter/Descendre -->
+                            <form method="post" action="{% url 'move_session' session.id 'up' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-2" title="Monter">↑</button>
+                            </form>
+                            <form method="post" action="{% url 'move_session' session.id 'down' %}" class="m-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-2" title="Descendre">↓</button>
+                            </form>
 
-                            <!-- Boutons d'action -->
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'edit_session' session.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                                    Modifier
-                                </a>
-                                
-                                {% if sequence.status == 'VALIDATED' and session.status == 'DRAFT' %}
-                                <a href="{% url 'delete_session' session.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette séance et tout son contenu ?');">
-                                    Supprimer
-                                </a>
-                                {% endif %}
-                            </div>
+                            <a href="{% url 'edit_session' session.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                Modifier
+                            </a>
+                            
+                            {% if sequence.status == 'VALIDATED' and session.status == 'DRAFT' %}
+                            <form method="post" action="{% url 'delete_session' session.id %}" class="m-0" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette séance et tout son contenu ?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Supprimer</button>
+                            </form>
+                            {% endif %}
                         </div>
-                    {% empty %}
-                        <div class="alert alert-info">
-                            Aucune séance n'a pu être générée.
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="alert alert-info">
+                        Aucune séance n'a pu être générée.
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
             
         </div>
     </div>

@@ -17,7 +17,9 @@ db.sqlite3
 # Fichiers systèmes / IDE
 .DS_Store
 .vscode/
-.idea/# Environnements virtuels
+.idea/
+
+# Environnements virtuels
 .venv/
 env/
 venv/

@@ -96,6 +96,9 @@ class PlannedSession(models.Model):
         verbose_name = "Séance prévisionnelle"
         verbose_name_plural = "Séances prévisionnelles"
         ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(fields=['sequence', 'order'], name='unique_planned_session_order_per_sequence')
+        ]
 
     def __str__(self):
         return f"Séance {self.order} : {self.name}"
@@ -120,7 +123,10 @@ class Session(models.Model):
     class Meta:
         verbose_name = "Séance"
         verbose_name_plural = "Séances"
-        ordering = ['order'] # Trie automatiquement par numéro
+        ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(fields=['sequence', 'order'], name='unique_session_order_per_sequence')
+        ]
 
     def __str__(self):
         return f"Séance {self.order} : {self.name}"

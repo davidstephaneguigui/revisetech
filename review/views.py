@@ -66,17 +66,16 @@ def validate_content(request, sequence_id):
 @is_referee
 def referee_dashboard(request):
     """
-    Display the dashboard for referees, showing pending intentions, 
-    pending contents, validated sequences, and content validated.
+    Display the dashboard for referees.
     """
-    # 1. Intentions waiting for validation
+    # 1. Sequences waiting for intention validation
     pending_sequences = Sequence.objects.filter(status='PENDING').order_by('chapter__matiere__name', 'name')
-      
-    # 2. Sequences validated (currently filling content)
-    validated_sequences = Sequence.objects.filter(status='VALIDATED').order_by('-id')
-
-    # 3. Sequences waiting for content validation
+    
+    # 2. Sequences waiting for content validation
     content_pending_sequences = Sequence.objects.filter(status='CONTENT_PENDING').order_by('chapter__matiere__name', 'name')
+    
+    # 3. Sequences validated (currently filling content)
+    validated_sequences = Sequence.objects.filter(status='VALIDATED').order_by('-id')
 
     # 4. Content validated (waiting for publication)
     content_validated_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('-id')
@@ -87,14 +86,8 @@ def referee_dashboard(request):
     # 6. Sequences published
     published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
 
-    # Prepare sessions with is_new flag for the template
-    for seq in validated_sequences:
-        planned_orders = set(seq.planned_sessions.values_list('order', flat=True))
-        sessions_with_flags = list(seq.sessions.all())
-        for sess in sessions_with_flags:
-            sess.is_new = sess.order not in planned_orders
-        seq.sessions_with_flags = sessions_with_flags
-        deval_form = DevalidationForm()
+    # On instancie le formulaire de dévalidation
+    deval_form = DevalidationForm()
     
     context = {
         'pending_sequences': pending_sequences,
@@ -225,6 +218,11 @@ def invalidate_sequence(request, sequence_id):
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
+    # On vérifie d'abord si le statut permet l'annulation
+    if sequence.status not in ['VALIDATED', 'CONTENT_PENDING', 'CONTENT_VALIDATED']:
+        messages.error(request, "Cette action n'est pas autorisée pour cette séquence.")
+        return redirect('referee_dashboard')
+
     form = DevalidationForm(request.POST)
     if form.is_valid():
         action = form.save(commit=False)

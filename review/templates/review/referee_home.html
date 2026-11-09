@@ -268,38 +268,6 @@
                                 <div class="alert alert-info mb-0">
                                     Aucune séquence en cours de remplissage.
                                 </div>
-                                <!-- Modal for invalidating intention validation -->
-                                <div class="modal fade" id="invalidateIntentModal{{ sequence.id }}" tabindex="-1" aria-labelledby="invalidateIntentModalLabel{{ sequence.id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content" style="border-radius: 16px;">
-                                            <div class="modal-header border-0">
-                                                <h5 class="modal-title fw-bold" id="invalidateIntentModalLabel{{ sequence.id }}">Annuler la validation</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}">
-                                                {% csrf_token %}
-                                                <div class="modal-body">
-                                                    <div class="alert alert-warning">
-                                                        La séquence repassera en brouillon. Le concepteur sera notifié.
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="{{ deval_form.reason.id_for_label }}" class="form-label fw-bold">{{ deval_form.reason.label }}</label>
-                                                        {{ deval_form.reason }}
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="{{ deval_form.comment.id_for_label }}" class="form-label fw-bold">{{ deval_form.comment.label }}</label>
-                                                        {{ deval_form.comment }}
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer border-0">
-                                                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
-                                                    <button type="submit" class="btn btn-warning rounded-pill px-4">Confirmer</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
                             {% endfor %}
                         </div>
                     </div>
@@ -565,12 +533,6 @@
                                             <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}">
                                                 <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
                                             </span>
-
-                                            <!-- Bouton annuler validation -->
-                                            <form method="post" action="{% url 'invalidate_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler la validation de cette séquence ? Elle repassera en brouillon.');">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3">Annuler la validation</button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>

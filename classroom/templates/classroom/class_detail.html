@@ -4,142 +4,143 @@
 {% block title %}{{ classe.name }} - Revisetech{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-12 col-lg-10">
-        
-        <!-- Back button -->
-        <div class="mb-4 mt-2">
-            <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                &larr; Retour aux classes
-            </a>
-        </div>
+    <div class="row justify-content-center mt-2">
+        <div class="col-12 col-lg-10">
+            
+            <!-- Back button -->
+            <div class="mb-4 mt-2">
+                <a href="{% url 'teacher_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour aux classes
+                </a>
+            </div>
 
-        <!-- Messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 class="mb-1">{{ classe.name }}</h2>
+                    <p class="text-muted">{{ classe.level }} - {{ classe.specialty }}</p>
                 </div>
-            {% endfor %}
-        {% endif %}
-
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div>
-                <h2 class="mb-1">{{ classe.name }}</h2>
-                <p class="text-muted">{{ classe.level }} - {{ classe.specialty }}</p>
             </div>
-        </div>
 
-        <!-- Invitation Code -->
-        <div class="alert alert-primary d-flex justify-content-between align-items-center mb-4" style="border-radius: 12px;">
-            <div>
-                <strong>Code d'invitation :</strong>
-                <span class="fs-5 ms-2 font-monospace">{{ classe.code_invitation }}</span>
+            <!-- Invitation Code -->
+            <div class="alert alert-primary d-flex justify-content-between align-items-center mb-4" style="border-radius: 12px;">
+                <div>
+                    <strong>Code d'invitation :</strong>
+                    <span class="fs-5 ms-2 font-monospace">{{ classe.code_invitation }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="navigator.clipboard.writeText('{{ classe.code_invitation }}'); alert('Code copié !');">Copier</button>
             </div>
-            <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="navigator.clipboard.writeText('{{ classe.code_invitation }}'); alert('Code copié !');">Copier</button>
-        </div>
 
-        <!-- Sequences Section -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Séquences au programme</h4>
-            <button class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addSequenceModal">+ Ajouter des séquences</button>
-        </div>
+            <!-- Sequences Section -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Séquences au programme</h4>
+                <button class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addSequenceModal">+ Ajouter des séquences</button>
+            </div>
 
-        <div class="d-grid gap-2 mb-5">
-            {% for sequence in class_sequences %}
-                <div class="card py-2 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="fw-bold text-dark">{{ sequence.name }}</div>
-                            <div class="text-muted small">{{ sequence.chapter.matiere.name }} - {{ sequence.chapter.name }}</div>
+            <div class="d-grid gap-2 mb-5">
+                {% for sequence in class_sequences %}
+                    <div class="card py-2 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-dark">{{ sequence.name }}</div>
+                                <div class="text-muted small">{{ sequence.chapter.matiere.name }} - {{ sequence.chapter.name }}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% empty %}
-                <div class="alert alert-info py-2">
-                    Aucune séquence associée à cette classe pour le moment.
-                </div>
-            {% endfor %}
-        </div>
-
-        <!-- Students Section -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Élèves inscrits ({{ students|length }})</h4>
-            <button class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addStudentModal">+ Ajouter un élève</button>
-        </div>
-
-        <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-            <ul class="list-group list-group-flush">
-                {% for student in students %}
-                    <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
-                        <a href="{% url 'student_results' student.id %}" class="fw-bold text-decoration-none" style="color: #6a1b9a;">
-                            {{ student.username }}
-                        </a>
-                        <span class="text-muted small">{{ student.first_name }} {{ student.last_name }}</span>
-                    </li>
                 {% empty %}
-                    <li class="list-group-item py-3 text-muted text-center">
-                        Aucun élève n'est inscrit dans cette classe pour le moment.
-                    </li>
+                    <div class="alert alert-info py-2">
+                        Aucune séquence associée à cette classe pour le moment.
+                    </div>
                 {% endfor %}
-            </ul>
-        </div>
-        
-    </div>
-</div>
-
-<!-- Modal to add sequences -->
-<div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 16px;">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="addSequenceModalLabel">Ajouter des séquences</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="{{ sequence_form.sequences.id_for_label }}" class="form-label">{{ sequence_form.sequences.label }}</label>
-                        {{ sequence_form.sequences }}
-                        <div class="form-text">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs séquences.</div>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" name="add_sequences" class="btn btn-primary rounded-pill px-4">Ajouter</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- Modal to add a student -->
-<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 16px;">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="addStudentModalLabel">Ajouter un élève</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <!-- Students Section -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Élèves inscrits ({{ students|length }})</h4>
+                <button class="btn btn-sm btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addStudentModal">+ Ajouter un élève</button>
             </div>
-            <form method="post">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="{{ student_form.username.id_for_label }}" class="form-label">{{ student_form.username.label }}</label>
-                        {{ student_form.username }}
-                        {% if student_form.username.errors %}
-                            <div class="text-danger small">{{ student_form.username.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" name="add_student" class="btn btn-primary rounded-pill px-4">Ajouter</button>
-                </div>
-            </form>
+
+            <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                <ul class="list-group list-group-flush">
+                    {% for student in students %}
+                        <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
+                            <a href="{% url 'student_results' student.id %}" class="fw-bold text-decoration-none" style="color: #6a1b9a;">
+                                {{ student.username }}
+                            </a>
+                            <span class="text-muted small">{{ student.first_name }} {{ student.last_name }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item py-3 text-muted text-center">
+                            Aucun élève n'est inscrit dans cette classe pour le moment.
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
         </div>
     </div>
-</div>
+
+    <!-- Modal to add sequences -->
+    <div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="addSequenceModalLabel">Ajouter des séquences</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="{{ sequence_form.sequences.id_for_label }}" class="form-label">{{ sequence_form.sequences.label }}</label>
+                            {{ sequence_form.sequences }}
+                            <div class="form-text">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs séquences.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" name="add_sequences" class="btn btn-primary rounded-pill px-4">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal to add a student -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="addStudentModalLabel">Ajouter un élève</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="{{ student_form.username.id_for_label }}" class="form-label">{{ student_form.username.label }}</label>
+                            {{ student_form.username }}
+                            {% if student_form.username.errors %}
+                                <div class="text-danger small">{{ student_form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" name="add_student" class="btn btn-primary rounded-pill px-4">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

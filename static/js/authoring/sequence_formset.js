@@ -6,7 +6,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalFormsInput = document.getElementById('id_planned_sessions-TOTAL_FORMS');
     const emptyFormTemplate = document.getElementById('empty-form-template');
 
-    // 1. Add a new row
+    // Fonction utilitaire pour trier le tableau par numéro d'ordre
+    function sortTableByOrder() {
+        const rows = Array.from(tableBody.querySelectorAll('tr'));
+        
+        rows.sort((a, b) => {
+            const orderInputA = a.querySelector('input[name$="-order"]');
+            const orderInputB = b.querySelector('input[name$="-order"]');
+            
+            const valA = orderInputA ? parseInt(orderInputA.value) || 9999 : 9999;
+            const valB = orderInputB ? parseInt(orderInputB.value) || 9999 : 9999;
+            
+            return valA - valB;
+        });
+        
+        tableBody.innerHTML = '';
+        rows.forEach(row => tableBody.appendChild(row));
+    }
+
+    // 1. Ajouter une nouvelle ligne
     if (addBtn && tableBody && totalFormsInput && emptyFormTemplate) {
         addBtn.addEventListener('click', function() {
             const formCount = parseInt(totalFormsInput.value);
@@ -18,46 +36,60 @@ document.addEventListener('DOMContentLoaded', function() {
             
             totalFormsInput.value = formCount + 1;
 
+            // --- CALCUL DU PROCHAIN NUMERO ---
+            const activeOrders = [];
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (!(checkbox && checkbox.checked)) {
+                    const orderInput = row.querySelector('input[name$="-order"]');
+                    if (orderInput) {
+                        const val = parseInt(orderInput.value);
+                        if (!isNaN(val)) {
+                            activeOrders.push(val);
+                        }
+                    }
+                }
+            });
+
+            let newOrder = 1;
+            while (activeOrders.includes(newOrder)) {
+                newOrder++;
+            }
+
+            const newOrderInput = tr.querySelector('input[name$="-order"]');
+            if (newOrderInput) {
+                newOrderInput.value = newOrder;
+            }
+
             const newCheckbox = tr.querySelector('input[type="checkbox"]');
             if (newCheckbox) {
                 newCheckbox.classList.add('form-check-input');
             }
+
+            // On trie le tableau immédiatement après l'ajout
+            sortTableByOrder();
         });
     }
 
-    // 2. Delete checked rows
+    // 2. Supprimer les lignes cochées
     if (deleteBtn && tableBody) {
         deleteBtn.addEventListener('click', function() {
             const rows = tableBody.querySelectorAll('tr');
             rows.forEach(row => {
                 const checkbox = row.querySelector('input[type="checkbox"]');
                 if (checkbox && checkbox.checked) {
-                    row.style.display = 'none'; // Hide visually
-                    // Do not remove from DOM, let Django Formset handle deletion via the checked box
+                    row.style.display = 'none';
+                    const orderInput = row.querySelector('input[name$="-order"]');
+                    if (orderInput) orderInput.value = '';
                 }
             });
         });
     }
 
-    // 3. Sort rows by order
+    // 3. Bouton "Trier par numéro"
     if (sortBtn && tableBody) {
         sortBtn.addEventListener('click', function() {
-            // Get all rows, even hidden ones
-            const rows = Array.from(tableBody.querySelectorAll('tr'));
-            
-            rows.sort((a, b) => {
-                const orderInputA = a.querySelector('input[name$="-order"]');
-                const orderInputB = b.querySelector('input[name$="-order"]');
-                
-                const valA = orderInputA ? parseInt(orderInputA.value) || 0 : 0;
-                const valB = orderInputB ? parseInt(orderInputB.value) || 0 : 0;
-                
-                return valA - valB;
-            });
-            
-            // Re-append rows in the sorted order
-            tableBody.innerHTML = '';
-            rows.forEach(row => tableBody.appendChild(row));
+            sortTableByOrder();
         });
     }
 });

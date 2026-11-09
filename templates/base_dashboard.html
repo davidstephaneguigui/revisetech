@@ -1,0 +1,84 @@
+{% load static %}
+{% load auth_extras %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Revisetech{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body class="bg-light">
+    
+    <!-- Navbar Bootstrap standard -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+        <div class="container-fluid px-4">
+            
+            <!-- Logo -->
+            <a class="navbar-brand fs-3 fw-bolder" href="{% url 'dashboard_home' %}" style="color: #6a1b9a;">
+                Revisetech
+            </a>
+            
+            <!-- Bouton Burger (visible uniquement sur mobile/tablette) -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Contenu du menu (se replie sur mobile) -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                
+                <!-- Liens de gauche -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                    {% block top_menu %}
+                    {% endblock %}
+                    <li class="nav-item">
+                        <a class="nav-link text-muted" href="{% url 'help_page' %}">❓ Aide</a>
+                    </li>
+                </ul>
+
+                <!-- Profil et Déconnexion -->
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 mt-3 mt-lg-0 border-top pt-3 pt-lg-0 border-lg-0">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'suggestion_list' %}" class="text-decoration-none position-relative" style="color: #333; width: fit-content;">
+                            <span class="fs-4">🔔</span>
+                            {% get_unread_suggestions_count user as unread_count %}
+                            {% if unread_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                    {{ unread_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+                        <span class="text-muted small d-none d-lg-inline">{{ user.username }}</span>
+                        <form action="{% url 'logout' %}" method="post" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 w-100 w-lg-auto">Déconnexion</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu Principal -->
+    <main class="container-fluid px-4">
+        <div class="row justify-content-center mt-2">
+            <div class="col-12 col-lg-10">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

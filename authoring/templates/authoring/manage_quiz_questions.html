@@ -1,89 +1,96 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block container_class %}container-fluid px-4{% endblock %}
 
 {% block title %}Questions : {{ activity.title }} - Revisetech{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-12 col-lg-8">
-        
-        <!-- Bouton retour -->
-        <div class="mb-4 mt-2">
-            <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                &larr; Retour à la séance
-            </a>
-        </div>
+    <div class="row justify-content-center mt-2">
+        <div class="col-12 col-lg-10">
+            
+            <!-- Back button -->
+            <div class="mb-4 mt-2">
+                <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à la séance
+                </a>
+            </div>
 
-        <h2 class="mb-4">Questions du Quiz : {{ activity.title }}</h2>
+            <h2 class="mb-4">Questions du Quiz : {{ activity.title }}</h2>
 
-        <form method="post">
-            {% csrf_token %}
-            {{ question_formset.management_form }}
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-            <div id="questions-container">
-                {% for form in question_formset %}
-                    <div class="card mb-3 shadow-sm border-0 p-3 question-row" style="border-radius: 12px;">
-                        {{ form.id }}
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Question</h5>
-                            {% if form.instance.pk %}
-                                <form method="post" action="{% url 'delete_question' form.instance.id %}" class="m-0" onsubmit="return confirm('Supprimer cette question ?');">
+            <!-- Section: Liste des questions existantes -->
+            <h4 class="mb-3">Questions existantes</h4>
+            <div class="card shadow-sm border-0 mb-5" style="border-radius: 12px;">
+                <ul class="list-group list-group-flush">
+                    {% for question in questions %}
+                        <li class="list-group-item py-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-secondary me-2">{{ question.order }}</span>
+                                <strong>{{ question.text }}</strong>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'manage_question_choices' question.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Gérer les choix</a>
+                                <form method="post" action="{% url 'delete_question' question.id %}" class="m-0" onsubmit="return confirm('Supprimer cette question ?');">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">Supprimer</button>
                                 </form>
-                            {% endif %}
-                        </div>
+                            </div>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item py-3 text-muted text-center">
+                            Aucune question pour le moment.
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
 
+            <!-- Section: Ajouter une nouvelle question -->
+            <h4 class="mb-3">Ajouter une question</h4>
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
                         <div class="row mb-3">
                             <div class="col-md-2">
-                                <label class="form-label">{{ form.order.label }}</label>
+                                <label for="{{ form.order.id_for_label }}" class="form-label fw-bold">{{ form.order.label }}</label>
                                 {{ form.order }}
                             </div>
                             <div class="col-md-10">
-                                <label class="form-label">{{ form.text.label }}</label>
+                                <label for="{{ form.text.id_for_label }}" class="form-label fw-bold">{{ form.text.label }}</label>
                                 {{ form.text }}
                             </div>
                         </div>
 
-                        <!-- If the question is already saved, link to manage its choices -->
-                        {% if form.instance.pk %}
-                            <div class="text-end">
-                                <a href="{% url 'manage_question_choices' form.instance.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Gérer les choix</a>
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3">Choix de réponses (cochez la bonne réponse)</h6>
+                        
+                        {% for i in "1234" %}
+                        <div class="input-group mb-2">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="radio" name="correct_choice" value="{{ forloop.counter }}" required>
                             </div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
+                            <input type="text" class="form-control" name="choice_{{ forloop.counter }}" placeholder="Texte du choix {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
 
-            <!-- Hidden empty form template for JS cloning -->
-            <template id="empty-form-template">
-                <div class="card mb-3 shadow-sm border-0 p-3 question-row" style="border-radius: 12px;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Nouvelle question</h5>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-2">
-                            <label class="form-label">N°</label>
-                            {{ question_formset.empty_form.order }}
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Ajouter la question</button>
                         </div>
-                        <div class="col-md-10">
-                            <label class="form-label">Question</label>
-                            {{ question_formset.empty_form.text }}
-                        </div>
-                    </div>
+                    </form>
                 </div>
-            </template>
-
-            <div class="d-flex justify-content-between mt-4">
-                <button type="button" class="btn btn-outline-primary rounded-pill px-3" id="add-question-btn">+ Ajouter une question</button>
-                <button type="submit" class="btn btn-success rounded-pill px-4">Enregistrer les questions</button>
             </div>
-        </form>
-        
+            
+        </div>
     </div>
-</div>
-
-<script src="{% static 'js/authoring/manage_quiz_questions.js' %}"></script>
 {% endblock %}

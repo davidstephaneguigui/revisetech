@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
+
 """
 URL configuration for config project.
 
@@ -22,14 +23,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+
 urlpatterns = [
+    path('', include('core.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('admin/', admin.site.urls),
     path('designer/', include('authoring.urls')),
+    path('eleve/', include('learning.urls')),
     path('', include('accounts.urls')),
     path('', include('classroom.urls')),
-    path('', include('learning.urls')),
     path('', include('pedagogy.urls')),
     path('review/', include('review.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

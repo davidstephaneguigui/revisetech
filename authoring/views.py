@@ -14,38 +14,32 @@ from .forms import SequenceForm, SessionForm, ActivityForm, SequenceIntentionFor
 @is_designer
 def designer_dashboard(request):
     """
-    Display the dashboard for designers.
-    - Shows sequences created by the designer.
-    - Allows creating a sequence in ANY existing chapter.
+    Display the dashboard for designers, organized by sequence status.
     """
-    # Fetch subjects created by this designer
-    subjects = Matiere.objects.filter(creator=request.user)
-    
-    # Fetch all chapters from the database (to allow creating sequences anywhere)
-    all_chapters = Chapter.objects.all().order_by('matiere__name', 'name')
-    
-    # Fetch sequences created by this specific designer
-    sequences = Sequence.objects.filter(creator=request.user).order_by('chapter__name', 'name')
+    user_sequences = Sequence.objects.filter(creator=request.user).order_by('-created_at')
     
     if request.method == 'POST':
         form = SequenceForm(request.POST)
-        form.fields['chapter'].queryset = all_chapters
+        form.fields['chapter'].queryset = Chapter.objects.all()
         
         if form.is_valid():
             sequence = form.save(commit=False)
-            sequence.creator = request.user # Assign the current user as the creator
+            sequence.creator = request.user
             sequence.save()
             messages.success(request, "La séquence a été créée avec succès.")
             return redirect('designer_dashboard')
     else:
         form = SequenceForm()
-        form.fields['chapter'].queryset = all_chapters
+        form.fields['chapter'].queryset = Chapter.objects.all()
     
     context = {
-        'subjects': subjects,
-        'chapters': all_chapters,
-        'sequences': sequences,
-        'form': form
+        'drafts': user_sequences.filter(status='DRAFT'),
+        'intent_pending': user_sequences.filter(status='PENDING'),
+        'in_progress': user_sequences.filter(status='VALIDATED'),
+        'content_pending': user_sequences.filter(status='CONTENT_PENDING'),
+        'content_validated': user_sequences.filter(status='CONTENT_VALIDATED'),
+        'published': user_sequences.filter(status='PUBLISHED'),
+        'form': form,
     }
     
     return render(request, 'authoring/designer_home.html', context)
@@ -101,11 +95,11 @@ def manage_sequence(request, sequence_id):
                 session.order = (last_session.order + 1) if last_session else 1
                 session.save()
                 
-                # Change sequence status back to PENDING to notify the referee
-                sequence.status = 'PENDING'
+                # Flag the sequence as having changes that need review, without blocking the designer
+                sequence.has_unreviewed_changes = True
                 sequence.save()
                 
-                messages.warning(request, "La séance a été ajoutée. La séquence a été renvoyée au référent pour valider cette nouvelle structure.")
+                messages.warning(request, "La séance a été ajoutée. Le référent sera notifié de cette modification lors de sa prochaine lecture.")
                 return redirect('manage_sequence', sequence_id=sequence.id)
     
     context = {
@@ -150,6 +144,31 @@ def manage_session(request, session_id):
 
 @login_required
 @is_designer
+def edit_session(request, session_id):
+    """
+    Display and handle the editing of an existing session.
+    """
+    session = get_object_or_404(Session, id=session_id, sequence__creator=request.user)
+    
+    if request.method == 'POST':
+        form = SessionForm(request.POST, instance=session)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "La séance a été modifiée avec succès.")
+            return redirect('manage_sequence', sequence_id=session.sequence.id)
+    else:
+        form = SessionForm(instance=session)
+        
+    context = {
+        'session': session,
+        'form': form,
+    }
+    
+    return render(request, 'authoring/edit_session.html', context)
+
+
+@login_required
+@is_designer
 def delete_session(request, session_id):
     """
     Allows the designer to delete a session (and its activities).
@@ -169,47 +188,76 @@ def delete_session(request, session_id):
 
 @login_required
 @is_designer
-def manage_quiz_questions(request, activity_id):
+def edit_activity(request, activity_id):
     """
-    Display and handle the questions and choices for a specific quiz activity.
+    Display and handle the editing of an existing activity.
     """
     activity = get_object_or_404(Activity, id=activity_id, sessions__sequence__creator=request.user)
     
-    # Security check: Only for QUIZ activities
+    if request.method == 'POST':
+        form = ActivityForm(request.POST, request.FILES, instance=activity)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "L'activité a été modifiée avec succès.")
+            return redirect('manage_session', session_id=activity.sessions.first().id)
+    else:
+        form = ActivityForm(instance=activity)
+        
+    context = {
+        'activity': activity,
+        'form': form,
+    }
+    
+    return render(request, 'authoring/edit_activity.html', context)
+
+
+@login_required
+@is_designer
+def manage_quiz_questions(request, activity_id):
+    """
+    Display the questions of a quiz and handle adding a new one.
+    """
+    activity = get_object_or_404(Activity, id=activity_id, sessions__sequence__creator=request.user)
+    
     if activity.activity_type != 'QUIZ':
         messages.error(request, "Cette activité n'est pas un quiz.")
         return redirect('manage_session', session_id=activity.sessions.first().id)
     
-    # Create a formset for questions
-    QuestionFormSet = inlineformset_factory(
-        Activity,
-        Question,
-        form=QuestionForm,
-        extra=1,
-        can_delete=True
-    )
+    # Calculate the next order number
+    last_question = activity.questions.order_by('-order').first()
+    next_order = (last_question.order + 1) if last_question else 1
     
     if request.method == 'POST':
-        question_formset = QuestionFormSet(request.POST, instance=activity)
-        
-        # Hack to ignore completely empty forms (extra forms) in the formset
-        for form in question_formset.forms:
-            if not form.has_changed() and not form.instance.pk:
-                form.empty_permitted = True
-        
-        if question_formset.is_valid():
-            question_formset.save()
-            messages.success(request, "Les questions ont été mises à jour avec succès.")
+        form = QuestionForm(request.POST)
+        if form.is_valid():
+            # 1. Save the question
+            question = form.save(commit=False)
+            question.activity = activity
+            question.save()
+            
+            # 2. Save the choices
+            correct_choice = request.POST.get('correct_choice')
+            
+            for i in range(1, 5): # Loop from 1 to 4
+                choice_text = request.POST.get(f'choice_{i}', '').strip()
+                if choice_text: # Only save if the text is not empty
+                    is_correct = (str(i) == correct_choice)
+                    Choice.objects.create(
+                        question=question,
+                        text=choice_text,
+                        is_correct=is_correct
+                    )
+            
+            messages.success(request, "La question et ses choix ont été ajoutés avec succès.")
             return redirect('manage_quiz_questions', activity_id=activity.id)
-        else:
-            # Print errors to the terminal for debugging
-            print(question_formset.errors)
     else:
-        question_formset = QuestionFormSet(instance=activity)
+        # Pre-fill the order field with the next number
+        form = QuestionForm(initial={'order': next_order})
         
     context = {
         'activity': activity,
-        'question_formset': question_formset,
+        'questions': activity.questions.all(),
+        'form': form,
     }
     
     return render(request, 'authoring/manage_quiz_questions.html', context)

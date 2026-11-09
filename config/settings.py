@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'review',  
     'classroom',
     'learning',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -140,6 +141,6 @@ MAILERS = {
 AUTH_USER_MODEL = 'accounts.User'
 
 # Authentication settings
-LOGIN_REDIRECT_URL = 'dashboard_redirect'
+LOGIN_REDIRECT_URL = 'dashboard_home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'

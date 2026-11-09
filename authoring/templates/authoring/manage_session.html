@@ -4,93 +4,102 @@
 {% block title %}{{ session.name }} - Espace Concepteur{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-12">
-        
-        <!-- Bouton retour -->
-        <div class="mb-4 mt-2">
-            <a href="{% url 'manage_sequence' session.sequence.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                &larr; Retour aux séances
-            </a>
-        </div>
-
-        <!-- Affichage des messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="mb-1">{{ session.name }}</h2>
-                <p class="text-muted mb-0">{{ session.sequence.name }} ({{ session.sequence.chapter.name }})</p>
+    <div class="row justify-content-center mt-2">
+        <div class="col-12 col-lg-10">
+            
+            <!-- Bouton retour -->
+            <div class="mb-4 mt-2">
+                <a href="{% url 'manage_sequence' session.sequence.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour aux séances
+                </a>
             </div>
-            <!-- Bouton pour ouvrir la modale -->
-            <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addActivityModal">+ Nouvelle activité</button>
-        </div>
 
-        <h4 class="mb-3">Activités</h4>
-
-        <div class="d-grid gap-2">
-            {% for activity in activities %}
-                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ session.sequence.chapter.matiere.color_hex }} !important;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="fw-bold text-dark">{{ activity.title }}</div>
-                            <div class="text-muted small">{{ activity.get_activity_type_display }}</div>
-                        </div>
-                        {% if activity.activity_type == 'QUIZ' %}
-                            <div class="mt-2">
-                                <a href="{% url 'manage_quiz_questions' activity.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Gérer les questions</a>
-                            </div>
-                        {% endif %}
-                        <span class="badge {% if activity.status == 'DRAFT' %}bg-secondary{% elif activity.status == 'PENDING' %}bg-warning text-dark{% elif activity.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill">
-                            {{ activity.get_status_display }}
-                        </span>
+            <!-- Affichage des messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                </div>
-            {% empty %}
-                <div class="alert alert-info">
-                    Aucune activité n'est disponible dans cette séance.
-                </div>
-            {% endfor %}
-        </div>
-        
-    </div>
-</div>
+                {% endfor %}
+            {% endif %}
 
-<!-- Fenêtre Modale pour ajouter une activité -->
-<div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="border-radius: 16px;">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="addActivityModalLabel">Nouvelle activité</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">{{ session.name }}</h2>
+                    <p class="text-muted mb-0">{{ session.sequence.name }} ({{ session.sequence.chapter.name }})</p>
+                </div>
+                <!-- Bouton pour ouvrir la modale -->
+                <button class="btn btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addActivityModal">+ Nouvelle activité</button>
             </div>
-            <!-- ATTENTION: enctype is required for file uploads -->
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-body">
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="text-danger small">{{ field.errors.0 }}</div>
-                            {% endif %}
+
+            <h4 class="mb-3">Activités</h4>
+
+            <div class="d-grid gap-2">
+                {% for activity in activities %}
+                    <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ session.sequence.chapter.matiere.color_hex }} !important;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            
+                            <!-- Partie gauche : Titre et Type -->
+                            <div>
+                                <div class="fw-bold text-dark">{{ activity.title }}</div>
+                                <div class="text-muted small">{{ activity.get_activity_type_display }}</div>
+                            </div>
+                            
+                            <!-- Partie droite : Boutons + Statut -->
+                            <div class="d-flex align-items-center gap-2">
+                                {% if activity.activity_type == 'QUIZ' %}
+                                    <a href="{% url 'manage_quiz_questions' activity.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Gérer les questions</a>
+                                {% endif %}
+                                
+                                <!-- Bouton Modifier -->
+                                <a href="{% url 'edit_activity' activity.id %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Modifier</a>
+                                
+                                <span class="badge {% if activity.status == 'DRAFT' %}bg-secondary{% elif activity.status == 'PENDING' %}bg-warning text-dark{% elif activity.status == 'VALIDATED' %}bg-success{% else %}bg-info{% endif %} rounded-pill ms-2">
+                                    {{ activity.get_status_display }}
+                                </span>
+                            </div>
+                            
                         </div>
-                    {% endfor %}
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Créer</button>
-                </div>
-            </form>
+                    </div>
+                {% empty %}
+                    <div class="alert alert-info">
+                        Aucune activité n'est disponible dans cette séance.
+                    </div>
+                {% endfor %}
+            </div>
+            
         </div>
     </div>
-</div>
+
+    <!-- Fenêtre Modale pour ajouter une activité -->
+    <div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 16px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="addActivityModalLabel">Nouvelle activité</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- ATTENTION: enctype is required for file uploads -->
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}

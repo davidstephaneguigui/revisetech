@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block container_class %}container-fluid px-4{% endblock %}
+
+{% block title %}Modifier : {{ activity.title }} - Revisetech{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center mt-2">
+        <div class="col-12 col-lg-10">
+            
+            <!-- Bouton retour -->
+            <div class="mb-4 mt-2">
+                <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    &larr; Retour à la séance
+                </a>
+            </div>
+
+            <h2 class="mb-4">Modifier l'activité</h2>
+
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-body p-4">
+                    <!-- Attention: enctype is required for file uploads -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-bold">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a href="{% url 'manage_session' activity.sessions.first.id %}" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Enregistrer les modifications</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+{% endblock %}

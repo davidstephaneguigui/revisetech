@@ -71,19 +71,29 @@ def referee_dashboard(request):
     """
     # 1. Intentions waiting for validation
     pending_sequences = Sequence.objects.filter(status='PENDING').order_by('chapter__matiere__name', 'name')
-    
-    # 2. Sequences waiting for content validation
-    content_pending_sequences = Sequence.objects.filter(status='CONTENT_PENDING').order_by('chapter__matiere__name', 'name')
-    
-    # 3. Sequences validated (currently filling content)
+      
+    # 2. Sequences validated (currently filling content)
     validated_sequences = Sequence.objects.filter(status='VALIDATED').order_by('-id')
-    
+
+    # 3. Sequences waiting for content validation
+    content_pending_sequences = Sequence.objects.filter(status='CONTENT_PENDING').order_by('chapter__matiere__name', 'name')
+
     # 4. Content validated (waiting for publication)
     content_validated_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('-id')
 
     # 5. Content which need a second validation
     second_review_sequences = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).order_by('-id')
 
+    # 6. Sequences published
+    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+
+    # Prepare sessions with is_new flag for the template
+    for seq in validated_sequences:
+        planned_orders = set(seq.planned_sessions.values_list('order', flat=True))
+        sessions_with_flags = list(seq.sessions.all())
+        for sess in sessions_with_flags:
+            sess.is_new = sess.order not in planned_orders
+        seq.sessions_with_flags = sessions_with_flags
     
     context = {
         'pending_sequences': pending_sequences,
@@ -91,6 +101,7 @@ def referee_dashboard(request):
         'validated_sequences': validated_sequences,
         'content_validated_sequences': content_validated_sequences,
         'second_review_sequences': second_review_sequences,
+        'published_sequences': published_sequences,
     }
     
     return render(request, 'review/referee_home.html', context)
@@ -100,13 +111,22 @@ def referee_dashboard(request):
 @is_inspector
 def inspector_dashboard(request):
     """
-    Display the dashboard for inspectors, showing sequences ready to be published.
+    Display the dashboard for inspectors.
+    Shows sequences in preparation, ready to be published, and already published.
     """
-    # Fetch sequences that are validated by the referee and ready for publication
+    # Sequences in preparation (intention validated, content being filled)
+    sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+    
+    # Sequences ready for publication
     sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
     
+    # Published sequences
+    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+    
     context = {
-        'sequences_to_publish': sequences_to_publish
+        'sequences_in_preparation': sequences_in_preparation,
+        'sequences_to_publish': sequences_to_publish,
+        'published_sequences': published_sequences,
     }
     
     return render(request, 'review/inspector_home.html', context)

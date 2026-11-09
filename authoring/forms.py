@@ -60,12 +60,10 @@ class PlannedSessionForm(forms.ModelForm):
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
-        fields = ['name']
+        fields = ['name', 'objective']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Binaire vs décimal'}),
-        }
-        labels = {
-            'name': 'Nom de la séance',
+            'objective': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Objectif pédagogique de la séance...'}),
         }
 
 

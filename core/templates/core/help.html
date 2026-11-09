@@ -1,0 +1,47 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Aide et Documentation - Revisetech{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-2">
+    <div class="col-12 col-lg-10">
+        
+        <h3 class="mb-4 fw-bold text-muted">Centre d'aide</h3>
+
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold" style="color: #6a1b9a;">Qu'est-ce que Revisetech ?</h4>
+                <p class="text-muted mt-3">
+                    Revisetech est un LMS (Learning Management System) conçu spécifiquement pour la filière STI2D. Il permet aux enseignants de proposer des séquences de révision interactives aux élèves, tout en garantissant la qualité pédagogique grâce à un système de validation par les pairs.
+                </p>
+                
+                <hr class="my-4">
+                
+                <h5 class="fw-bold">Les différents rôles :</h5>
+                <ul class="list-group list-group-flush mt-3">
+                    <li class="list-group-item px-0">
+                        <strong>🎒 Élève :</strong> Consulte ses cours, réalise des quiz et suit sa progression.
+                    </li>
+                    <li class="list-group-item px-0">
+                        <strong>🏫 Enseignant :</strong> Gère ses classes, y affecte des séquences publiées et suit les résultats de ses élèves.
+                    </li>
+                    <li class="list-group-item px-0">
+                        <strong>🛠️ Concepteur :</strong> Crée le contenu pédagogique (séquences, activités, questions).
+                    </li>
+                    <li class="list-group-item px-0">
+                        <strong>📝 Référent :</strong> Valide la qualité pédagogique des contenus proposés par les concepteurs.
+                    </li>
+                    <li class="list-group-item px-0">
+                        <strong>🔍 Inspecteur :</strong> Supervise les séquences validées et les publie officiellement pour les enseignants.
+                    </li>
+                </ul>
+
+                <div class="alert alert-info mt-4 mb-0">
+                    <strong>Besoin d'aide supplémentaire ?</strong> Contactez votre administrateur ou votre référent numérique.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

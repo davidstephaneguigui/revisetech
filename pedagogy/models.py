@@ -4,11 +4,11 @@ from django.conf import settings
 
 STATUS_CHOICES = [
     ('DRAFT', 'Brouillon'),
-    ('PENDING', 'Intention en attente de validation'),
-    ('VALIDATED', 'Intention validée (en cours de remplissage)'),
-    ('CONTENT_PENDING', 'Contenu en attente de validation'),
+    ('PENDING', 'Intention en attente'),
+    ('VALIDATED', 'Intention validée'),
+    ('CONTENT_PENDING', 'Contenu à valider'),
     ('CONTENT_VALIDATED', 'Contenu validé'),
-    ('PENDING_INSPECTION', "En attente d'inspection"),
+    ('PENDING_INSPECTION', "Contenu à publier"),
     ('PUBLISHED', 'Publié'),
     ('UNPUBLISHED', 'Dépublié'),
     ('ARCHIVED', 'Archivé'),
@@ -67,6 +67,7 @@ class Sequence(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_sequences", verbose_name="Concepteur", null=True, blank=True)
     referee_comment = models.TextField(blank=True, null=True, verbose_name="Commentaire du référent")
     needs_second_review = models.BooleanField(default=False, verbose_name="Nécessite une seconde validation")
+    has_unreviewed_changes = models.BooleanField(default=False, verbose_name="Modifications non validées")
 
     class Meta:
         verbose_name = "Séquence"

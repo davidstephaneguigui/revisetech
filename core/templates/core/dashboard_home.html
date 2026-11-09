@@ -1,0 +1,93 @@
+{% extends 'base_dashboard.html' %}
+
+{% block title %}Accueil - Revisetech{% endblock %}
+
+{% block top_menu %}
+    <!-- Le menu vide pour l'instant sur cette page d'accueil, 
+         on pourrait y mettre des liens génériques -->
+{% endblock %}
+
+{% block content %}
+    <div class="p-4 p-md-5 mb-5 bg-white rounded-3 shadow-sm border-0 mt-2 text-center">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold mb-3" style="color: #6a1b9a;">Bienvenue {{ user.username }}</h1>
+            <p class="col-md-10 mx-auto fs-5 text-muted">
+                Vous êtes connecté(e) à votre espace de gestion pédagogique. Retrouvez ici vos outils pour préparer, valider ou organiser vos cours.
+            </p>
+            <div class="mt-4">
+                <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill">Espace {{ role }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center g-4">
+        
+        {% if role == 'Administrateur' %}
+            <div class="col-md-6 col-lg-4">
+                <a href="/admin/" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">⚙️</div>
+                        <h5 class="fw-bold text-dark">Administration Django</h5>
+                        <p class="text-muted small mb-0">Gérer les utilisateurs, les rôles et la maintenance.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elif role == 'Inspecteur' %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'inspector_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">🔍</div>
+                        <h5 class="fw-bold text-dark">Inspection</h5>
+                        <p class="text-muted small mb-0">Superviser les séquences et publier les contenus validés.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elif role == 'Référent' %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">📝</div>
+                        <h5 class="fw-bold text-dark">Validations</h5>
+                        <p class="text-muted small mb-0">Examiner les intentions et les contenus proposés.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elif role == 'Concepteur' %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">🛠️</div>
+                        <h5 class="fw-bold text-dark">Mes Séquences</h5>
+                        <p class="text-muted small mb-0">Gérer mes brouillons, intentions et contenus validés.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% elif role == 'Enseignant' %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">🏫</div>
+                        <h5 class="fw-bold text-dark">Mes Classes</h5>
+                        <p class="text-muted small mb-0">Gérer mes classes et suivre les résultats de mes élèves.</p>
+                    </div>
+                </a>
+            </div>
+
+        {% else %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'student_home' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-3">🎒</div>
+                        <h5 class="fw-bold text-dark">Mes Matières</h5>
+                        <p class="text-muted small mb-0">Accéder à mes cours et faire mes quiz.</p>
+                    </div>
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+{% endblock %}

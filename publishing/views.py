@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from pedagogy.models import Sequence
-from accounts.decorators import is_supervisor
+from accounts.decorators import is_supervisor 
 
 
 @login_required
@@ -13,18 +13,26 @@ def supervisor_dashboard(request):
     Display the dashboard for supervisors.
     """
     # Sequences in preparation (intention validated, content being filled)
-    sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('chapter__matiere__name', 'name')
-    
+    sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('-id')
+    #sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('chapter__matiere__name', 'name')
+   
     # Sequences ready for publication
-    sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+    sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=False).order_by('-id')
+    #sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
     
     # Published sequences
-    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('-id')
+    #published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
     
+    # Need Second review sequences
+    second_reviews = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).order_by('-id')
+
     context = {
         'sequences_in_preparation': sequences_in_preparation,
         'sequences_to_publish': sequences_to_publish,
         'published_sequences': published_sequences,
+        'second_reviews': second_reviews,
+        'open_section': request.GET.get('section', ''),
     }
     
     return render(request, 'publishing/supervisor_home.html', context)

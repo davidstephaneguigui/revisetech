@@ -1,276 +1,310 @@
-{% extends 'base.html' %}
+{% extends 'base_dashboard.html' %}
 {% load static %}
-{% block container_class %}container-fluid px-4{% endblock %}
 
 {% block title %}Espace Superviseur - Revisetech{% endblock %}
 
 {% block content %}
-    <div class="row justify-content-center mt-2">
-        <div class="col-12 col-lg-10">
-            
-            <h3 class="mb-4 fw-bold text-muted">Espace Superviseur</h3>
+      
+    <h3 class="mb-4 fw-bold text-muted">Espace Superviseur</h3>
 
-            <!-- SECTION 1: Sequences in preparation -->
-            <div class="card mb-4 border-0 {% if sequences_in_preparation %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseInPreparation" aria-expanded="false" style="cursor: pointer;">
-                    <h4 class="mb-3 d-flex justify-content-between align-items-center">
-                        <span>Séquences en cours de rédaction</span>
-                        {% if sequences_in_preparation %}
-                            <span class="badge bg-info rounded-pill fs-6">{{ sequences_in_preparation|length }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                        {% endif %}
-                    </h4>
-                </div>
-                <div id="collapseInPreparation" class="collapse">
-                    <div class="card-body">
-                        <div class="d-grid gap-3">
-                            {% for sequence in sequences_in_preparation %}
-                                <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
-                                            <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
-                                            <div class="mt-2 text-dark small"><strong>Objectif :</strong> {{ sequence.objectives|truncatechars:150 }}</div>
-                                        </div>
-                                    </div>
+    <!-- SECTION 1: Sequences in preparation -->
+    <div class="card mb-4 border-0 {% if sequences_in_preparation %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseInPreparation').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
+                <span>Séquences en cours de rédaction</span>
+                {% if sequences_in_preparation %}
+                    <span class="badge bg-warning text-dark rounded-pill fs-6">{{ sequences_in_preparation|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div id="collapseInPreparation" class="collapse {% if open_section == 'in_preparation' %}show{% endif %}">
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    {% for sequence in sequences_in_preparation %}
+                        <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
+                                    <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
+                                    <div class="mt-2 text-dark small"><strong>Objectif :</strong> {{ sequence.objectives|truncatechars:150 }}</div>
                                 </div>
-                            {% empty %}
-                                <div class="alert alert-info mb-0">
-                                    Aucune séquence en cours de rédaction.
-                                </div>
-                            {% endfor %}
+                            </div>
                         </div>
-                    </div>
+                    {% empty %}
+                        <div class="alert alert-info mb-0">
+                            Aucune séquence en cours de rédaction.
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
-
-            <!-- SECTION 2: Sequences ready to publish -->
-            <div class="card mb-4 border-0 {% if sequences_to_publish %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseToPublish" aria-expanded="false" style="cursor: pointer;">
-                    <h4 class="mb-3 d-flex justify-content-between align-items-center">
-                        <span>Séquences à publier</span>
-                        {% if sequences_to_publish %}
-                            <span class="badge bg-danger rounded-pill fs-6">{{ sequences_to_publish|length }}</span>
-                        {% else %}
-                            <span class="badge bg-success rounded-pill fs-6">0</span>
-                        {% endif %}
-                    </h4>
-                </div>
-                <div id="collapseToPublish" class="collapse">
-                    <div class="card-body">
-                        <div class="accordion" id="accordionPublishing">
-                            {% for sequence in sequences_to_publish %}
-                                <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-                                    <h2 class="accordion-header" id="headingInspect{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInspect{{ sequence.id }}" aria-expanded="false" aria-controls="collapseInspect{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    </h2>
-                                    <div id="collapseInspect{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingInspect{{ sequence.id }}" data-bs-parent="#accordionPublishing">
-                                        <div class="accordion-body">
-                                            
-                                            <div class="mb-4">
-                                                <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
-                                                <p class="mb-0">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
-                                            </div>
-
-                                            {% if sequence.referee_comment %}
-                                            <div class="alert alert-success mb-4">
-                                                <strong>Avis du Référent :</strong><br>
-                                                {{ sequence.referee_comment|linebreaksbr }}
-                                            </div>
-                                            {% endif %}
-
-                                            <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
-                                            <div class="accordion mb-4" id="accordionSessions{{ sequence.id }}">
-                                                {% for session in sequence.sessions.all %}
-                                                    <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
-                                                        <h2 class="accordion-header" id="headingSession{{ session.id }}">
-                                                            <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSession{{ session.id }}" aria-expanded="false" aria-controls="collapseSession{{ session.id }}">
-                                                                <strong>Séance {{ session.order }} : {{ session.name }}</strong> <span class="badge bg-secondary ms-2">{{ session.get_session_type_display }}</span>
-                                                            </button>
-                                                        </h2>
-                                                        <div id="collapseSession{{ session.id }}" class="accordion-collapse collapse" aria-labelledby="headingSession{{ session.id }}" data-bs-parent="#accordionSessions{{ sequence.id }}">
-                                                            <div class="accordion-body">
-                                                                <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
-                                                                
-                                                                {% for activity in session.activities.all %}
-                                                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
-                                                                        <div class="card-body py-2 px-3">
-                                                                            <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
-                                                                            {% if activity.content %}
-                                                                                <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
-                                                                                    {{ activity.content|linebreaksbr|truncatechars:200 }}
-                                                                                </div>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </div>
-                                                                {% empty %}
-                                                                    <div class="text-muted small">Aucune activité dans cette séance.</div>
-                                                                {% endfor %}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {% empty %}
-                                                    <div class="text-muted small">Aucune séance générée.</div>
-                                                {% endfor %}
-                                            </div>
-
-                                            <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-                                                <form method="post" action="{% url 'request_second_review' sequence.id %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment demander une seconde validation à un autre référent ?');">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-outline-warning rounded-pill px-4">Demander un avis</button>
-                                                </form>
-                                                
-                                                <form method="post" action="{% url 'publish_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir publier cette séquence ?');">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-success rounded-pill px-4">Publier la séquence</button>
-                                                </form>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            {% empty %}
-                                <div class="alert alert-success mb-0">
-                                    Aucune séquence en attente de publication pour le moment.
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 3: Published sequences -->
-            <div class="card mb-4 border-0 {% if published_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapsePublished" aria-expanded="false" style="cursor: pointer;">
-                    <h4 class="mb-3 d-flex justify-content-between align-items-center">
-                        <span>Séquences publiées</span>
-                        {% if published_sequences %}
-                            <span class="badge bg-success rounded-pill fs-6">{{ published_sequences|length }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                        {% endif %}
-                    </h4>
-                </div>
-                <div id="collapsePublished" class="collapse">
-                    <div class="card-body">
-                        <div class="accordion" id="accordionPublished">
-                            {% for sequence in published_sequences %}
-                                <!-- 1. L'ACCORDÉON DE LA SÉQUENCE -->
-                                <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-                                    <h2 class="accordion-header" id="headingPub{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
-                                                </div>
-                                                <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModal{{ sequence.id }}">
-                                                    <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
-                                                </span>
-                                            </div>
-                                        </button>
-                                    </h2>
-                                    <div id="collapsePub{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingPub{{ sequence.id }}" data-bs-parent="#accordionPublished">
-                                        <div class="accordion-body">
-                                            
-                                            <div class="mb-3">
-                                                <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
-                                                <p class="mb-2">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
-                                            </div>
-
-                                            <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
-                                            <div class="accordion mb-4" id="accordionSessionsPub{{ sequence.id }}">
-                                                {% for session in sequence.sessions.all %}
-                                                    <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
-                                                        <h2 class="accordion-header" id="headingSessionPub{{ session.id }}">
-                                                            <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionPub{{ session.id }}" aria-expanded="false" aria-controls="collapseSessionPub{{ session.id }}">
-                                                                <strong>Séance {{ session.order }} : {{ session.name }}</strong> <span class="badge bg-secondary ms-2">{{ session.get_session_type_display }}</span>
-                                                            </button>
-                                                        </h2>
-                                                        <div id="collapseSessionPub{{ session.id }}" class="accordion-collapse collapse" aria-labelledby="headingSessionPub{{ session.id }}" data-bs-parent="#accordionSessionsPub{{ sequence.id }}">
-                                                            <div class="accordion-body">
-                                                                <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
-                                                                
-                                                                {% for activity in session.activities.all %}
-                                                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
-                                                                        <div class="card-body py-2 px-3">
-                                                                            <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
-                                                                            {% if activity.content %}
-                                                                                <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
-                                                                                    {{ activity.content|linebreaksbr|truncatechars:200 }}
-                                                                                </div>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </div>
-                                                                {% empty %}
-                                                                    <div class="text-muted small">Aucune activité dans cette séance.</div>
-                                                                {% endfor %}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                {% empty %}
-                                                    <div class="text-muted small">Aucune séance générée.</div>
-                                                {% endfor %}
-                                            </div>
-
-                                            <!-- LE BOUTON DE DÉPUBLICATION EST ICI, À L'INTÉRIEUR DU BODY -->
-                                            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
-                                                <form method="post" action="{% url 'unpublish_sequence' sequence.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir dépublier cette séquence ? Les élèves n\'y auront plus accès.');">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
-                                                        <i class="bi bi-eye-slash"></i> Dépublier la séquence
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            
-                                        </div> <!-- Fin accordion-body -->
-                                    </div> <!-- Fin accordion-collapse -->
-                                </div> <!-- Fin accordion-item -->
-
-                                <!-- 2. LE MODAL (En dehors de l'accordéon, mais dans la boucle for) -->
-                                <div class="modal fade" id="classesModal{{ sequence.id }}" tabindex="-1" aria-labelledby="classesModalLabel{{ sequence.id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content" style="border-radius: 16px;">
-                                            <div class="modal-header border-0">
-                                                <h5 class="modal-title fw-bold" id="classesModalLabel{{ sequence.id }}">Classes utilisant cette séquence</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <ul class="list-group list-group-flush">
-                                                    {% for classe in sequence.classes.all %}
-                                                        <li class="list-group-item px-0">
-                                                            <strong>{{ classe.name }}</strong> <span class="text-muted small">({{ classe.level }} - {{ classe.specialty }})</span>
-                                                        </li>
-                                                    {% empty %}
-                                                        <li class="list-group-item px-0 text-muted">Aucune classe n'utilise cette séquence.</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                            <div class="modal-footer border-0">
-                                                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            {% empty %}
-                                <div class="alert alert-info mb-0">
-                                    Aucune séquence publiée pour le moment.
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
         </div>
     </div>
+
+    <!-- SECTION 2: Sequences ready to publish -->
+    <div class="card mb-4 border-0 {% if sequences_to_publish %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseToPublish').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
+                <span>Séquences à publier</span>
+                {% if sequences_to_publish %}
+                    <span class="badge bg-danger rounded-pill fs-6">{{ sequences_to_publish|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div id="collapseToPublish" class="collapse {% if open_section == 'to_publish' %}show{% endif %}">
+            <div class="card-body">
+                <div class="accordion" id="accordionPublishing">
+                    {% for sequence in sequences_to_publish %}
+                        <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <h2 class="accordion-header" id="headingInspect{{ sequence.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInspect{{ sequence.id }}" aria-expanded="false" aria-controls="collapseInspect{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
+                                    <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                                        <div>
+                                            <strong class="fs-5">{{ sequence.name }}</strong><br>
+                                            <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseInspect{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingInspect{{ sequence.id }}" data-bs-parent="#accordionPublishing">
+                                <div class="accordion-body">
+                                    
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
+                                        <p class="mb-0">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                                    </div>
+
+                                    {% if sequence.referee_comment %}
+                                    <div class="alert alert-success mb-4">
+                                        <strong>Avis du Référent :</strong><br>
+                                        {{ sequence.referee_comment|linebreaksbr }}
+                                    </div>
+                                    {% endif %}
+
+                                    <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
+                                    <div class="accordion mb-4" id="accordionSessions{{ sequence.id }}">
+                                        {% for session in sequence.sessions.all %}
+                                            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
+                                                <h2 class="accordion-header" id="headingSession{{ session.id }}">
+                                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSession{{ session.id }}" aria-expanded="false" aria-controls="collapseSession{{ session.id }}">
+                                                        <strong>Séance {{ session.order }} : {{ session.name }}</strong> <span class="badge bg-secondary ms-2">{{ session.get_session_type_display }}</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseSession{{ session.id }}" class="accordion-collapse collapse" aria-labelledby="headingSession{{ session.id }}" data-bs-parent="#accordionSessions{{ sequence.id }}">
+                                                    <div class="accordion-body">
+                                                        <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
+                                                        
+                                                        {% for activity in session.activities.all %}
+                                                            <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                                                <div class="card-body py-2 px-3">
+                                                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                    {% if activity.content %}
+                                                                        <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
+                                                                            {{ activity.content|linebreaksbr|truncatechars:200 }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% empty %}
+                                                            <div class="text-muted small">Aucune activité dans cette séance.</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <div class="text-muted small">Aucune séance générée.</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                                        <form method="post" action="{% url 'request_second_review' sequence.id %}" class="d-inline" onsubmit="return confirm('Voulez-vous vraiment demander une seconde validation à un autre référent ?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-warning rounded-pill px-4">Demander un avis</button>
+                                        </form>
+                                        
+                                        <form method="post" action="{% url 'publish_sequence' sequence.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir publier cette séquence ?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success rounded-pill px-4">Publier la séquence</button>
+                                        </form>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-success mb-0">
+                            Aucune séquence en attente de publication pour le moment.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: Second Reviews Requested -->
+    <div class="card mb-4 border-0 {% if second_reviews %}shadow bg-white border-start border-5 border-warning{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseSecondReviews').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
+                <span>Demandes de deuxième avis</span>
+                {% if second_reviews %}
+                    <span class="badge bg-danger rounded-pill fs-6">{{ second_reviews|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div id="collapseSecondReviews" class="collapse {% if open_section == 'second_reviews' %}show{% endif %}">
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    {% for sequence in second_reviews %}
+                        <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
+                                    <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-warning text-dark rounded-pill">
+                                        <i class="bi bi-hourglass-split"></i> En attente du 2ème référent
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-info mb-0">
+                            Aucune demande de second avis en cours.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: Published sequences -->
+    <div class="card mb-4 border-0 {% if published_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapsePublished').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
+                <span>Séquences publiées</span>
+                {% if published_sequences %}
+                    <span class="badge bg-success rounded-pill fs-6">{{ published_sequences|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div id="collapsePublished" class="collapse {% if open_section == 'published' %}show{% endif %}">
+            <div class="card-body">
+                <div class="accordion" id="accordionPublished">
+                    {% for sequence in published_sequences %}
+                        <!-- 1. L'ACCORDÉON DE LA SÉQUENCE -->
+                        <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+                            <h2 class="accordion-header" id="headingPub{{ sequence.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
+                                    <div class="d-flex w-100 justify-content-between align-items-center pe-3">
+                                        <div>
+                                            <strong class="fs-5">{{ sequence.name }}</strong><br>
+                                            <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                        </div>
+                                        <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModal{{ sequence.id }}">
+                                            <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
+                                        </span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapsePub{{ sequence.id }}" class="accordion-collapse collapse" aria-labelledby="headingPub{{ sequence.id }}" data-bs-parent="#accordionPublished">
+                                <div class="accordion-body">
+                                    
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
+                                        <p class="mb-2">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                                    </div>
+
+                                    <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
+                                    <div class="accordion mb-4" id="accordionSessionsPub{{ sequence.id }}">
+                                        {% for session in sequence.sessions.all %}
+                                            <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
+                                                <h2 class="accordion-header" id="headingSessionPub{{ session.id }}">
+                                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionPub{{ session.id }}" aria-expanded="false" aria-controls="collapseSessionPub{{ session.id }}">
+                                                        <strong>Séance {{ session.order }} : {{ session.name }}</strong> <span class="badge bg-secondary ms-2">{{ session.get_session_type_display }}</span>
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseSessionPub{{ session.id }}" class="accordion-collapse collapse" aria-labelledby="headingSessionPub{{ session.id }}" data-bs-parent="#accordionSessionsPub{{ sequence.id }}">
+                                                    <div class="accordion-body">
+                                                        <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
+                                                        
+                                                        {% for activity in session.activities.all %}
+                                                            <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                                                <div class="card-body py-2 px-3">
+                                                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                    {% if activity.content %}
+                                                                        <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
+                                                                            {{ activity.content|linebreaksbr|truncatechars:200 }}
+                                                                        </div>
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                        {% empty %}
+                                                            <div class="text-muted small">Aucune activité dans cette séance.</div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <div class="text-muted small">Aucune séance générée.</div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <!-- LE BOUTON DE DÉPUBLICATION EST ICI, À L'INTÉRIEUR DU BODY -->
+                                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                        <form method="post" action="{% url 'unpublish_sequence' sequence.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir dépublier cette séquence ? Les élèves n\'y auront plus accès.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                                <i class="bi bi-eye-slash"></i> Dépublier la séquence
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                </div> <!-- Fin accordion-body -->
+                            </div> <!-- Fin accordion-collapse -->
+                        </div> <!-- Fin accordion-item -->
+
+                        <!-- 2. LE MODAL (En dehors de l'accordéon, mais dans la boucle for) -->
+                        <div class="modal fade" id="classesModal{{ sequence.id }}" tabindex="-1" aria-labelledby="classesModalLabel{{ sequence.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content" style="border-radius: 16px;">
+                                    <div class="modal-header border-0">
+                                        <h5 class="modal-title fw-bold" id="classesModalLabel{{ sequence.id }}">Classes utilisant cette séquence</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group list-group-flush">
+                                            {% for classe in sequence.classes.all %}
+                                                <li class="list-group-item px-0">
+                                                    <strong>{{ classe.name }}</strong> <span class="text-muted small">({{ classe.level }} - {{ classe.specialty }})</span>
+                                                </li>
+                                            {% empty %}
+                                                <li class="list-group-item px-0 text-muted">Aucune classe n'utilise cette séquence.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% empty %}
+                        <div class="alert alert-info mb-0">
+                            Aucune séquence publiée pour le moment.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

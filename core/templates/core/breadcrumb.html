@@ -1,0 +1,13 @@
+{% if steps %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+        {% for step in steps %}
+            {% if step.url %}
+                <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+            {% else %}
+                <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+            {% endif %}
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}

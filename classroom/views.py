@@ -7,6 +7,10 @@ from learning.models import Result
 from .models import Classe, Suggestion
 from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm
 from accounts.decorators import is_teacher
+from django.urls import reverse
+from .utils import get_student_global_score
+from django.http import HttpResponseForbidden
+
 
 @login_required
 @is_teacher
@@ -165,3 +169,109 @@ def suggestion_list(request):
     }
     
     return render(request, 'classroom/suggestion_list.html', context)
+
+
+@login_required
+def teacher_results(request):
+    # Sécurité : On ne récupère que les classes de l'enseignant connecté
+    classes = Classe.objects.filter(main_teacher=request.user).order_by('name')
+    
+    # Préparation du fil d'Ariane
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes Élèves', 'url': None}
+    ]
+    
+    context = {
+        'classes': classes,
+        'breadcrumbs': breadcrumbs
+    }
+    return render(request, 'classroom/teacher_results.html', context)
+
+
+@login_required
+def class_results(request, class_id):
+    # Sécurité : On vérifie que la classe appartient bien à l'enseignant connecté
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    
+    # On récupère les élèves triés par ordre alphabétique
+    students = classe.students.all().order_by('username')
+    
+    # On prépare les données pour le template
+    student_data = []
+    for student in students:
+        score, color = get_student_global_score(student)
+        student_data.append({
+            'student': student,
+            'score': score,
+            'color': color
+        })
+        
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes Élèves', 'url': reverse('teacher_results')},
+        {'label': classe.name, 'url': None}
+    ]
+    
+    context = {
+        'classe': classe,
+        'student_data': student_data,
+        'breadcrumbs': breadcrumbs
+    }
+    return render(request, 'classroom/class_results.html', context)
+
+
+@login_required
+def student_profile(request, student_id):
+    User = get_user_model()
+    student = get_object_or_404(User, id=student_id)
+    
+    # Sécurité : Vérifier que l'élève est bien dans une classe de l'enseignant
+    teacher_classes = Classe.objects.filter(main_teacher=request.user, students=student)
+    if not teacher_classes.exists():
+        return HttpResponseForbidden("Vous n'avez pas accès à cet élève.")
+    
+    classe = teacher_classes.first() # Pour le fil d'Ariane
+
+    # 1. Historique complet des résultats
+    results = Result.objects.filter(student=student).order_by('-id')
+
+    # 2. Répartition par matière
+    subjects_stats = {}
+    for res in results:
+        if not res.activity: continue
+        try:
+            # On remonte la chaîne pour trouver la matière
+            matiere_name = res.activity.sessions.first().sequence.chapter.matiere.name
+            if matiere_name not in subjects_stats:
+                subjects_stats[matiere_name] = {'obtained': 0, 'total': 0}
+            subjects_stats[matiere_name]['obtained'] += res.score
+            subjects_stats[matiere_name]['total'] += res.activity.questions.count()
+        except Exception:
+            pass # Ignore si la chaîne de relation est incomplète
+            
+    subjects_breakdown = []
+    for name, stats in subjects_stats.items():
+        if stats['total'] > 0:
+            avg = (stats['obtained'] / stats['total']) * 20
+            subjects_breakdown.append({'name': name, 'average': round(avg, 1)})
+
+    # 3. Les suggestions
+    suggestions = Suggestion.objects.filter(student=student).order_by('-id')
+    
+    # Fil d'Ariane
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes Élèves', 'url': reverse('teacher_results')},
+        {'label': classe.name, 'url': reverse('class_results', args=[classe.id])},
+        {'label': student.username, 'url': None}
+    ]
+
+    context = {
+        'student': student,
+        'results': results,
+        'subjects_breakdown': subjects_breakdown,
+        'suggestions': suggestions,
+        'breadcrumbs': breadcrumbs
+    }
+    return render(request, 'classroom/student_profile.html', context)

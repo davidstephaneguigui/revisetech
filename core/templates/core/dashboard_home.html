@@ -9,11 +9,10 @@
     </div>
 
     <div class="row justify-content-center g-4">
-
         {% if role == 'Concepteur' %}
             <!-- Concepteur -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=DRAFT" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
                         <h5 class="fw-bold text-dark">Brouillons</h5>
@@ -23,7 +22,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=VALIDATED" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">En cours</h5>
@@ -33,7 +32,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=PENDING" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">⏳</div>
                         <h5 class="fw-bold text-dark">Validées</h5>
@@ -43,7 +42,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=PUBLISHED" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
@@ -56,7 +55,7 @@
         {% elif role == 'Référent' %}
             <!-- Référent -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'referee_dashboard' %}?section=intentions" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
                         <h5 class="fw-bold text-dark">Intentions</h5>
@@ -66,7 +65,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'referee_dashboard' %}?section=contents" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">Contenus</h5>
@@ -76,7 +75,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'referee_dashboard' %}?section=second_review" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">👀</div>
                         <h5 class="fw-bold text-dark">Second avis</h5>
@@ -86,7 +85,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'referee_dashboard' %}?section=published" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
@@ -99,7 +98,7 @@
         {% elif role == 'Superviseur' %}
             <!-- Superviseur -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'supervisor_dashboard' %}?section=in_preparation" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">Projets</h5>
@@ -109,7 +108,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'supervisor_dashboard' %}?section=to_publish" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">À publier</h5>
@@ -119,7 +118,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'supervisor_dashboard' %}?section=second_reviews" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">👀</div>
                         <h5 class="fw-bold text-dark">2ème avis</h5>
@@ -129,7 +128,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'supervisor_dashboard' %}?section=published" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">✅</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
@@ -152,7 +151,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'teacher_results' %}" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🎒</div>
                         <h5 class="fw-bold text-dark">Mes Élèves</h5>
@@ -172,7 +171,7 @@
                 </a>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
+                <a href="{% url 'teacher_results' %}" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📊</div>
                         <h5 class="fw-bold text-dark">Résultats</h5>
@@ -194,6 +193,6 @@
                 </a>
             </div>
         {% endif %}
-
     </div>
+
 {% endblock %}

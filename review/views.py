@@ -86,7 +86,7 @@ def referee_dashboard(request):
     # 6. Sequences published
     published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
 
-    # On instancie le formulaire de dévalidation
+    # Instanciation of unvalidate form
     deval_form = DevalidationForm()
     
     context = {
@@ -97,6 +97,7 @@ def referee_dashboard(request):
         'second_review_sequences': second_review_sequences,
         'published_sequences': published_sequences,
         'deval_form': deval_form,
+        'open_section': request.GET.get('section', ''),
     }
     
     return render(request, 'review/referee_home.html', context)

@@ -29,49 +29,20 @@
 
     <!-- SECTION 1: Drafts -->
     <div class="card mb-4 border-0 {% if drafts %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseDrafts" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseDrafts').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                 <span>Séquences à proposer</span>
-                <span class="badge bg-secondary rounded-pill fs-6">{{ drafts|length }}</span>
-            </h4>
+                {% if drafts %}
+                    <span class="badge bg-warning text-dark rounded-pill fs-6">{{ drafts|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
         </div>
-        <div id="collapseDrafts" class="collapse">
+        <div id="collapseDrafts" class="collapse {% if open_section == 'DRAFT' %}show{% endif %}">
             <div class="card-body">
                 <div class="row">
                     {% for seq in drafts %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-secondary rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 2: Intent Pending -->
-    <div class="card mb-4 border-0 {% if intent_pending %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseIntentPending" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
-                <span>Intentions en attente</span>
-                <span class="badge bg-warning text-dark rounded-pill fs-6">{{ intent_pending|length }}</span>
-            </h4>
-        </div>
-        <div id="collapseIntentPending" class="collapse">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in intent_pending %}
                         <div class="col-12 mb-3">
                             <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
                                 <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
@@ -93,15 +64,56 @@
         </div>
     </div>
 
+    <!-- SECTION 2: Intent Pending -->
+    <div class="card mb-4 border-0 {% if intent_pending %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseIntentPending').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
+                <span>Intentions en attente</span>
+                {% if intent_pending %}
+                    <span class="badge bg-danger rounded-pill fs-6">{{ intent_pending|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div id="collapseIntentPending" class="collapse {% if open_section == 'PENDING' %}show{% endif %}">
+            <div class="card-body">
+                <div class="row">
+                    {% for seq in intent_pending %}
+                        <div class="col-12 mb-3">
+                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
+                                            <span class="badge bg-danger rounded-pill ms-2">{{ seq.get_status_display }}</span>
+                                        </div>
+                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% empty %}
+                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SECTION 3: In Progress -->
     <div class="card mb-4 border-0 {% if in_progress %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseInProgress" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseInProgress').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                 <span>En cours</span>
-                <span class="badge bg-success rounded-pill fs-6">{{ in_progress|length }}</span>
-            </h4>
+                {% if in_progress %}
+                    <span class="badge bg-warning text-dark rounded-pill fs-6">{{ in_progress|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
         </div>
-        <div id="collapseInProgress" class="collapse">
+        <div id="collapseInProgress" class="collapse {% if open_section == 'VALIDATED' %}show{% endif %}">
             <div class="card-body">
                 <div class="row">
                     {% for seq in in_progress %}
@@ -111,7 +123,7 @@
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-success rounded-pill ms-2">{{ seq.get_status_display }}</span>
+                                            <span class="badge bg-warning text-dark rounded-pill ms-2">{{ seq.get_status_display }}</span>
                                         </div>
                                         <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
                                     </div>
@@ -128,13 +140,17 @@
 
     <!-- SECTION 4: Content Pending -->
     <div class="card mb-4 border-0 {% if content_pending %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseContentPending" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseContentPending').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                 <span>En attente de validation</span>
-                <span class="badge bg-danger rounded-pill fs-6">{{ content_pending|length }}</span>
-            </h4>
+                {% if content_pending %}
+                    <span class="badge bg-danger rounded-pill fs-6">{{ content_pending|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
         </div>
-        <div id="collapseContentPending" class="collapse">
+        <div id="collapseContentPending" class="collapse {% if open_section == 'CONTENT_PENDING' %}show{% endif %}">
             <div class="card-body">
                 <div class="row">
                     {% for seq in content_pending %}
@@ -161,13 +177,17 @@
 
     <!-- SECTION 5: Content Validated -->
     <div class="card mb-4 border-0 {% if content_validated %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseContentValidated" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseContentValidated').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                 <span>Séquences validées</span>
-                <span class="badge bg-info rounded-pill fs-6">{{ content_validated|length }}</span>
-            </h4>
+                {% if content_validated %}
+                    <span class="badge bg-success rounded-pill fs-6">{{ content_validated|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
         </div>
-        <div id="collapseContentValidated" class="collapse">
+        <div id="collapseContentValidated" class="collapse {% if open_section == 'CONTENT_VALIDATED' %}show{% endif %}">
             <div class="card-body">
                 <div class="row">
                     {% for seq in content_validated %}
@@ -177,7 +197,7 @@
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-info rounded-pill ms-2">{{ seq.get_status_display }}</span>
+                                            <span class="badge bg-success rounded-pill ms-2">{{ seq.get_status_display }}</span>
                                         </div>
                                         <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
                                     </div>
@@ -194,13 +214,17 @@
 
     <!-- SECTION 6: Published -->
     <div class="card mb-4 border-0 {% if published %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapsePublished" aria-expanded="false" style="cursor: pointer;">
-            <h4 class="mb-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapsePublished').classList.toggle('show');" style="cursor: pointer;">
+            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                 <span>Séquences publiées</span>
-                <span class="badge bg-success rounded-pill fs-6">{{ published|length }}</span>
-            </h4>
+                {% if published %}
+                    <span class="badge bg-success rounded-pill fs-6">{{ published|length }}</span>
+                {% else %}
+                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
+                {% endif %}
+            </h5>
         </div>
-        <div id="collapsePublished" class="collapse">
+        <div id="collapsePublished" class="collapse {% if open_section == 'PUBLISHED' %}show{% endif %}">
             <div class="card-body">
                 <div class="row">
                     {% for seq in published %}

@@ -22,17 +22,17 @@
 
             <!-- SECTION 1: Pending intentions -->
             <div class="card mb-4 border-0 {% if pending_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapsePendingIntent" aria-expanded="false" style="cursor: pointer;">
+                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" onclick="document.getElementById('collapsePendingIntent').classList.toggle('show');" aria-expanded="{% if open_section == 'intentions' %}true{% else %}false{% endif %}" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Intentions en attente</span>
                         {% if pending_sequences %}
                             <span class="badge bg-danger rounded-pill fs-6">{{ pending_sequences|length }}</span>
                         {% else %}
-                            <span class="badge bg-success rounded-pill fs-6">0</span>
+                            <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
                     </h5>
                 </div>
-                <div id="collapsePendingIntent" class="collapse">
+                <div id="collapsePendingIntent" class="collapse {% if open_section == 'intentions' %}show{% endif %}">
                     <div class="card-body">
                         <div class="accordion" id="accordionPendingIntent">
                             {% for sequence in pending_sequences %}
@@ -149,7 +149,7 @@
 
             <!-- SECTION 2: Validated sequences (Intention validated, filling content) -->
             <div class="card mb-4 border-0 {% if validated_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseValidated" aria-expanded="false" style="cursor: pointer;">
+                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" onclick="document.getElementById('collapseValidated').classList.toggle('show');" aria-expanded="false" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Séquences en cours</span>
                         {% if validated_sequences %}
@@ -294,17 +294,17 @@
 
             <!-- SECTION 3: Sequences with pending content -->
             <div class="card mb-4 border-0 {% if content_pending_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseContentPending" aria-expanded="false" style="cursor: pointer;">
+                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" onclick="document.getElementById('collapseContentPending').classList.toggle('show');" aria-expanded="{% if open_section == 'contents' %}true{% else %}false{% endif %}" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Contenus à valider</span>
                         {% if content_pending_sequences %}
                             <span class="badge bg-danger rounded-pill fs-6">{{ content_pending_sequences|length }}</span>
                         {% else %}
-                            <span class="badge bg-success rounded-pill fs-6">0</span>
+                            <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
                     </h5>
                 </div>
-                <div id="collapseContentPending" class="collapse">
+                <div id="collapseContentPending" class="collapse {% if open_section == 'contents' %}show{% endif %}">
                     <div class="card-body">
                         <div class="accordion" id="accordionContentPending">
                             {% for sequence in content_pending_sequences %}
@@ -405,17 +405,17 @@
 
             <!-- SECTION 4: Second Reviews Requested -->
             <div class="card mb-4 border-0 {% if second_review_sequences %}shadow bg-white border-start border-5 border-warning{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseSecondReview" aria-expanded="false" style="cursor: pointer;">
+                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" onclick="document.getElementById('collapseSecondReview').classList.toggle('show');" aria-expanded="{% if open_section == 'second_review' %}true{% else %}false{% endif %}" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Seconde validation</span>
                         {% if second_review_sequences %}
                             <span class="badge bg-danger rounded-pill fs-6">{{ second_review_sequences|length }}</span>
                         {% else %}
-                            <span class="badge bg-success rounded-pill fs-6">0</span>
+                            <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
                     </h5>
                 </div>
-                <div id="collapseSecondReview" class="collapse">
+                <div id="collapseSecondReview" class="collapse {% if open_section == 'second_review' %}show{% endif %}">
                     <div class="card-body">
                         <div class="accordion" id="accordionSecondReview">
                             {% for sequence in second_review_sequences %}
@@ -524,11 +524,11 @@
 
             <!-- SECTION 5: Validated contents (Pending publication) -->
             <div class="card mb-4 border-0 {% if content_validated_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapseContentValidated" aria-expanded="false" style="cursor: pointer;">
+                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" onclick="document.getElementById('collapseContentValidated').classList.toggle('show');" aria-expanded="false" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Contenus validés</span>
                         {% if content_validated_sequences %}
-                            <span class="badge bg-info rounded-pill fs-6">{{ content_validated_sequences|length }}</span>
+                            <span class="badge bg-success rounded-pill fs-6">{{ content_validated_sequences|length }}</span>
                         {% else %}
                             <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
@@ -563,7 +563,7 @@
             
             <!-- SECTION 6: Published sequences -->
             <div class="card mb-4 border-0 {% if published_sequences %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0" data-bs-toggle="collapse" data-bs-target="#collapsePublishedRef" aria-expanded="false" style="cursor: pointer;">
+                <a href="javascript:void(0);" onclick="document.getElementById('collapsePublishedRef').classList.toggle('show');" class="card-header bg-white border-0 pt-3 pb-0 d-block text-decoration-none text-dark" style="cursor: pointer;">
                     <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
                         <span>Séquences déjà publiées</span>
                         {% if published_sequences %}
@@ -572,8 +572,8 @@
                             <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
                     </h5>
-                </div>
-                <div id="collapsePublishedRef" class="collapse">
+                </a>
+                <div id="collapsePublishedRef" class="collapse {% if open_section == 'published' %}show{% endif %}">
                     <div class="card-body">
                         <div class="d-grid gap-3">
                             {% for sequence in published_sequences %}

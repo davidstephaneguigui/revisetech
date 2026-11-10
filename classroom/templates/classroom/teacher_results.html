@@ -1,0 +1,42 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Mes Élèves - Revisetech{% endblock %}
+
+{% block content %}
+    <!-- Inclusion du Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            {% for step in breadcrumbs %}
+                {% if step.url %}
+                    <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Sélectionnez la classe</h3>
+    </div>
+
+    <div class="row g-4">
+        {% for classe in classes %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <a href="{% url 'class_results' classe.id %}" class="text-decoration-none"> 
+                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px; transition: transform 0.2s;">
+                        <div class="fs-1 mb-2">🏫</div>
+                        <h5 class="fw-bold text-dark">{{ classe.name }}</h5>
+                        <p class="text-muted small mb-0">{{ classe.level }} - {{ classe.specialty }}</p>
+                        <span class="badge bg-primary rounded-pill mt-3">{{ classe.students.count }} élève{{ classe.students.count|pluralize }}</span>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">Vous n'avez pas encore de classe.</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

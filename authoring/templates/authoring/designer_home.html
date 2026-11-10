@@ -254,4 +254,37 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modal : Nouvelle séquence -->
+    <div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <form method="post" action="{% url 'create_sequence' %}">
+                    {% csrf_token %}
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="addSequenceModalLabel">Nouvelle séquence</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label fw-bold">Nom de la séquence</label>
+                            <input type="text" name="name" id="id_name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_chapter" class="form-label fw-bold">Chapitre</label>
+                            <select name="chapter" id="id_chapter" class="form-select" required>
+                                {% for chapter in chapters %}
+                                    <option value="{{ chapter.id }}">{{ chapter.name }} ({{ chapter.matiere.name }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}

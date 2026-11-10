@@ -13,4 +13,5 @@ urlpatterns = [
     path('session/<int:session_id>/edit/', views.edit_session, name='edit_session'),
     path('session/<int:session_id>/move/<str:direction>/', views.move_session, name='move_session'),
     path('sequence/<int:sequence_id>/delete/', views.delete_sequence, name='delete_sequence'),
+    path('sequence/create', views.create_sequence, name='create_sequence'),
 ]

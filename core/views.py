@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from pedagogy.models import Sequence
 from classroom.models import Classe, Suggestion
-from django.contrib.auth import get_user_model
+from learning.models import Result
 
 
 @login_required
@@ -12,24 +13,24 @@ def dashboard_home(request):
     """
     user = request.user
     context = {}
-    
+
     if user.groups.filter(name='Administrateur').exists():
         context['role'] = 'Administrateur'
-        
+
     elif user.groups.filter(name='Superviseur').exists():
         context['role'] = 'Superviseur'
         context['in_preparation'] = Sequence.objects.filter(status='VALIDATED').count()
         context['to_publish'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=False).count()
         context['second_reviews'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).count()
         context['published'] = Sequence.objects.filter(status='PUBLISHED').count()
-        
+
     elif user.groups.filter(name='Référent').exists():
         context['role'] = 'Référent'
         context['pending_intentions'] = Sequence.objects.filter(status='PENDING').count()
         context['pending_contents'] = Sequence.objects.filter(status='CONTENT_PENDING').count()
         context['second_reviews'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).count()
         context['published'] = Sequence.objects.filter(status='PUBLISHED').count()
-        
+
     elif user.groups.filter(name='Concepteur').exists():
         context['role'] = 'Concepteur'
         user_sequences = Sequence.objects.filter(creator=user)
@@ -37,14 +38,18 @@ def dashboard_home(request):
         context['in_progress'] = user_sequences.filter(status='VALIDATED').count()
         context['validated'] = user_sequences.filter(status__in=['PENDING', 'CONTENT_PENDING', 'CONTENT_VALIDATED']).count()
         context['published'] = user_sequences.filter(status='PUBLISHED').count()
-        
+
     elif user.groups.filter(name='Enseignant').exists():
         context['role'] = 'Enseignant'
         context['classes_count'] = Classe.objects.filter(main_teacher=user).count()
-        context['students_count'] = get_user_model().objects.filter(student_classes__main_teacher=user).distinct().count()
+        context['students_count'] = get_user_model().objects.filter(
+            student_classes__main_teacher=user
+        ).distinct().count()
         context['suggestions_count'] = Suggestion.objects.filter(teacher=user).count()
-        context['results_count'] = Result.objects.filter(activity__sessions__sequence__chapter__matiere__teacher=user).count() if 'Result' in globals() else 0 # Fallback
-        
+        context['results_count'] = Result.objects.filter(
+            student__student_classes__main_teacher=user
+        ).distinct().count()
+
     else:
         return redirect('student_home')
 

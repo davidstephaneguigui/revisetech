@@ -30,7 +30,7 @@
                         {% else %}
                             <span class="badge bg-success rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapsePendingIntent" class="collapse">
                     <div class="card-body">
@@ -157,7 +157,7 @@
                         {% else %}
                             <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapseValidated" class="collapse">
                     <div class="card-body">
@@ -200,14 +200,32 @@
                                                         <div id="collapseSessionVal{{ session.id }}" class="accordion-collapse collapse" aria-labelledby="headingSessionVal{{ session.id }}" data-bs-parent="#accordionSessionsValidated{{ sequence.id }}">
                                                             <div class="accordion-body">
                                                                 <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
-                                                                
                                                                 {% for activity in session.activities.all %}
-                                                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
-                                                                        <div class="card-body py-2 px-3">
-                                                                            <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                    <div class="card mb-3 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                                                        <div class="card-body py-3 px-3">
+                                                                            <div class="fw-bold mb-2">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                            
                                                                             {% if activity.content %}
-                                                                                <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
-                                                                                    {{ activity.content|linebreaksbr|truncatechars:200 }}
+                                                                                <div class="text-muted small mb-3">
+                                                                                    {{ activity.content|linebreaksbr }}
+                                                                                </div>
+                                                                            {% endif %}
+
+                                                                            {% if activity.questions.exists %}
+                                                                                <div class="bg-light p-3 rounded mb-2 border">
+                                                                                    <h6 class="fw-bold text-secondary mb-3">Questions du quiz :</h6>
+                                                                                    {% for question in activity.questions.all %}
+                                                                                        <div class="mb-3">
+                                                                                            <div class="fw-bold">Q{{ forloop.counter }}. {{ question.text }}</div>
+                                                                                            <ul class="list-unstyled ms-3 mb-0 mt-1">
+                                                                                                {% for choice in question.choices.all %}
+                                                                                                    <li class="{% if choice.is_correct %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                                                                                        {% if choice.is_correct %}✅{% else %}⬜{% endif %} {{ choice.text }}
+                                                                                                    </li>
+                                                                                                {% endfor %}
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                    {% endfor %}
                                                                                 </div>
                                                                             {% endif %}
                                                                         </div>
@@ -284,7 +302,7 @@
                         {% else %}
                             <span class="badge bg-success rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapseContentPending" class="collapse">
                     <div class="card-body">
@@ -310,8 +328,8 @@
                                             <!-- Sessions and Activities -->
                                             <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
                                             <div class="accordion mb-4" id="accordionSessionsRef{{ sequence.id }}">
-                                                {% for session in sequence.sessions_with_flags %}
-                                                    <div class="accordion-item border-0 mb-2 shadow-sm {% if session.is_new %}bg-warning bg-opacity-10 border-start border-4 border-warning{% endif %}" style="border-radius: 8px;">
+                                                {% for session in sequence.sessions.all %}
+                                                    <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
                                                         <h2 class="accordion-header" id="headingSessionRef{{ session.id }}">
                                                             <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionRef{{ session.id }}" aria-expanded="false" aria-controls="collapseSessionRef{{ session.id }}">
                                                                 <strong>Séance {{ session.order }} : {{ session.name }}</strong> <span class="badge bg-secondary ms-2">{{ session.get_session_type_display }}</span>
@@ -322,12 +340,31 @@
                                                                 <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
                                                                 
                                                                 {% for activity in session.activities.all %}
-                                                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
-                                                                        <div class="card-body py-2 px-3">
-                                                                            <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                    <div class="card mb-3 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                                                        <div class="card-body py-3 px-3">
+                                                                            <div class="fw-bold mb-2">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                            
                                                                             {% if activity.content %}
-                                                                                <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
-                                                                                    {{ activity.content|linebreaksbr|truncatechars:200 }}
+                                                                                <div class="text-muted small mb-3">
+                                                                                    {{ activity.content|linebreaksbr }}
+                                                                                </div>
+                                                                            {% endif %}
+
+                                                                            {% if activity.questions.exists %}
+                                                                                <div class="bg-light p-3 rounded mb-2 border">
+                                                                                    <h6 class="fw-bold text-secondary mb-3">Questions du quiz :</h6>
+                                                                                    {% for question in activity.questions.all %}
+                                                                                        <div class="mb-3">
+                                                                                            <div class="fw-bold">Q{{ forloop.counter }}. {{ question.text }}</div>
+                                                                                            <ul class="list-unstyled ms-3 mb-0 mt-1">
+                                                                                                {% for choice in question.choices.all %}
+                                                                                                    <li class="{% if choice.is_correct %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                                                                                        {% if choice.is_correct %}✅{% else %}⬜{% endif %} {{ choice.text }}
+                                                                                                    </li>
+                                                                                                {% endfor %}
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                    {% endfor %}
                                                                                 </div>
                                                                             {% endif %}
                                                                         </div>
@@ -376,7 +413,7 @@
                         {% else %}
                             <span class="badge bg-success rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapseSecondReview" class="collapse">
                     <div class="card-body">
@@ -406,7 +443,7 @@
                                             <!-- Sessions and Activities (Read-only) -->
                                             <h6 class="fw-bold text-primary mb-3">Contenu de la séquence</h6>
                                             <div class="accordion mb-4" id="accordionSessionsSecond{{ sequence.id }}">
-                                                {% for session in sequence.sessions_with_flags %}
+                                                {% for session in sequence.sessions.all %}
                                                     <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
                                                         <h2 class="accordion-header" id="headingSessionSecond{{ session.id }}">
                                                             <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSessionSecond{{ session.id }}" aria-expanded="false" aria-controls="collapseSessionSecond{{ session.id }}">
@@ -418,12 +455,31 @@
                                                                 <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
                                                                 
                                                                 {% for activity in session.activities.all %}
-                                                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
-                                                                        <div class="card-body py-2 px-3">
-                                                                            <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                    <div class="card mb-3 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                                                        <div class="card-body py-3 px-3">
+                                                                            <div class="fw-bold mb-2">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                                                            
                                                                             {% if activity.content %}
-                                                                                <div class="text-muted small mt-2" style="max-height: 100px; overflow-y: auto;">
-                                                                                    {{ activity.content|linebreaksbr|truncatechars:200 }}
+                                                                                <div class="text-muted small mb-3">
+                                                                                    {{ activity.content|linebreaksbr }}
+                                                                                </div>
+                                                                            {% endif %}
+
+                                                                            {% if activity.questions.exists %}
+                                                                                <div class="bg-light p-3 rounded mb-2 border">
+                                                                                    <h6 class="fw-bold text-secondary mb-3">Questions du quiz :</h6>
+                                                                                    {% for question in activity.questions.all %}
+                                                                                        <div class="mb-3">
+                                                                                            <div class="fw-bold">Q{{ forloop.counter }}. {{ question.text }}</div>
+                                                                                            <ul class="list-unstyled ms-3 mb-0 mt-1">
+                                                                                                {% for choice in question.choices.all %}
+                                                                                                    <li class="{% if choice.is_correct %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                                                                                        {% if choice.is_correct %}✅{% else %}⬜{% endif %} {{ choice.text }}
+                                                                                                    </li>
+                                                                                                {% endfor %}
+                                                                                            </ul>
+                                                                                        </div>
+                                                                                    {% endfor %}
                                                                                 </div>
                                                                             {% endif %}
                                                                         </div>
@@ -476,7 +532,7 @@
                         {% else %}
                             <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapseContentValidated" class="collapse">
                     <div class="card-body">
@@ -515,7 +571,7 @@
                         {% else %}
                             <span class="badge bg-secondary rounded-pill fs-6">0</span>
                         {% endif %}
-                    </h4>
+                    </h5>
                 </div>
                 <div id="collapsePublishedRef" class="collapse">
                     <div class="card-body">

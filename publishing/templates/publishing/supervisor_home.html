@@ -163,6 +163,7 @@
                     <div class="card-body">
                         <div class="accordion" id="accordionPublished">
                             {% for sequence in published_sequences %}
+                                <!-- 1. L'ACCORDÉON DE LA SÉQUENCE -->
                                 <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                                     <h2 class="accordion-header" id="headingPub{{ sequence.id }}">
                                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
@@ -220,10 +221,21 @@
                                                 {% endfor %}
                                             </div>
 
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Modal for classes list -->
+                                            <!-- LE BOUTON DE DÉPUBLICATION EST ICI, À L'INTÉRIEUR DU BODY -->
+                                            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                                                <form method="post" action="{% url 'unpublish_sequence' sequence.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir dépublier cette séquence ? Les élèves n\'y auront plus accès.');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                                        <i class="bi bi-eye-slash"></i> Dépublier la séquence
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            
+                                        </div> <!-- Fin accordion-body -->
+                                    </div> <!-- Fin accordion-collapse -->
+                                </div> <!-- Fin accordion-item -->
+
+                                <!-- 2. LE MODAL (En dehors de l'accordéon, mais dans la boucle for) -->
                                 <div class="modal fade" id="classesModal{{ sequence.id }}" tabindex="-1" aria-labelledby="classesModalLabel{{ sequence.id }}" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content" style="border-radius: 16px;">
@@ -248,6 +260,7 @@
                                         </div>
                                     </div>
                                 </div>
+
                             {% empty %}
                                 <div class="alert alert-info mb-0">
                                     Aucune séquence publiée pour le moment.

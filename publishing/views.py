@@ -83,3 +83,24 @@ def request_second_review(request, sequence_id):
         messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
             
     return redirect('supervisor_dashboard')
+
+
+@login_required
+@require_POST
+def unpublish_sequence(request, sequence_id):
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    
+    # 1. La séquence retourne dans la file d'attente de publication
+    sequence.status = 'CONTENT_VALIDATED'
+    sequence.save()
+    
+    # 2. Cascade sur les séances et activités
+    for session in sequence.sessions.all():
+        session.status = 'DRAFT'
+        session.save()
+        for activity in session.activities.all():
+            activity.status = 'DRAFT'
+            activity.save()
+            
+    messages.warning(request, f"La séquence '{sequence.name}' a été dépubliée.")
+    return redirect('supervisor_dashboard')

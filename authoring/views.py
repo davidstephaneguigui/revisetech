@@ -40,9 +40,36 @@ def designer_dashboard(request):
         'content_validated': user_sequences.filter(status='CONTENT_VALIDATED'),
         'published': user_sequences.filter(status='PUBLISHED'),
         'form': form,
+        'chapters': Chapter.objects.all(),
     }
     
     return render(request, 'authoring/designer_home.html', context)
+
+
+@login_required
+@is_designer
+def create_sequence(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        chapter_id = request.POST.get('chapter')
+        
+        if name and chapter_id:
+            try:
+                chapter = Chapter.objects.get(id=chapter_id)
+                Sequence.objects.create(
+                    name=name,
+                    chapter=chapter,
+                    creator=request.user,
+                    status='DRAFT'  # Assure-toi que le statut par défaut est bien DRAFT
+                )
+                messages.success(request, "Séquence créée avec succès.")
+            except Chapter.DoesNotExist:
+                messages.error(request, "Chapitre introuvable.")
+        else:
+            messages.error(request, "Erreur : tous les champs sont requis.")
+            
+        return redirect('designer_dashboard')
+    return redirect('designer_dashboard')
 
 
 @login_required

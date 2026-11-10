@@ -2,88 +2,194 @@
 
 {% block title %}Accueil - Revisetech{% endblock %}
 
-{% block top_menu %}
-    <!-- Le menu vide pour l'instant sur cette page d'accueil, 
-         on pourrait y mettre des liens génériques -->
-{% endblock %}
-
 {% block content %}
-    <div class="p-4 p-md-5 mb-5 bg-white rounded-3 shadow-sm border-0 mt-2 text-center">
-        <div class="container-fluid py-3">
-            <h1 class="display-5 fw-bold mb-3" style="color: #6a1b9a;">Bienvenue {{ user.username }}</h1>
-            <p class="col-md-10 mx-auto fs-5 text-muted">
-                Vous êtes connecté(e) à votre espace de gestion pédagogique. Retrouvez ici vos outils pour préparer, valider ou organiser vos cours.
-            </p>
-            <div class="mt-4">
-                <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill">Espace {{ role }}</span>
-            </div>
-        </div>
+    <div class="text-center mt-4 mb-5">
+        <h1 class="fw-bold" style="color: #6a1b9a;">Bienvenue, {{ user.username }}</h1>
+        <h4 class="text-muted">Espace {{ role }}</h4>
     </div>
 
     <div class="row justify-content-center g-4">
-        
-        {% if role == 'Administrateur' %}
-            <div class="col-md-6 col-lg-4">
-                <a href="/admin/" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">⚙️</div>
-                        <h5 class="fw-bold text-dark">Administration Django</h5>
-                        <p class="text-muted small mb-0">Gérer les utilisateurs, les rôles et la maintenance.</p>
+
+        {% if role == 'Concepteur' %}
+            <!-- Concepteur -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📝</div>
+                        <h5 class="fw-bold text-dark">Brouillons</h5>
+                        <h2 class="display-5 fw-bold text-secondary mb-0">{{ drafts }}</h2>
+                        <p class="text-muted small mb-0">À proposer</p>
                     </div>
                 </a>
             </div>
-
-        {% elif role == 'Superviseur' %}
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">🔍</div>
-                        <h5 class="fw-bold text-dark">Publication</h5>
-                        <p class="text-muted small mb-0">Superviser les séquences et publier les contenus validés.</p>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🛠️</div>
+                        <h5 class="fw-bold text-dark">En cours</h5>
+                        <h2 class="display-5 fw-bold text-success mb-0">{{ in_progress }}</h2>
+                        <p class="text-muted small mb-0">En rédaction</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">⏳</div>
+                        <h5 class="fw-bold text-dark">Validées</h5>
+                        <h2 class="display-5 fw-bold text-warning mb-0">{{ validated }}</h2>
+                        <p class="text-muted small mb-0">En attente de validation</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🚀</div>
+                        <h5 class="fw-bold text-dark">Publiées</h5>
+                        <h2 class="display-5 fw-bold text-primary mb-0">{{ published }}</h2>
+                        <p class="text-muted small mb-0">Visibles par les élèves</p>
                     </div>
                 </a>
             </div>
 
         {% elif role == 'Référent' %}
-            <div class="col-md-6 col-lg-4">
+            <!-- Référent -->
+            <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">📝</div>
-                        <h5 class="fw-bold text-dark">Validations</h5>
-                        <p class="text-muted small mb-0">Examiner les intentions et les contenus proposés.</p>
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📝</div>
+                        <h5 class="fw-bold text-dark">Intentions</h5>
+                        <h2 class="display-5 fw-bold text-warning mb-0">{{ pending_intentions }}</h2>
+                        <p class="text-muted small mb-0">À valider</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📖</div>
+                        <h5 class="fw-bold text-dark">Contenus</h5>
+                        <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_contents }}</h2>
+                        <p class="text-muted small mb-0">À valider</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">👀</div>
+                        <h5 class="fw-bold text-dark">Second avis</h5>
+                        <h2 class="display-5 fw-bold text-info mb-0">{{ second_reviews }}</h2>
+                        <p class="text-muted small mb-0">Demandés</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'referee_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🚀</div>
+                        <h5 class="fw-bold text-dark">Publiées</h5>
+                        <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        <p class="text-muted small mb-0">En ligne</p>
                     </div>
                 </a>
             </div>
 
-        {% elif role == 'Concepteur' %}
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'designer_dashboard' %}" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">🛠️</div>
-                        <h5 class="fw-bold text-dark">Mes Séquences</h5>
-                        <p class="text-muted small mb-0">Gérer mes brouillons, intentions et contenus validés.</p>
+        {% elif role == 'Superviseur' %}
+            <!-- Superviseur -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🛠️</div>
+                        <h5 class="fw-bold text-dark">Projets</h5>
+                        <h2 class="display-5 fw-bold text-info mb-0">{{ in_preparation }}</h2>
+                        <p class="text-muted small mb-0">En rédaction</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📖</div>
+                        <h5 class="fw-bold text-dark">À publier</h5>
+                        <h2 class="display-5 fw-bold text-danger mb-0">{{ to_publish }}</h2>
+                        <p class="text-muted small mb-0">Validés par le référent</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">👀</div>
+                        <h5 class="fw-bold text-dark">2ème avis</h5>
+                        <h2 class="display-5 fw-bold text-warning mb-0">{{ second_reviews }}</h2>
+                        <p class="text-muted small mb-0">Demandés</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'supervisor_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">✅</div>
+                        <h5 class="fw-bold text-dark">Publiées</h5>
+                        <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        <p class="text-muted small mb-0">En ligne</p>
                     </div>
                 </a>
             </div>
 
         {% elif role == 'Enseignant' %}
-            <div class="col-md-6 col-lg-4">
+            <!-- Enseignant -->
+            <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">🏫</div>
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🏫</div>
                         <h5 class="fw-bold text-dark">Mes Classes</h5>
-                        <p class="text-muted small mb-0">Gérer mes classes et suivre les résultats de mes élèves.</p>
+                        <h2 class="display-5 fw-bold text-primary mb-0">{{ classes_count }}</h2>
+                        <p class="text-muted small mb-0">Classes gérées</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">🎒</div>
+                        <h5 class="fw-bold text-dark">Mes Élèves</h5>
+                        <h2 class="display-5 fw-bold text-info mb-0">{{ students_count }}</h2>
+                        <p class="text-muted small mb-0">Élèves suivis</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'suggestion_list' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">💡</div>
+                        <h5 class="fw-bold text-dark">Suggestions</h5>
+                        <h2 class="display-5 fw-bold text-warning mb-0">{{ suggestions_count }}</h2>
+                        <p class="text-muted small mb-0">Envoyées</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'teacher_dashboard' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📊</div>
+                        <h5 class="fw-bold text-dark">Résultats</h5>
+                        <h2 class="display-5 fw-bold text-success mb-0">{{ results_count }}</h2>
+                        <p class="text-muted small mb-0">Quiz réalisés</p>
                     </div>
                 </a>
             </div>
 
         {% else %}
-            <div class="col-md-6 col-lg-4">
-                <a href="{% url 'student_home' %}" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center p-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-3">🎒</div>
-                        <h5 class="fw-bold text-dark">Mes Matières</h5>
-                        <p class="text-muted small mb-0">Accéder à mes cours et faire mes quiz.</p>
+            <!-- Administrateur ou autres -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="/admin/" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">⚙️</div>
+                        <h5 class="fw-bold text-dark">Admin</h5>
+                        <p class="text-muted small mt-4 mb-0">Gérer la plateforme</p>
                     </div>
                 </a>
             </div>

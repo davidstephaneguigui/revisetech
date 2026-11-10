@@ -54,3 +54,10 @@ body {
 .navbar-toggler:focus {
     box-shadow: none;
 }
+
+/* Style de l'onglet actif dans la navbar */
+.navbar .nav-link.active {
+    color: #6a1b9a !important;
+    font-weight: 700;
+    border-bottom: 3px solid #6a1b9a;
+}

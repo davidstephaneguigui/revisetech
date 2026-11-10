@@ -5,7 +5,7 @@
 
 {% block top_menu %}
     <li class="nav-item">
-        <a class="nav-link fw-bold" href="{% url 'designer_dashboard' %}" style="color: #6a1b9a;">Tableau de bord</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'designer_dashboard' %}active{% endif %}" href="{% url 'designer_dashboard' %}">Tableau de bord</a>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#addSequenceModal">➕ Nouvelle séquence</a>

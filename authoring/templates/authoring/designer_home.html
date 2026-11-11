@@ -15,6 +15,12 @@
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold text-muted">Espace Concepteur</h3>
+        <a href="{% url 'designer_proposals' %}" class="btn btn-warning rounded-pill px-4 shadow-sm">
+            <i class="bi bi-inbox"></i> Propositions d'activités
+            {% if pending_proposals_count > 0 %}
+                <span class="badge bg-danger ms-2">{{ pending_proposals_count }}</span>
+            {% endif %}
+        </a>
     </div>
 
     <!-- Messages -->

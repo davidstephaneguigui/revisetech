@@ -217,20 +217,19 @@
                     </div>
                 </a>
             </div>
+            
+            <!-- LA NOUVELLE CARTE "MES PRÉPARATIONS" -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'suggestion_list' %}" class="text-decoration-none">
+                <a href="{% url 'teacher_preparations' %}" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-2">💡</div>
-                        <h5 class="fw-bold text-dark">Suggestions</h5>
-                        {% if suggestions_count > 0 %}
-                            <h2 class="display-5 fw-bold text-warning mb-0">{{ suggestions_count }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">Envoyées</p>
+                        <div class="fs-1 mb-2">📋</div>
+                        <h5 class="fw-bold text-dark">Mes préparations</h5>
+                        <h2 class="display-5 fw-bold text-info mb-0">➔</h2>
+                        <p class="text-muted small mb-0">Séances & Banque</p>
                     </div>
                 </a>
             </div>
+
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'teacher_results' %}" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">

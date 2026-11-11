@@ -17,73 +17,111 @@
         </ol>
     </nav>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <h3 class="mb-0 fw-bold text-muted">Préparation : {{ session.name }}</h3>
-        <a href="{% url 'create_local_activity' classe.id session.id %}" class="btn btn-primary rounded-pill">
-            + Ajouter une activité locale
-        </a>
+        
+        <div class="d-flex flex-wrap gap-2 justify-content-end ms-md-auto align-items-center">
+            <!-- Bouton Masquer (qui agit comme un switch) -->
+            <button type="button" class="btn btn-outline-secondary rounded-pill" id="toggle-hide-btn">
+                <i class="bi bi-eye-slash"></i> Masquer inactives
+            </button>
+            
+            <button type="button" class="btn btn-outline-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#addExistingModal">
+                + Activité existante
+            </button>
+            
+            <a href="{% url 'create_local_activity' classe.id session.id %}" class="btn btn-primary rounded-pill">
+                + Activité locale
+            </a>
+        </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Activités Globales (du référentiel) -->
-        <div class="col-12">
-            <div class="card shadow-sm border-0" style="border-radius: 12px;">
-                <div class="card-header bg-white border-0 pt-3 pb-0">
-                    <h5 class="fw-bold text-dark">Activités du programme</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column gap-2">
-                        {% for activity in global_activities %}
-                            <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
-                                <div>
-                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
-                                    {% if activity.content %}
-                                        <div class="text-muted small mt-1">{{ activity.content|truncatechars:100 }}</div>
-                                    {% endif %}
-                                </div>
-                                <!-- Interrupteur de sélection -->
-                                <div class="form-check form-switch fs-4 mb-0">
-                                    <input class="form-check-input toggle-activity-btn" type="checkbox" role="switch" 
-                                           data-class="{{ classe.id }}" data-activity="{{ activity.id }}"
-                                           {% if activity.id in selected_activity_ids %}checked{% endif %}>
-                                </div>
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+            <h5 class="fw-bold text-dark">Activités de la séance</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-column gap-2">
+                {% for activity in all_activities %}
+                    <div class="d-flex justify-content-between align-items-center p-3 border rounded activity-row {% if activity.is_local %}bg-light-purple{% endif %}" 
+                        data-is-active="{% if activity.id in selected_activity_ids %}true{% else %}false{% endif %}"
+                        style="{% if activity.is_local %}border-left: 4px solid #6a1b9a !important; background-color: #fdfbfe;{% endif %}">
+                        
+                        <div>
+                            <div class="fw-bold">
+                                {{ activity.title }} 
+                                <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span>
+                                {% if activity.is_local %}
+                                    <span class="badge bg-primary ms-1">Local</span>
+                                {% endif %}
                             </div>
-                        {% empty %}
-                            <p class="text-muted small">Aucune activité globale pour cette séance.</p>
-                        {% endfor %}
+                            {% if activity.content %}
+                                <div class="text-muted small mt-1">{{ activity.content|truncatechars:100 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Bouton Proposer (uniquement pour les activités locales) -->
+                            {% if activity.is_local %}
+                                <form method="post" action="{% url 'propose_activity' activity.id %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Proposer au Concepteur">
+                                        <i class="bi bi-send"></i> Proposer
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            <!-- Flèches de réordonnancement -->
+                            <div class="d-flex gap-1">
+                                <form method="post" action="{% url 'move_activity' classe.id session.id activity.id 'up' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-1 fw-bold" title="Monter">↑</button>
+                                </form>
+                                <form method="post" action="{% url 'move_activity' classe.id session.id activity.id 'down' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-1 fw-bold" title="Descendre">↓</button>
+                                </form>
+                            </div>
+
+                            <!-- Interrupteur -->
+                            <div class="form-check form-switch fs-4 mb-0">
+                                <input class="form-check-input toggle-activity-btn" type="checkbox" role="switch" 
+                                    data-class="{{ classe.id }}" data-activity="{{ activity.id }}"
+                                    {% if activity.id in selected_activity_ids %}checked{% endif %}>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                {% empty %}
+                    <p class="text-muted small">Aucune activité dans cette séance.</p>
+                {% endfor %}
             </div>
         </div>
+    </div>
 
-        <!-- Activités Locales (créées par l'enseignant) -->
-        <div class="col-12">
-            <div class="card shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid #6a1b9a !important;">
-                <div class="card-header bg-white border-0 pt-3 pb-0">
-                    <h5 class="fw-bold text-dark">Vos activités locales pour cette classe</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex flex-column gap-2">
-                        {% for activity in local_activities %}
-                            <div class="d-flex justify-content-between align-items-center p-3 border rounded" style="border-left: 3px solid #6a1b9a !important; background-color: #fdfbfe;">
-                                <div>
-                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-primary ms-1">Local</span></div>
-                                    {% if activity.content %}
-                                        <div class="text-muted small mt-1">{{ activity.content|truncatechars:100 }}</div>
-                                    {% endif %}
-                                </div>
-                                <!-- Interrupteur de sélection -->
-                                <div class="form-check form-switch fs-4 mb-0">
-                                    <input class="form-check-input toggle-activity-btn" type="checkbox" role="switch" 
-                                           data-class="{{ classe.id }}" data-activity="{{ activity.id }}"
-                                           {% if activity.id in selected_activity_ids %}checked{% endif %}>
-                                </div>
-                            </div>
-                        {% empty %}
-                            <p class="text-muted small">Vous n'avez pas encore ajouté d'activité locale pour cette séance.</p>
-                        {% endfor %}
+    <!-- Modale pour ajouter une activité existante -->
+    <div class="modal fade" id="addExistingModal" tabindex="-1" aria-labelledby="addExistingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 16px;">
+                <form method="post" action="{% url 'add_existing_activity' classe.id session.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="addExistingModalLabel">Ajouter une activité du référentiel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                </div>
+                    <div class="modal-body">
+                        <p class="text-muted small">Sélectionnez une activité globale. Une copie sera ajoutée à cette séance pour votre classe.</p>
+                        <select name="global_activity_id" class="form-select" required>
+                            <option value="">-- Choisir une activité --</option>
+                            {% for global_act in all_global_activities %}
+                                <option value="{{ global_act.id }}">{{ global_act.title }} ({{ global_act.get_activity_type_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary rounded-pill">Ajouter à ma séance</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

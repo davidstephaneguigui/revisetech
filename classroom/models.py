@@ -47,6 +47,7 @@ class SessionCompletion(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='completions')
     is_completed = models.BooleanField(default=False, verbose_name="Séance réalisée")
     updated_at = models.DateTimeField(auto_now=True)
+    order =  models.PositiveIntegerField(default=0, verbose_name="Ordre personnalisé")
 
     class Meta:
         unique_together = ('classe', 'session')
@@ -61,6 +62,7 @@ class ActivitySelection(models.Model):
     classe = models.ForeignKey(Classe, on_delete=models.CASCADE, related_name='selected_activities')
     activity = models.ForeignKey('pedagogy.Activity', on_delete=models.CASCADE, related_name='selections')
     is_used = models.BooleanField(default=True, verbose_name="Activité utilisée")
+    order = models.PositiveIntegerField(default=0, verbose_name="Ordre personnalisé")
 
     class Meta:
         unique_together = ('classe', 'activity')
@@ -85,3 +87,18 @@ class Suggestion(models.Model):
 
     def __str__(self):
         return f"Suggestion pour {self.student.username} - {self.activity.title}"
+
+    class ActivityProposal(models.Model):
+        STATUS_CHOICES = [
+            ('PENDING', 'En attente'),
+            ('ACCEPTED', 'Acceptée'),
+            ('REJECTED', 'Refusée'),
+        ]
+    
+        activity = models.ForeignKey('pedagogy.Activity', on_delete=models.CASCADE, related_name='proposals')
+        teacher = models.ForeignKey('accounts.User', on_delete=models.CASCADE)
+        status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+        created_at = models.DateTimeField(auto_now_add=True)
+
+        def __str__(self):
+            return f"Proposition : {self.activity.title} par {self.teacher.username}"

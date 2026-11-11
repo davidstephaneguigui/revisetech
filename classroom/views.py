@@ -1,23 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-
-from pedagogy.models import Sequence
-from learning.models import Result
-from .models import Classe, Suggestion, ActivitySelection
-from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm
-from accounts.decorators import is_teacher
 from django.urls import reverse
-from .utils import get_student_global_score
-from django.http import HttpResponseForbidden
-from classroom.utils import compute_sequence_stats
+from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.http import HttpResponseForbidden
 from django.http import JsonResponse
-from .models import SessionCompletion
 
-from pedagogy.models import Session
-from .forms import LocalActivityForm
+from classroom.utils import compute_sequence_stats
+from pedagogy.models import Sequence, Session, Activity
+from learning.models import Result
+from accounts.decorators import is_teacher
+from .utils import get_student_global_score
+from .models import Classe, SessionCompletion, ActivitySelection, Suggestion
+from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm, LocalActivityForm
 
 
 @login_required
@@ -126,16 +122,24 @@ def class_sequence_detail(request, class_id, sequence_id):
     classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
-    # On vérifie que la séquence est bien assignée à cette classe
     if sequence not in classe.sequences.all():
         return redirect('class_detail', class_id=classe.id)
         
-    sessions = sequence.sessions.all().order_by('order')
+    # On crée les suivis manquants sans casser l'ordre existant
+    for sess in sequence.sessions.all():
+        SessionCompletion.objects.get_or_create(classe=classe, session=sess)
+
+    # On récupère les séances triées
+    completions = SessionCompletion.objects.filter(
+        classe=classe, 
+        session__in=sequence.sessions.all()
+    ).order_by('order', 'id')
     
-    # On prépare les données pour le template (comme sur la page class_results)
+    sessions = [c.session for c in completions]
+    
     breadcrumbs = [
         {'label': 'Accueil', 'url': reverse('dashboard_home')},
-        {'label': 'Mes Classes', 'url': reverse('teacher_dashboard')}, # ou teacher_results
+        {'label': 'Mes Classes', 'url': reverse('teacher_results')},
         {'label': classe.name, 'url': reverse('class_detail', args=[classe.id])},
         {'label': sequence.name, 'url': None}
     ]
@@ -155,12 +159,32 @@ def prepare_session(request, class_id, session_id):
     classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
     session = get_object_or_404(Session, id=session_id)
     
-    # On récupère les activités globales (non locales)
-    global_activities = session.activities.filter(is_local=False).order_by('id')
+    # On crée les sélections manquantes sans casser l'ordre existant
+    for act in session.activities.all():
+        ActivitySelection.objects.get_or_create(classe=classe, activity=act)
+
+    # On récupère les sélections triées
+    selections = ActivitySelection.objects.filter(
+        classe=classe, 
+        activity__in=session.activities.all()
+    ).order_by('order', 'id')
     
-    # On récupère les activités locales créées par CET enseignant pour CETTE classe
-    local_activities = session.activities.filter(is_local=True, classe=classe).order_by('id')
+    # 1. On s'assure que toutes les activités ont une sélection
+    for act in session.activities.all():
+        ActivitySelection.objects.get_or_create(classe=classe, activity=act)
+
+    # 2. On récupère toutes les sélections triées par ordre
+    selections = ActivitySelection.objects.filter(
+        classe=classe, 
+        activity__in=session.activities.all()
+    ).order_by('order', 'id')
     
+    # 3. On crée une seule liste d'activités fusionnées
+    all_activities = [s.activity for s in selections]
+    
+    # (On garde all_global_activities pour la modale d'ajout)
+    all_global_activities = Activity.objects.filter(is_local=False).order_by('title')
+
     breadcrumbs = [
         {'label': 'Accueil', 'url': reverse('dashboard_home')},
         {'label': 'Mes Classes', 'url': reverse('teacher_results')},
@@ -168,12 +192,11 @@ def prepare_session(request, class_id, session_id):
         {'label': session.sequence.name, 'url': reverse('class_sequence_detail', args=[classe.id, session.sequence.id])},
         {'label': session.name, 'url': None}
     ]
-    
     context = {
         'classe': classe,
         'session': session,
-        'global_activities': global_activities,
-        'local_activities': local_activities,
+        'all_activities': all_activities, # <-- La nouvelle liste fusionnée
+        'all_global_activities': all_global_activities,
         'breadcrumbs': breadcrumbs,
         'selected_activity_ids': list(classe.selected_activities.filter(is_used=True).values_list('activity_id', flat=True)),
     }
@@ -394,6 +417,7 @@ def toggle_session_completion(request, class_id, session_id):
 
 
 @login_required
+@is_teacher
 def create_local_activity(request, class_id, session_id):
     classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
     session = get_object_or_404(Session, id=session_id)
@@ -440,3 +464,161 @@ def toggle_activity_usage(request, class_id, activity_id):
     selection.save()
     
     return JsonResponse({'status': 'success', 'is_used': selection.is_used})
+
+
+@require_POST
+@login_required
+@is_teacher
+def move_activity(request, class_id, session_id, activity_id, direction):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    session = get_object_or_404(Session, id=session_id)
+    
+    activities = session.activities.all()
+    
+    for act in activities:
+        ActivitySelection.objects.get_or_create(classe=classe, activity=act)
+        
+    selections = list(ActivitySelection.objects.filter(classe=classe, activity__in=activities).order_by('order', 'id'))
+    
+    for i, sel in enumerate(selections):
+        if sel.order != i:
+            sel.order = i
+            sel.save()
+            
+    current_idx = next((i for i, s in enumerate(selections) if s.activity_id == int(activity_id)), None)
+    
+    if current_idx is not None:
+        if direction == 'up' and current_idx > 0:
+            swap_idx = current_idx - 1
+        elif direction == 'down' and current_idx < len(selections) - 1:
+            swap_idx = current_idx + 1
+        else:
+            return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+            
+        selections[current_idx].order, selections[swap_idx].order = selections[swap_idx].order, selections[current_idx].order
+        selections[current_idx].save()
+        selections[swap_idx].save()
+        
+    return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+
+
+@require_POST
+@login_required
+@is_teacher
+def import_global_activity(request, activity_id):
+    global_activity = get_object_or_404(Activity, id=activity_id, is_local=False)
+    
+    # On récupère la séance d'origine pour la redirection
+    session = global_activity.sessions.first()
+    
+    # On crée la copie locale
+    local_activity = Activity.objects.create(
+        title=f"{global_activity.title} (Copie)",
+        content=global_activity.content,
+        activity_type=global_activity.activity_type,
+        is_local=True,
+        creator=request.user,
+        status='PUBLISHED'
+    )
+    
+    # On la lie à la séance d'origine pour qu'elle apparaisse dans la préparation
+    if session:
+        local_activity.sessions.add(session)
+        
+    # On demande à l'enseignant de choisir sa classe (pour l'instant, on prend la première)
+    # Idéalement, il faudrait un select, mais en TGV on fait au plus simple pour tester
+    classe = request.user.main_classes.first()
+    if classe:
+        local_activity.classe = classe
+        local_activity.save()
+        
+        messages.success(request, f"L'activité a été ajoutée à votre classe {classe.name}.")
+        return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+    
+    messages.error(request, "Vous n'avez pas de classe pour ajouter cette activité.")
+    return redirect('activity_bank')
+
+
+@require_POST
+@login_required
+@is_teacher
+def add_existing_activity(request, class_id, session_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    session = get_object_or_404(Session, id=session_id)
+    
+    activity_id = request.POST.get('global_activity_id')
+    if not activity_id:
+        messages.error(request, "Veuillez sélectionner une activité.")
+        return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+
+    original_activity = get_object_or_404(Activity, id=activity_id, is_local=False)
+    
+    # On clone l'activité pour en faire une activité locale à la classe
+    new_activity = Activity.objects.create(
+        title=f"{original_activity.title} (Copie)",
+        content=original_activity.content,
+        activity_type=original_activity.activity_type,
+        is_local=True,
+        creator=request.user,
+        classe=classe,
+        status='PUBLISHED'
+    )
+    # On l'attache à la séance
+    new_activity.sessions.add(session)
+    
+    messages.success(request, f"L'activité '{original_activity.title}' a été ajoutée à votre séance.")
+    return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+
+
+@require_POST
+@login_required
+@is_teacher
+def move_session(request, class_id, sequence_id, session_id, direction):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    
+    # 1. On récupère toutes les séances
+    sessions = sequence.sessions.all()
+    
+    # 2. On s'assure que tout est créé
+    for sess in sessions:
+        SessionCompletion.objects.get_or_create(classe=classe, session=sess)
+        
+    # 3. On réinitialise les ordres pour qu'ils soient uniques (0, 1, 2, 3...)
+    completions = list(SessionCompletion.objects.filter(classe=classe, session__in=sessions).order_by('order', 'id'))
+    
+    for i, comp in enumerate(completions):
+        if comp.order != i:
+            comp.order = i
+            comp.save()
+            
+    # 4. On trouve l'index et on échange
+    current_idx = next((i for i, c in enumerate(completions) if c.session_id == int(session_id)), None)
+    
+    if current_idx is not None:
+        if direction == 'up' and current_idx > 0:
+            swap_idx = current_idx - 1
+        elif direction == 'down' and current_idx < len(completions) - 1:
+            swap_idx = current_idx + 1
+        else:
+            return redirect('class_sequence_detail', class_id=classe.id, sequence_id=sequence.id)
+            
+        completions[current_idx].order, completions[swap_idx].order = completions[swap_idx].order, completions[current_idx].order
+        completions[current_idx].save()
+        completions[swap_idx].save()
+        
+    return redirect('class_sequence_detail', class_id=classe.id, sequence_id=sequence.id)
+
+
+@login_required
+@is_teacher
+def teacher_preparations(request):
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes préparations', 'url': None}
+    ]
+    
+    context = {
+        'breadcrumbs': breadcrumbs
+    }
+    return render(request, 'classroom/teacher_preparations.html', context)

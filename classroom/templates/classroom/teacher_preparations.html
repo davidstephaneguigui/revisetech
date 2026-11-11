@@ -1,0 +1,45 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Mes préparations - Revisetech{% endblock %}
+
+{% block content %}
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            {% for step in breadcrumbs %}
+                {% if step.url %}
+                    <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Mes préparations</h3>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Bouton vers la Banque d'activités -->
+        <div class="col-12 col-md-6">
+            <a href="{% url 'activity_bank' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100 text-center py-5" style="border-radius: 16px; background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); transition: transform 0.2s;">
+                    <div class="fs-1 mb-3">🏦</div>
+                    <h4 class="fw-bold text-dark mb-2">Banque des activités</h4>
+                    <p class="text-muted px-4">Découvrez et importez les activités créées et partagées par d'autres enseignants.</p>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Emplacement pour les futures préparations -->
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm border-0 h-100 text-center py-5" style="border-radius: 16px; background-color: #f8f9fa;">
+                <div class="fs-1 mb-3">🛠️</div>
+                <h4 class="fw-bold text-muted mb-2">Mes séances préparées</h4>
+                <p class="text-muted px-4">Retrouvez ici l'historique de vos séances modifiées et adaptées pour vos classes (Bientôt disponible).</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

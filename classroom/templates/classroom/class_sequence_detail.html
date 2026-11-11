@@ -4,6 +4,16 @@
 {% block title %}{{ sequence.name }} - {{ classe.name }}{% endblock %}
 
 {% block content %}
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
     <!-- Fil d'Ariane -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
@@ -22,7 +32,7 @@
     </div>
 
     <div class="row">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-12">
             <div class="card shadow-sm border-0" style="border-radius: 12px;">
                 <div class="card-header bg-white border-0 pt-3 pb-0">
                     <h5 class="fw-bold text-dark">Séances de la séquence</h5>
@@ -31,7 +41,6 @@
                     <div class="d-flex flex-column gap-3">
                         {% for session in sessions %}
                             <div class="d-flex justify-content-between align-items-center p-3 border rounded">
-                                
                                 <!-- Infos Séance -->
                                 <div>
                                     <div class="fw-bold">{{ session.order }}. {{ session.name }}</div>
@@ -46,7 +55,26 @@
                                 </div>
 
                                 <!-- Actions -->
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 align-items-center">
+                                    
+                                    <!-- BOUTONS MONTER / DESCENDRE -->
+                                    <div class="d-flex gap-1 me-3">
+                                        <!-- Monter -->
+                                        <form method="post" action="{% url 'move_session' classe.id sequence.id session.id 'up' %}" class="m-0">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-1 fw-bold" title="Monter">
+                                                ↑
+                                            </button>
+                                        </form>
+                                        <!-- Descendre -->
+                                        <form method="post" action="{% url 'move_session' classe.id sequence.id session.id 'down' %}" class="m-0">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-1 fw-bold" title="Descendre">
+                                                ↓
+                                            </button>
+                                        </form>
+                                    </div>
+
                                     <!-- Bouton Fait/Non fait -->
                                     <button class="btn btn-sm {% if session in classe.completed_sessions.all %}btn-success{% else %}btn-outline-secondary{% endif %} toggle-session-btn" 
                                             data-class="{{ classe.id }}" 
@@ -63,7 +91,6 @@
                                         Préparer <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </div>
-
                             </div>
                         {% empty %}
                             <p class="text-muted">Aucune séance générée.</p>

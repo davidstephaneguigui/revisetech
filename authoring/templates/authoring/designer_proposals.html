@@ -1,0 +1,58 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Propositions d'activités - Revisetech{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Propositions d'activités</h3>
+        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary rounded-pill">Retour à l'accueil</a>
+    </div>
+
+    <div class="row g-4">
+        {% for prop in proposals %}
+            <div class="col-12">
+                <div class="card shadow-sm border-0 border-start border-4 border-warning" style="border-radius: 12px;">
+                    <div class="card-body">
+                        
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ prop.activity.title }}</h5>
+                                <span class="badge bg-secondary mb-2">{{ prop.activity.get_activity_type_display }}</span>
+                                <p class="text-muted small mb-1">Proposé par : <strong>{{ prop.teacher.username }}</strong> le {{ prop.created_at|date:"d/m/Y à H:i" }}</p>
+                                <p class="text-muted small mb-0">Séance(s) concernée(s) : 
+                                    {% for session in prop.activity.sessions.all %}
+                                        <strong>{{ session.name }}</strong>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{% url 'handle_proposal' prop.id 'reject' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Refuser</button>
+                                </form>
+                                <form method="post" action="{% url 'handle_proposal' prop.id 'accept' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Accepter et Publier</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Contenu de l'activité proposée -->
+                        <div class="bg-light p-3 rounded border">
+                            <h6 class="fw-bold text-secondary mb-2">Contenu proposé :</h6>
+                            {{ prop.activity.content|linebreaksbr|default:"<em>Aucun contenu textuel renseigné.</em>" }}
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info shadow-sm border-0" style="border-radius: 12px;">
+                    <i class="bi bi-info-circle"></i> Aucune proposition d'activité en attente pour le moment.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -62,6 +62,16 @@ body {
     border-bottom: 3px solid #6a1b9a;
 }
 
+/* Empêche le retour à la ligne dans les menus de la navbar */
+.navbar-nav .nav-link {
+    white-space: nowrap;
+}
+
+/* Ajoute un peu d'espace horizontal entre les éléments du menu */
+.navbar-nav .nav-item {
+    padding: 0 0.5rem;
+}
+
 /* AJUSTEMENTS POUR MOBILES (Écrans < 768px) */
 @media (max-width: 767.98px) {
     /* Réduction globale de la police de base */
@@ -141,5 +151,13 @@ body {
         font-size: 10px !important;
         padding: 0.2rem 0.5rem !important;
         margin-top: 6px;
+    }
+}
+
+/* Supprime la ligne au-dessus de la zone utilisateur sur les grands écrans */
+@media (min-width: 992px) {
+    .navbar-collapse > div {
+        border-top: none !important;
+        padding-top: 0 !important;
     }
 }

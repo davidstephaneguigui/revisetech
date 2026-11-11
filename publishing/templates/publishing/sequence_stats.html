@@ -1,0 +1,88 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Statistiques - {{ sequence.name }}{% endblock %}
+
+{% block content %}
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_home' %}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">Accueil</a></li>
+            <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">Stats : {{ sequence.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Statistiques : {{ sequence.name }}</h3>
+    </div>
+
+    <!-- Stats Globales -->
+    <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px; background: linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%); color: white;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4"><i class="bi bi-globe"></i> Vue d'ensemble (Toutes classes confondues)</h5>
+            {% if global_count > 0 %}
+                <div class="row text-center">
+                    <div class="col-3">
+                        <h2 class="display-6 fw-bold mb-0">{{ global_avg|floatformat:1 }}</h2>
+                        <span class="small opacity-75">Moyenne / 20</span>
+                    </div>
+                    <div class="col-3">
+                        <h2 class="display-6 fw-bold mb-0">{{ global_max|floatformat:1 }}</h2>
+                        <span class="small opacity-75">Note max</span>
+                    </div>
+                    <div class="col-3">
+                        <h2 class="display-6 fw-bold mb-0">{{ global_min|floatformat:1 }}</h2>
+                        <span class="small opacity-75">Note min</span>
+                    </div>
+                    <div class="col-3">
+                        <h2 class="display-6 fw-bold mb-0">{{ global_count }}</h2>
+                        <span class="small opacity-75">Élèves évalués</span>
+                    </div>
+                </div>
+            {% else %}
+                <p class="mb-0 opacity-75">Aucun élève n'a encore réalisé cette séquence.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats par Classe -->
+    <h5 class="fw-bold text-muted mb-3">Détail par classe</h5>
+    <div class="row g-4">
+        {% for stat in classes_stats %}
+            <div class="col-12 col-md-6">
+                <div class="card shadow-sm border-0 h-100" style="border-radius: 12px;">
+                    <div class="card-header bg-white border-0 pt-3 pb-0">
+                        <h6 class="fw-bold text-dark">{{ stat.classe.name }}</h6>
+                        <p class="text-muted small mb-0">{{ stat.classe.level }} - {{ stat.classe.specialty }}</p>
+                    </div>
+                    <div class="card-body">
+                        {% if stat.count > 0 %}
+                            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                <span class="text-muted">Moyenne</span>
+                                <span class="fw-bold text-primary">{{ stat.avg|floatformat:1 }}/20</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                <span class="text-muted">Note max</span>
+                                <span class="fw-bold text-success">{{ stat.max|floatformat:1 }}/20</span>
+                            </div>
+                            <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                <span class="text-muted">Note min</span>
+                                <span class="fw-bold text-danger">{{ stat.min|floatformat:1 }}/20</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Élèves évalués</span>
+                                <span class="fw-bold">{{ stat.count }} / {{ stat.classe.students.count }}</span>
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">Aucun résultat pour le moment.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">Aucune classe n'utilise cette séquence pour l'instant.</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

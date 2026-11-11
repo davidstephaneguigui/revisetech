@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+
 from pedagogy.models import Sequence
 from learning.models import Result
 from .models import Classe, Suggestion
@@ -10,6 +11,7 @@ from accounts.decorators import is_teacher
 from django.urls import reverse
 from .utils import get_student_global_score
 from django.http import HttpResponseForbidden
+from classroom.utils import compute_sequence_stats
 
 
 @login_required
@@ -78,12 +80,35 @@ def class_detail(request, class_id):
         # For GET requests, populate the sequence form
         sequence_form.fields['sequences'].queryset = Sequence.objects.filter(status='PUBLISHED')
     
+    # =========================================================
+    # NOUVEAU : Calcul des statistiques pour chaque séquence
+    # =========================================================
+    available_sequences = Sequence.objects.filter(status='PUBLISHED')
+    sequences_data = []
+    
+    for seq in available_sequences:
+        # On utilise le helper pour avoir la moyenne globale (toutes classes confondues)
+        avg, min_s, max_s, count = compute_sequence_stats(seq)
+        
+        # On convertit la moyenne sur 20 en pourcentage de réussite
+        if avg is not None:
+            success_rate = int((avg / 20) * 100)
+        else:
+            success_rate = None
+            
+        sequences_data.append({
+            'sequence': seq,
+            'rate': success_rate,
+            'count': count
+        })
+    
     context = {
         'classe': classe,
         'students': students,
         'sequence_form': sequence_form,
         'student_form': student_form,
-        'class_sequences': classe.sequences.all()
+        'class_sequences': classe.sequences.all(),
+        'sequences_data': sequences_data, # <-- On passe la liste au template
     }
     
     return render(request, 'classroom/class_detail.html', context)
@@ -116,7 +141,6 @@ def join_class(request):
 
 
 @login_required
-@is_teacher
 def student_results(request, student_id):
     """
     Display the results of a specific student and handle sending suggestions.
@@ -172,6 +196,7 @@ def suggestion_list(request):
 
 
 @login_required
+@is_teacher
 def teacher_results(request):
     # Sécurité : On ne récupère que les classes de l'enseignant connecté
     classes = Classe.objects.filter(main_teacher=request.user).order_by('name')
@@ -190,6 +215,7 @@ def teacher_results(request):
 
 
 @login_required
+@is_teacher
 def class_results(request, class_id):
     # Sécurité : On vérifie que la classe appartient bien à l'enseignant connecté
     classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
@@ -222,6 +248,7 @@ def class_results(request, class_id):
 
 
 @login_required
+@is_teacher
 def student_profile(request, student_id):
     User = get_user_model()
     student = get_object_or_404(User, id=student_id)
@@ -275,3 +302,4 @@ def student_profile(request, student_id):
         'breadcrumbs': breadcrumbs
     }
     return render(request, 'classroom/student_profile.html', context)
+

@@ -57,7 +57,7 @@
                                                 <div style="margin-top: 2px;">
                                                     <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModal{{ sequence.id }}" onclick="event.stopPropagation();" style="font-size: 10px !important; padding: 0.2rem 0.5rem; font-weight: normal !important;">
                                                         <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
-                                                    </span>
+                                                    </span>                                
                                                 </div>
                                                 
                                             </div>
@@ -181,12 +181,22 @@
                             {% for sequence in validated_sequences %}
                                 <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
                                     <h2 class="accordion-header" id="headingValidated{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseValidated{{ sequence.id }}" aria-expanded="false" aria-controls="collapseValidated{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">                                            
+                                            <div class="d-flex flex-column w-100 text-start pe-3">
+                                                
+                                                <!-- Ligne 1 : Titre -->
+                                                <div class="seq-title">{{ sequence.name }}</div>
+                                                
+                                                <!-- Ligne 2 : Sous-titre (sans le concepteur) -->
+                                                <div class="seq-subtitle">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                                
+                                                <!-- Ligne 3 : Badge aligné à droite -->
+                                                <div class="w-100 text-end mt-1">
+                                                    <span class="badge bg-success rounded-pill seq-badge" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
+                                                    </span>
                                                 </div>
+                                                
                                             </div>
                                         </button>
                                     </h2>
@@ -326,12 +336,22 @@
                             {% for sequence in content_pending_sequences %}
                                 <div class="accordion-item mb-3 shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
                                     <h2 class="accordion-header" id="headingContent{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseContent{{ sequence.id }}" aria-expanded="false" aria-controls="collapseContent{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">    
+                                            <div class="d-flex flex-column w-100 text-start pe-3">
+                                                
+                                                <!-- Ligne 1 : Titre -->
+                                                <div class="seq-title">{{ sequence.name }}</div>
+                                                
+                                                <!-- Ligne 2 : Sous-titre (sans le concepteur) -->
+                                                <div class="seq-subtitle">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                                
+                                                <!-- Ligne 3 : Badge aligné à droite -->
+                                                <div class="w-100 text-end mt-1">
+                                                    <span class="badge bg-success rounded-pill seq-badge" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
+                                                    </span>
                                                 </div>
+                                                
                                             </div>
                                         </button>
                                     </h2>
@@ -437,12 +457,22 @@
                             {% for sequence in second_review_sequences %}
                                 <div class="accordion-item mb-3 shadow-sm border-0 border-start border-5 border-warning" style="border-radius: 12px; overflow: hidden;">
                                     <h2 class="accordion-header" id="headingSecond{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSecond{{ sequence.id }}" aria-expanded="false" aria-controls="collapseSecond{{ sequence.id }}">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</span>
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">    
+                                            <div class="d-flex flex-column w-100 text-start pe-3">
+                                                
+                                                <!-- Ligne 1 : Titre -->
+                                                <div class="seq-title">{{ sequence.name }}</div>
+                                                
+                                                <!-- Ligne 2 : Sous-titre (sans le concepteur) -->
+                                                <div class="seq-subtitle">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                                
+                                                <!-- Ligne 3 : Badge aligné à droite -->
+                                                <div class="w-100 text-end mt-1">
+                                                    <span class="badge bg-success rounded-pill seq-badge" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
+                                                    </span>
                                                 </div>
+                                                
                                             </div>
                                         </button>
                                     </h2>
@@ -555,16 +585,20 @@
                         <div class="d-grid gap-3">
                             {% for sequence in content_validated_sequences %}
                                 <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
-                                            <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#invalidateIntentModal{{ sequence.id }}">
+                                    <div class="d-flex flex-column w-100 text-start">
+                                        
+                                        <!-- Ligne 1 : Titre -->
+                                        <div class="seq-title fw-bold text-dark">{{ sequence.name }}</div>
+                                        
+                                        <!-- Ligne 2 : Sous-titre -->
+                                        <div class="seq-subtitle text-muted">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                        
+                                        <!-- Ligne 3 : Bouton aligné à droite -->
+                                        <div class="w-100 text-end mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#invalidateIntentModal{{ sequence.id }}" style="font-size: 10px;">
                                                 Annuler la validation
                                             </button>
-                                        </div>
+                                        </div>      
                                     </div>
                                 </div>
                             {% empty %}
@@ -594,17 +628,16 @@
                         <div class="d-grid gap-3">
                             {% for sequence in published_sequences %}
                                 <div class="card py-3 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <div class="fw-bold fs-5 text-dark">{{ sequence.name }}</div>
-                                            <div class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}</div>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-2">
-                                            
-                                            <!-- Badge cliquable -->
-                                            <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}">
+                                    <div class="d-flex flex-column w-100 text-start">
+                                        <div class="seq-title fw-bold text-dark">{{ sequence.name }}</div>
+                                        <div class="seq-subtitle text-muted">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }})</div>
+                                        <div class="w-100 text-end mt-1">
+                                            <span class="badge bg-success rounded-pill seq-badge" role="button" data-bs-toggle="modal" data-bs-target="#classesModalRef{{ sequence.id }}">
                                                 <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
                                             </span>
+                                            <a href="{% url 'sequence_stats' sequence.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 ms-2">
+                                                📊 Stats
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

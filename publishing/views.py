@@ -4,7 +4,9 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from pedagogy.models import Sequence
 from accounts.decorators import is_supervisor 
-
+from django.contrib.auth import get_user_model
+from classroom.models import Classe
+from classroom.utils import compute_sequence_stats
 
 @login_required
 @is_supervisor
@@ -112,3 +114,38 @@ def unpublish_sequence(request, sequence_id):
             
     messages.warning(request, f"La séquence '{sequence.name}' a été dépubliée.")
     return redirect('supervisor_dashboard')
+
+
+@login_required
+def sequence_stats(request, sequence_id):
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    
+    # Sécurité : accessible aux Enseignants, Référents, Superviseurs
+    user = request.user
+    if not (user.groups.filter(name__in=['Enseignant', 'Référent', 'Superviseur', 'Administrateur']).exists()):
+        return redirect('dashboard_home')
+
+    # Stats globales (toutes classes confondues)
+    global_avg, global_min, global_max, global_count = compute_sequence_stats(sequence)
+
+    # Stats par classe
+    classes_stats = []
+    for classe in sequence.classes.all():
+        avg, min_s, max_s, count = compute_sequence_stats(sequence, classe)
+        classes_stats.append({
+            'classe': classe,
+            'avg': avg,
+            'min': min_s,
+            'max': max_s,
+            'count': count
+        })
+
+    context = {
+        'sequence': sequence,
+        'global_avg': global_avg,
+        'global_min': global_min,
+        'global_max': global_max,
+        'global_count': global_count,
+        'classes_stats': classes_stats,
+    }
+    return render(request, 'publishing/sequence_stats.html', context)

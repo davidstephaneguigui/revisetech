@@ -211,6 +211,9 @@
                                         <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModal{{ sequence.id }}">
                                             <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
                                         </span>
+                                        <a href="{% url 'sequence_stats' sequence.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 ms-2">
+                                            📊 Stats
+                                        </a>
                                     </div>
                                 </button>
                             </h2>

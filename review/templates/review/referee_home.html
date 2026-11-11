@@ -37,13 +37,29 @@
                         <div class="accordion" id="accordionPendingIntent">
                             {% for sequence in pending_sequences %}
                                 <div class="accordion-item border-0 mb-2 shadow-sm" style="border-radius: 8px;">
-                                    <h2 class="accordion-header" id="headingIntent{{ sequence.id }}">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIntent{{ sequence.id }}" aria-expanded="false" aria-controls="collapseIntent{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }};">
-                                            <div class="d-flex w-100 justify-content-between align-items-center pe-3">
-                                                <div>
-                                                    <strong class="fs-5">{{ sequence.name }}</strong><br>
-                                                    <span class="text-muted small">{{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Proposé par : {{ sequence.creator.username }}</span>
+                                    <h2 class="accordion-header" id="headingPub{{ sequence.id }}" style="font-size: 1rem !important; margin-bottom: 0;">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePub{{ sequence.id }}" aria-expanded="false" aria-controls="collapsePub{{ sequence.id }}" style="border-left: 5px solid {{ sequence.chapter.matiere.color_hex }}; padding: 1rem; display: block;">
+                                            
+                                            <!-- display: block sur le bouton casse la logique 2 colonnes de Bootstrap -->
+                                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                                                
+                                                <!-- Ligne 1 : Titre (11px, gras) -->
+                                                <div style="font-size: 11px !important; font-weight: bold !important; color: #333; line-height: 1.2; margin-right: 30px;">
+                                                    {{ sequence.name }}
                                                 </div>
+                                                
+                                                <!-- Ligne 2 : Sous-titre (10px, normal) -->
+                                                <div style="font-size: 10px !important; font-weight: normal !important; color: #6c757d; line-height: 1.2; margin-right: 30px;">
+                                                    {{ sequence.chapter.name }} ({{ sequence.chapter.matiere.name }}) - Concepteur : {{ sequence.creator.username }}
+                                                </div>
+                                                
+                                                <!-- Ligne 3 : Badge -->
+                                                <div style="margin-top: 2px;">
+                                                    <span class="badge bg-success rounded-pill" role="button" data-bs-toggle="modal" data-bs-target="#classesModal{{ sequence.id }}" onclick="event.stopPropagation();" style="font-size: 10px !important; padding: 0.2rem 0.5rem; font-weight: normal !important;">
+                                                        <i class="bi bi-people-fill"></i> {{ sequence.classes.count }} classe{{ sequence.classes.count|pluralize }}
+                                                    </span>
+                                                </div>
+                                                
                                             </div>
                                         </button>
                                     </h2>

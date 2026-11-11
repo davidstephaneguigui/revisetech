@@ -4,11 +4,12 @@
 
 {% block content %}
     <div class="text-center mt-4 mb-5">
-        <h1 class="fw-bold" style="color: #6a1b9a;">Bienvenue, {{ user.username }}</h1>
+        <h1 class="fw-bold" style="color: #6a1b9a;">Bienvenue {{ user.username }}</h1>
         <h4 class="text-muted">Espace {{ role }}</h4>
     </div>
 
     <div class="row justify-content-center g-4">
+
         {% if role == 'Concepteur' %}
             <!-- Concepteur -->
             <div class="col-12 col-md-6 col-lg-3">
@@ -16,7 +17,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
                         <h5 class="fw-bold text-dark">Brouillons</h5>
-                        <h2 class="display-5 fw-bold text-secondary mb-0">{{ drafts }}</h2>
+                        {% if drafts > 0 %}
+                            <h2 class="display-5 fw-bold text-warning mb-0">{{ drafts }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">À proposer</p>
                     </div>
                 </a>
@@ -26,7 +31,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">En cours</h5>
-                        <h2 class="display-5 fw-bold text-success mb-0">{{ in_progress }}</h2>
+                        {% if in_progress > 0 %}
+                            <h2 class="display-5 fw-bold text-warning mb-0">{{ in_progress }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">En rédaction</p>
                     </div>
                 </a>
@@ -36,7 +45,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">⏳</div>
                         <h5 class="fw-bold text-dark">Validées</h5>
-                        <h2 class="display-5 fw-bold text-warning mb-0">{{ validated }}</h2>
+                        {% if validated > 0 %}
+                            <h2 class="display-5 fw-bold text-success mb-0">{{ validated }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">En attente de validation</p>
                     </div>
                 </a>
@@ -46,7 +59,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        <h2 class="display-5 fw-bold text-primary mb-0">{{ published }}</h2>
+                        {% if published > 0 %}
+                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Visibles par les élèves</p>
                     </div>
                 </a>
@@ -59,7 +76,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
                         <h5 class="fw-bold text-dark">Intentions</h5>
-                        <h2 class="display-5 fw-bold text-warning mb-0">{{ pending_intentions }}</h2>
+                        {% if pending_intentions > 0 %}
+                            <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_intentions }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">À valider</p>
                     </div>
                 </a>
@@ -69,7 +90,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">Contenus</h5>
-                        <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_contents }}</h2>
+                        {% if pending_contents > 0 %}
+                            <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_contents }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">À valider</p>
                     </div>
                 </a>
@@ -79,7 +104,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">👀</div>
                         <h5 class="fw-bold text-dark">Second avis</h5>
-                        <h2 class="display-5 fw-bold text-info mb-0">{{ second_reviews }}</h2>
+                        {% if second_reviews > 0 %}
+                            <h2 class="display-5 fw-bold text-danger mb-0">{{ second_reviews }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Demandés</p>
                     </div>
                 </a>
@@ -89,7 +118,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        {% if published > 0 %}
+                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">En ligne</p>
                     </div>
                 </a>
@@ -102,7 +135,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">Projets</h5>
-                        <h2 class="display-5 fw-bold text-info mb-0">{{ in_preparation }}</h2>
+                        {% if in_preparation > 0 %}
+                            <h2 class="display-5 fw-bold text-warning mb-0">{{ in_preparation }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">En rédaction</p>
                     </div>
                 </a>
@@ -112,7 +149,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">À publier</h5>
-                        <h2 class="display-5 fw-bold text-danger mb-0">{{ to_publish }}</h2>
+                        {% if to_publish > 0 %}
+                            <h2 class="display-5 fw-bold text-danger mb-0">{{ to_publish }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Validés par le référent</p>
                     </div>
                 </a>
@@ -122,7 +163,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">👀</div>
                         <h5 class="fw-bold text-dark">2ème avis</h5>
-                        <h2 class="display-5 fw-bold text-warning mb-0">{{ second_reviews }}</h2>
+                        {% if second_reviews > 0 %}
+                            <h2 class="display-5 fw-bold text-danger mb-0">{{ second_reviews }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Demandés</p>
                     </div>
                 </a>
@@ -132,7 +177,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">✅</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        {% if published > 0 %}
+                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">En ligne</p>
                     </div>
                 </a>
@@ -145,7 +194,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🏫</div>
                         <h5 class="fw-bold text-dark">Mes Classes</h5>
-                        <h2 class="display-5 fw-bold text-primary mb-0">{{ classes_count }}</h2>
+                        {% if classes_count > 0 %}
+                            <h2 class="display-5 fw-bold text-primary mb-0">{{ classes_count }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Classes gérées</p>
                     </div>
                 </a>
@@ -155,7 +208,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🎒</div>
                         <h5 class="fw-bold text-dark">Mes Élèves</h5>
-                        <h2 class="display-5 fw-bold text-info mb-0">{{ students_count }}</h2>
+                        {% if students_count > 0 %}
+                            <h2 class="display-5 fw-bold text-primary mb-0">{{ students_count }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Élèves suivis</p>
                     </div>
                 </a>
@@ -165,7 +222,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">💡</div>
                         <h5 class="fw-bold text-dark">Suggestions</h5>
-                        <h2 class="display-5 fw-bold text-warning mb-0">{{ suggestions_count }}</h2>
+                        {% if suggestions_count > 0 %}
+                            <h2 class="display-5 fw-bold text-warning mb-0">{{ suggestions_count }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Envoyées</p>
                     </div>
                 </a>
@@ -175,7 +236,11 @@
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📊</div>
                         <h5 class="fw-bold text-dark">Résultats</h5>
-                        <h2 class="display-5 fw-bold text-success mb-0">{{ results_count }}</h2>
+                        {% if results_count > 0 %}
+                            <h2 class="display-5 fw-bold text-success mb-0">{{ results_count }}</h2>
+                        {% else %}
+                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
+                        {% endif %}
                         <p class="text-muted small mb-0">Quiz réalisés</p>
                     </div>
                 </a>
@@ -193,6 +258,6 @@
                 </a>
             </div>
         {% endif %}
-    </div>
 
+    </div>
 {% endblock %}

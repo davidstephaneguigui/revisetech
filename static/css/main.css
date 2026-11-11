@@ -61,3 +61,34 @@ body {
     font-weight: 700;
     border-bottom: 3px solid #6a1b9a;
 }
+
+/* AJUSTEMENTS POUR MOBILES (Écrans < 768px) */
+@media (max-width: 767.98px) {
+    /* Réduction globale de la police de base */
+    body {
+        font-size: 0.9rem;
+    }
+    /* Réduction des titres */
+    h1, .h1 { font-size: 1.75rem; }
+    h2, .h2 { font-size: 1.5rem; }
+    h3, .h3 { font-size: 1.25rem; }
+    h4, .h4 { font-size: 1.1rem; }
+    h5, .h5 { font-size: 1rem; }
+    h6, .h6 { font-size: 0.9rem; }
+    /* Réduction des gros chiffres des dashboards (ex: .display-5) */
+    .display-5 {
+        font-size: 2.2rem;
+    }
+    /* Un peu moins de padding dans les cartes pour gagner de l'espace */
+    .card-body {
+        padding: 1rem;
+    }
+    /* Ajustement de la navbar */
+    .navbar-brand {
+        font-size: 1.5rem !important;
+    }
+    /* Réduire le padding des boutons d'accordéon sur mobile */
+    .accordion-button {
+        padding: 0.75rem 0.5rem !important;
+    }
+}

@@ -1,0 +1,80 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ sequence.name }} - {{ classe.name }}{% endblock %}
+
+{% block content %}
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            {% for step in breadcrumbs %}
+                {% if step.url %}
+                    <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Préparation : {{ sequence.name }}</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h5 class="fw-bold text-dark">Séances de la séquence</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-3">
+                        {% for session in sessions %}
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded">
+                                
+                                <!-- Infos Séance -->
+                                <div>
+                                    <div class="fw-bold">{{ session.order }}. {{ session.name }}</div>
+                                    <div class="text-muted small mt-1">
+                                        {% if session.is_essential %}
+                                            <span class="badge bg-warning text-dark">Essentielle</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Facultative</span>
+                                        {% endif %}
+                                        <span class="ms-2">{{ session.get_session_type_display }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex gap-2">
+                                    <!-- Bouton Fait/Non fait -->
+                                    <button class="btn btn-sm {% if session in classe.completed_sessions.all %}btn-success{% else %}btn-outline-secondary{% endif %} toggle-session-btn" 
+                                            data-class="{{ classe.id }}" 
+                                            data-session="{{ session.id }}">
+                                        {% if session in classe.completed_sessions.all %}
+                                            <i class="bi bi-check-circle-fill"></i> Réalisée
+                                        {% else %}
+                                            <i class="bi bi-circle"></i> À faire
+                                        {% endif %}
+                                    </button>
+
+                                    <!-- Lien vers le détail de la séance (Niveau 5) -->
+                                    <a href="{% url 'prepare_session' classe.id session.id %}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                        Préparer <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">Aucune séance générée.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF pour le JS -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <script src="{% static 'js/classroom/class_results.js' %}"></script>
+{% endblock %}

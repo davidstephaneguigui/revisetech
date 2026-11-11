@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.conf import settings
-from pedagogy.models import Activity
+from pedagogy.models import Activity, Session
 
 
 class Classe(models.Model):
@@ -40,6 +40,35 @@ class Classe(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.level} {self.specialty})"
+
+
+class SessionCompletion(models.Model):
+    classe = models.ForeignKey('Classe', on_delete=models.CASCADE, related_name='completed_sessions')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='completions')
+    is_completed = models.BooleanField(default=False, verbose_name="Séance réalisée")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('classe', 'session')
+        verbose_name = "Suivi de réalisation"
+        verbose_name_plural = "Suivis de réalisation"
+
+    def __str__(self):
+        return f"{self.classe.name} - {self.session.name} : {'Fait' if self.is_completed else 'Non fait'}"
+
+
+class ActivitySelection(models.Model):
+    classe = models.ForeignKey(Classe, on_delete=models.CASCADE, related_name='selected_activities')
+    activity = models.ForeignKey('pedagogy.Activity', on_delete=models.CASCADE, related_name='selections')
+    is_used = models.BooleanField(default=True, verbose_name="Activité utilisée")
+
+    class Meta:
+        unique_together = ('classe', 'activity')
+        verbose_name = "Sélection d'activité"
+        verbose_name_plural = "Sélections d'activités"
+
+    def __str__(self):
+        return f"{self.classe.name} - {self.activity.title} : {'Oui' if self.is_used else 'Non'}"
 
 
 class Suggestion(models.Model):

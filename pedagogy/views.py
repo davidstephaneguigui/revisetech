@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from accounts.decorators import get_user_roles
 from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
+from classroom.models import ActivitySelection
 from classroom.models import Suggestion
 from learning.models import Result, Badge
+from django.db.models import Q
 
 
 def can_view_unpublished(user):
@@ -121,8 +123,20 @@ def session_detail(request, session_id):
     if can_view_unpublished(request.user):
         activities = session.activities.all()
     else:
-        # Students only see published activities
-        activities = session.activities.filter(status='PUBLISHED')
+        # --- NOUVELLE LOGIQUE POUR LES ÉLÈVES ---
+        student_classes = request.user.student_classes.all()
+        
+        # 1. Récupérer les IDs des activités globales validées par les profs
+        selected_global_ids = ActivitySelection.objects.filter(
+            classe__in=student_classes, 
+            is_used=True
+        ).values_list('activity_id', flat=True)
+        
+        # 2. Filtrer les activités de la séance
+        activities = session.activities.filter(
+            Q(is_local=True, classe__in=student_classes) | 
+            Q(is_local=False, id__in=selected_global_ids, status='PUBLISHED')
+        ).distinct()
         
     context = {
         'session': session,
@@ -143,9 +157,28 @@ def activity_detail(request, activity_id):
     if not can_view_unpublished(request.user) and activity.status != 'PUBLISHED':
         raise Http404("Cette activité n'est pas encore publiée.")
         
+    # --- NOUVELLE SÉCURITÉ POUR LES ÉLÈVES ---
+    if not can_view_unpublished(request.user):
+        student_classes = request.user.student_classes.all()
+        
+        if activity.is_local:
+            # Si c'est une activité locale, elle doit appartenir à une de ses classes
+            if activity.classe not in student_classes:
+                raise Http404("Vous n'avez pas accès à cette activité.")
+        else:
+            # Si c'est une activité globale, elle doit avoir été validée par un prof
+            is_selected = ActivitySelection.objects.filter(
+                classe__in=student_classes, 
+                activity=activity, 
+                is_used=True
+            ).exists()
+            if not is_selected:
+                raise Http404("Vous n'avez pas accès à cette activité.")
+            
     questions = None
     score = None
     
+    # ... (Le reste de ta fonction reste inchangé à partir d'ici)
     if activity.activity_type == 'QUIZ':
         questions = activity.questions.prefetch_related('choices').all()
         

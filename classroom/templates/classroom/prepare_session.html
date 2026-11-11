@@ -1,0 +1,94 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Préparer : {{ session.name }}{% endblock %}
+
+{% block content %}
+    <!-- Fil d'Ariane -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            {% for step in breadcrumbs %}
+                {% if step.url %}
+                    <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Préparation : {{ session.name }}</h3>
+        <a href="{% url 'create_local_activity' classe.id session.id %}" class="btn btn-primary rounded-pill">
+            + Ajouter une activité locale
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Activités Globales (du référentiel) -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h5 class="fw-bold text-dark">Activités du programme</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        {% for activity in global_activities %}
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded bg-light">
+                                <div>
+                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-info text-dark ms-1">{{ activity.get_activity_type_display }}</span></div>
+                                    {% if activity.content %}
+                                        <div class="text-muted small mt-1">{{ activity.content|truncatechars:100 }}</div>
+                                    {% endif %}
+                                </div>
+                                <!-- Interrupteur de sélection -->
+                                <div class="form-check form-switch fs-4 mb-0">
+                                    <input class="form-check-input toggle-activity-btn" type="checkbox" role="switch" 
+                                           data-class="{{ classe.id }}" data-activity="{{ activity.id }}"
+                                           {% if activity.id in selected_activity_ids %}checked{% endif %}>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Aucune activité globale pour cette séance.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activités Locales (créées par l'enseignant) -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid #6a1b9a !important;">
+                <div class="card-header bg-white border-0 pt-3 pb-0">
+                    <h5 class="fw-bold text-dark">Vos activités locales pour cette classe</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        {% for activity in local_activities %}
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded" style="border-left: 3px solid #6a1b9a !important; background-color: #fdfbfe;">
+                                <div>
+                                    <div class="fw-bold">{{ activity.title }} <span class="badge bg-primary ms-1">Local</span></div>
+                                    {% if activity.content %}
+                                        <div class="text-muted small mt-1">{{ activity.content|truncatechars:100 }}</div>
+                                    {% endif %}
+                                </div>
+                                <!-- Interrupteur de sélection -->
+                                <div class="form-check form-switch fs-4 mb-0">
+                                    <input class="form-check-input toggle-activity-btn" type="checkbox" role="switch" 
+                                           data-class="{{ classe.id }}" data-activity="{{ activity.id }}"
+                                           {% if activity.id in selected_activity_ids %}checked{% endif %}>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Vous n'avez pas encore ajouté d'activité locale pour cette séance.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF pour le JS et chargement du script -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <script src="{% static 'js/classroom/prepare_session.js' %}"></script>
+{% endblock %}

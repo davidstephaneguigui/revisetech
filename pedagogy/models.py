@@ -120,6 +120,7 @@ class Session(models.Model):
     objective = models.TextField(verbose_name="Objectif de la séance", blank=True)
     session_type = models.CharField(max_length=20, choices=SESSION_TYPES, default='COURSE', verbose_name="Type de séance")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT', verbose_name="Statut")
+    is_essential = models.BooleanField(default=True, verbose_name="Séance essentielle", help_text="Si décoché, la séance est considérée comme facultative pour l'enseignant.")
     
     class Meta:
         verbose_name = "Séance"
@@ -149,6 +150,10 @@ class Activity(models.Model):
     content = models.TextField(blank=True, null=True, verbose_name="Contenu textuel (Cours, consignes)")
     external_url = models.URLField(blank=True, null=True, verbose_name="Lien externe (Vidéo, simulateur...)")
     file_upload = models.FileField(upload_to='activities/', blank=True, null=True, verbose_name="Fichier joint (SCORM, H5P, PDF...)")
+
+    is_local = models.BooleanField(default=False, verbose_name="Activité locale", help_text="Si coché, cette activité n'apparaît que pour la classe spécifiée.")
+    creator = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='created_activities', verbose_name="Créateur (si local)")
+    classe = models.ForeignKey('classroom.Classe', on_delete=models.CASCADE, null=True, blank=True, related_name='local_activities', verbose_name="Classe concernée (si local)")
     
     class Meta:
         verbose_name = "Activité"

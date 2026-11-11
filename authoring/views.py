@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.forms import inlineformset_factory
-from pedagogy.models import Matiere, Chapter, Sequence, Session, PlannedSession, Activity, Question, Choice
+from pedagogy.models import Chapter, Sequence, Session, PlannedSession, Activity, Question, Choice
 from .forms import QuestionForm, ChoiceForm
 from django.contrib import messages
 from accounts.decorators import is_designer

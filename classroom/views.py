@@ -5,13 +5,19 @@ from django.contrib.auth import get_user_model
 
 from pedagogy.models import Sequence
 from learning.models import Result
-from .models import Classe, Suggestion
+from .models import Classe, Suggestion, ActivitySelection
 from .forms import ClasseForm, AddSequenceToClassForm, JoinClassForm, SuggestionForm, AddStudentForm
 from accounts.decorators import is_teacher
 from django.urls import reverse
 from .utils import get_student_global_score
 from django.http import HttpResponseForbidden
 from classroom.utils import compute_sequence_stats
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import SessionCompletion
+
+from pedagogy.models import Session
+from .forms import LocalActivityForm
 
 
 @login_required
@@ -112,6 +118,66 @@ def class_detail(request, class_id):
     }
     
     return render(request, 'classroom/class_detail.html', context)
+
+
+@login_required
+@is_teacher
+def class_sequence_detail(request, class_id, sequence_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    
+    # On vérifie que la séquence est bien assignée à cette classe
+    if sequence not in classe.sequences.all():
+        return redirect('class_detail', class_id=classe.id)
+        
+    sessions = sequence.sessions.all().order_by('order')
+    
+    # On prépare les données pour le template (comme sur la page class_results)
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes Classes', 'url': reverse('teacher_dashboard')}, # ou teacher_results
+        {'label': classe.name, 'url': reverse('class_detail', args=[classe.id])},
+        {'label': sequence.name, 'url': None}
+    ]
+
+    context = {
+        'classe': classe,
+        'sequence': sequence,
+        'sessions': sessions,
+        'breadcrumbs': breadcrumbs
+    }
+    return render(request, 'classroom/class_sequence_detail.html', context)
+
+
+@login_required
+@is_teacher
+def prepare_session(request, class_id, session_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    session = get_object_or_404(Session, id=session_id)
+    
+    # On récupère les activités globales (non locales)
+    global_activities = session.activities.filter(is_local=False).order_by('id')
+    
+    # On récupère les activités locales créées par CET enseignant pour CETTE classe
+    local_activities = session.activities.filter(is_local=True, classe=classe).order_by('id')
+    
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mes Classes', 'url': reverse('teacher_results')},
+        {'label': classe.name, 'url': reverse('class_detail', args=[classe.id])},
+        {'label': session.sequence.name, 'url': reverse('class_sequence_detail', args=[classe.id, session.sequence.id])},
+        {'label': session.name, 'url': None}
+    ]
+    
+    context = {
+        'classe': classe,
+        'session': session,
+        'global_activities': global_activities,
+        'local_activities': local_activities,
+        'breadcrumbs': breadcrumbs,
+        'selected_activity_ids': list(classe.selected_activities.filter(is_used=True).values_list('activity_id', flat=True)),
+    }
+    return render(request, 'classroom/prepare_session.html', context)
 
 
 @login_required
@@ -303,3 +369,74 @@ def student_profile(request, student_id):
     }
     return render(request, 'classroom/student_profile.html', context)
 
+
+@require_POST
+@login_required
+@is_teacher
+def toggle_session_completion(request, class_id, session_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    
+    # On cherche ou on crée l'enregistrement
+    completion, created = SessionCompletion.objects.get_or_create(
+        classe=classe, 
+        session_id=session_id
+    )
+    
+    # On inverse l'état
+    completion.is_completed = not completion.is_completed
+    completion.save()
+    
+    # On renvoie une réponse JSON pour que le JS puisse mettre à jour l'icône sans recharger la page
+    return JsonResponse({
+        'status': 'success', 
+        'is_completed': completion.is_completed
+    })
+
+
+@login_required
+def create_local_activity(request, class_id, session_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    session = get_object_or_404(Session, id=session_id)
+    
+    if request.method == 'POST':
+        form = LocalActivityForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.is_local = True
+            activity.creator = request.user
+            activity.classe = classe
+            activity.status = 'PUBLISHED'
+            
+            # 1. On sauvegarde d'abord l'activité en base de données
+            activity.save() 
+            
+            # 2. On ajoute la séance à la relation ManyToMany
+            activity.sessions.add(session)
+            
+            messages.success(request, "L'activité locale a été ajoutée à cette séance.")
+            return redirect('prepare_session', class_id=classe.id, session_id=session.id)
+    else:
+        form = LocalActivityForm()
+
+    return render(request, 'classroom/create_local_activity.html', {
+        'form': form,
+        'classe': classe,
+        'session': session
+    })
+
+
+@require_POST
+@login_required
+@is_teacher
+def toggle_activity_usage(request, class_id, activity_id):
+    classe = get_object_or_404(Classe, id=class_id, main_teacher=request.user)
+    
+    selection, created = ActivitySelection.objects.get_or_create(
+        classe=classe, 
+        activity_id=activity_id
+    )
+    
+    selection.is_used = not selection.is_used
+    selection.save()
+    
+    return JsonResponse({'status': 'success', 'is_used': selection.is_used})

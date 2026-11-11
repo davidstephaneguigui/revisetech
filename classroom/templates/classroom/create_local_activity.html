@@ -1,0 +1,38 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Ajouter une activité locale{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center mt-2">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h3 class="fw-bold text-dark">Nouvelle activité locale</h3>
+                    <p class="text-muted">Pour la classe : <strong>{{ classe.name }}</strong> (Séance : {{ session.name }})</p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Titre</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Type d'activité</label>
+                            {{ form.activity_type }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Contenu</label>
+                            {{ form.content }}
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a href="{% url 'class_results' classe.id %}" class="btn btn-outline-secondary rounded-pill px-4">Annuler</a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">Créer l'activité</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

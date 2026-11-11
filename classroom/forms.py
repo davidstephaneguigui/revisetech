@@ -1,5 +1,5 @@
 from django import forms
-from pedagogy.models import Matiere, Sequence
+from pedagogy.models import Matiere, Sequence, Activity
 from .models import Classe, Suggestion
 
 
@@ -16,6 +16,17 @@ class ClasseForm(forms.ModelForm):
             'name': 'Nom de la classe',
             'level': 'Niveau',
             'specialty': 'Spécialité',
+        }
+
+
+class LocalActivityForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = ['title', 'activity_type', 'content']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Titre de l\'activité'}),
+            'activity_type': forms.Select(attrs={'class': 'form-select'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Contenu de l\'activité (texte, consignes...)'}),
         }
 
 

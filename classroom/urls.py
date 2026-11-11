@@ -10,4 +10,9 @@ urlpatterns = [
     path('teacher/results', views.teacher_results, name='teacher_results'),
     path('teacher/class/<int:class_id>/', views.class_results, name='class_results'),
     path('teacher/student/<int:student_id>/', views.student_profile, name='student_profile'),
+    path('class/<int:class_id>/session/<int:session_id>/toggle/', views.toggle_session_completion, name='toggle_session_completion'),
+    path('class/<int:class_id>/session/<int:session_id>/add-local/', views.create_local_activity, name='create_local_activity'),
+    path('class/<int:class_id>/sequence/<int:sequence_id>/', views.class_sequence_detail, name='class_sequence_detail'),
+    path('class/<int:class_id>/session/<int:session_id>/prepare/', views.prepare_session, name='prepare_session'),
+    path('class/<int:class_id>/activity/<int:activity_id>/toggle-usage/', views.toggle_activity_usage, name='toggle_activity_usage'),
 ]

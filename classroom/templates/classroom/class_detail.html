@@ -48,18 +48,17 @@
 
             <div class="d-grid gap-2 mb-5">
                 {% for sequence in class_sequences %}
-                    <div class="card py-2 px-3 shadow-sm border-0" style="border-radius: 12px; background-color: white; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-bold text-dark">{{ sequence.name }}</div>
-                                <div class="text-muted small">{{ sequence.chapter.matiere.name }} - {{ sequence.chapter.name }}</div>
+                    <a href="{% url 'class_sequence_detail' classe.id sequence.id %}" class="text-decoration-none">
+                        <div class="card mb-3 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ sequence.chapter.matiere.color_hex }} !important;">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold text-dark">{{ sequence.name }}</div>
+                                    <div class="text-muted small">{{ sequence.chapter.name }} - {{ sequence.chapter.matiere.name }}</div>
+                                </div>
+                                <i class="bi bi-chevron-right text-muted"></i>
                             </div>
                         </div>
-                    </div>
-                {% empty %}
-                    <div class="alert alert-info py-2">
-                        Aucune séquence associée à cette classe pour le moment.
-                    </div>
+                    </a>
                 {% endfor %}
             </div>
 

@@ -67,6 +67,7 @@ class Sequence(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_sequences", verbose_name="Concepteur", null=True, blank=True)
     referee_comment = models.TextField(blank=True, null=True, verbose_name="Commentaire du référent")
     needs_second_review = models.BooleanField(default=False, verbose_name="Nécessite une seconde validation")
+    first_referee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='first_reviews', verbose_name="Premier référent ayant validé")
     has_unreviewed_changes = models.BooleanField(default=False, verbose_name="Modifications non validées")
 
     class Meta:

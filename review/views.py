@@ -24,7 +24,6 @@ def submit_content(request, sequence_id):
     
     return redirect('manage_sequence', sequence_id=sequence.id)
 
-
 @require_POST
 @login_required
 @is_referee
@@ -40,6 +39,7 @@ def validate_content(request, sequence_id):
     if sequence.status == 'CONTENT_PENDING':
         sequence.status = 'CONTENT_VALIDATED'
         sequence.referee_comment = comment
+        sequence.first_referee = request.user  # <-- On enregistre l'auteur du premier avis
         sequence.save()
         
         messages.success(request, f"Le contenu de la séquence '{sequence.name}' a été validé.")
@@ -54,6 +54,11 @@ def validate_content(request, sequence_id):
             
     # Case 2: Second review requested by the supervisor
     elif sequence.status == 'CONTENT_VALIDATED' and sequence.needs_second_review:
+        # <-- NOUVEAU : On vérifie que ce n'est pas le même référent
+        if sequence.first_referee == request.user:
+            messages.error(request, "Vous ne pouvez pas donner un second avis sur une séquence que vous avez déjà validée. Un autre référent doit intervenir.")
+            return redirect('referee_dashboard')
+            
         sequence.referee_comment += f"\n\n--- Second avis ---\n{comment}"
         sequence.needs_second_review = False
         sequence.save()

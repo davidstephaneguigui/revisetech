@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
-from accounts.decorators import get_user_roles
-from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
-from classroom.models import ActivitySelection
-from classroom.models import Suggestion
-from learning.models import Result, Badge
 from django.db.models import Q
+
+from accounts.decorators import get_user_roles
+from classroom.models import ActivitySelection, Suggestion
+from learning.models import Result, Badge
+from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
 
 
 def can_view_unpublished(user):
@@ -146,6 +146,7 @@ def session_detail(request, session_id):
     return render(request, 'pedagogy/session_detail.html', context)
 
 
+
 @login_required
 def activity_detail(request, activity_id):
     """
@@ -162,11 +163,9 @@ def activity_detail(request, activity_id):
         student_classes = request.user.student_classes.all()
         
         if activity.is_local:
-            # Si c'est une activité locale, elle doit appartenir à une de ses classes
             if activity.classe not in student_classes:
                 raise Http404("Vous n'avez pas accès à cette activité.")
         else:
-            # Si c'est une activité globale, elle doit avoir été validée par un prof
             is_selected = ActivitySelection.objects.filter(
                 classe__in=student_classes, 
                 activity=activity, 
@@ -177,11 +176,20 @@ def activity_detail(request, activity_id):
             
     questions = None
     score = None
+    quiz_data = [] # <-- NOUVEAU : Préparation des données pour React
     
-    # ... (Le reste de ta fonction reste inchangé à partir d'ici)
     if activity.activity_type == 'QUIZ':
         questions = activity.questions.prefetch_related('choices').all()
         
+        # --- NOUVEAU : On construit la liste pour React ---
+        for q in questions:
+            quiz_data.append({
+                'id': q.id,
+                'text': q.text,
+                'choices': [{'id': c.id, 'text': c.text} for c in q.choices.all()]
+            })
+        
+        # L'ancienne logique POST (conservée au cas où)
         if request.method == 'POST':
             score = 0
             for question in questions:
@@ -230,7 +238,8 @@ def activity_detail(request, activity_id):
         'activity': activity,
         'questions': questions,
         'score': score,
-        'max_score': questions.count() if questions else 0
+        'max_score': questions.count() if questions else 0,
+        'quiz_data': quiz_data, # <-- NOUVEAU : On ajoute les données au contexte
     }
     
     return render(request, 'pedagogy/activity_detail.html', context)

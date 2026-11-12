@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_vite',
     'accounts',
     'authoring',
     'classroom',
@@ -146,3 +147,16 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_REDIRECT_URL = 'dashboard_home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+
+# Configuration de django-vite
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG, # Utilise le serveur Vite en dev, et le manifest en prod
+        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+    }
+}
+
+# Indiquer à Django où chercher les fichiers statiques de React
+STATICFILES_DIRS = [
+    BASE_DIR / "frontend" / "dist",
+]

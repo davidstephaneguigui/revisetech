@@ -5,29 +5,40 @@ Conceived as a "mobile-first" Progressive Web App (PWA), it allows students to r
 
 ## 🎯 Project Objectives
 
-The goal is to provide a simple tool for students (usable on iOS and Android without going through app stores) that is robust enough to handle the pedagogical complexity for teachers (classes, sequences, activities, validation).
+The goal is to provide a simple tool for students (usable on iOS and Android without going through app stores) that is robust enough to handle the pedagogical complexity for teachers (classes, sequences, activities, validation, pedagogical freedom).
 
 ## ✨ Current Features
 
 ### For Learners (Students)
 *   Login and registration via invitation code.
 *   Intuitive navigation through subjects, chapters, sequences, and sessions.
-*   Quizzes with real-time score calculation.
+*   Quizzes with real-time score calculation and badge rewards.
 *   Receive personalized revision suggestions from the teacher.
+*   Access customized content: only activities selected by their teacher (or created locally for their class) are visible.
 
 ### For Teachers
 *   Create and manage classes (generate invitation codes).
 *   Associate validated subjects with their classes.
-*   Detailed tracking of each student's results.
+*   **Detailed student tracking**: 4-level navigation (Class -> Sequence -> Session -> Student Profile) with color-coded global scores (Option B calculation).
+*   **Pedagogical Freedom**: 
+    *   Track session completion (Done/Not done).
+    *   Create local activities specific to their class.
+    *   Select, deselect, and reorder activities for their sessions.
+    *   Propose local activities to Designers for global publication.
+*   **Activity Bank**: Browse and import activities shared by other teachers.
 *   Send targeted suggestions (courses to review or exercises to redo).
 
 ### For Designers
 *   Dedicated workspace for pedagogical content creation.
 *   Create sequences and sessions.
-*   Create activities (Courses, Practical Work, Quizzes) with the ability to upload files (SCORM, H5P, PDF).
+*   Create activities (Courses, Practical Work, Quizzes).
+*   **Proposals Workflow**: Review and accept/reject local activities proposed by teachers to promote them to the global repository.
 
 ### For Referees and Supervisors
-*   Validation workflow: submission, validation, and rejection of sequences and chapters.
+*   **Validation workflow**: submission, validation, and rejection of intentions and contents.
+*   **Second validation**: Ensure objectivity by preventing the first referee from giving a second review.
+*   **Statistics Dashboard**: View aggregated statistics (average, min, max, success rate) on published sequences, without accessing individual grades.
+*   Publish sequences and monitor their usage across classes.
 
 ## 🏗️ Architecture
 
@@ -35,16 +46,18 @@ The project follows the principles of **Domain-Driven Design (DDD)**. Each Djang
 
 *   `accounts`: Identity management, users, and role-based routing (Django Groups).
 *   `pedagogy`: The pure data repository (Subject, Chapter, Sequence, Session, Activity, Question). *No business views here.*
-*   `authoring`: The Designer's workshop (content creation).
-*   `review`: The Referee and Supervisor's office (validation workflow).
-*   `classroom`: The Teacher's space (class management and suggestions).
+*   `authoring`: The Designer's workshop (content creation, proposals review, activity bank).
+*   `review`: The Referee's office (pedagogical validation).
+*   `publishing`: The Supervisor's office (final publication and sequence statistics).
+*   `classroom`: The Teacher's space (class management, pedagogical freedom, local activities).
 *   `learning`: The Student's space (navigation and results).
+*   `core`: Cross-cutting views (home dashboard, help center).
 
 ## 🛠️ Tech Stack
 
 *   **Backend:** Python 3.13, Django 6.1.2
 *   **Database:** SQLite (development) / PostgreSQL (future production)
-*   **Frontend:** HTML5, CSS3, Bootstrap 5
+*   **Frontend:** HTML5, CSS3, Bootstrap 5, Vanilla JavaScript (AJAX for toggles and ordering)
 *   **Typography:** Roboto font (via Google Fonts)
 *   **Future:** React (interactive islands for Quizzes and Dashboards), PWA (Manifest & Service Worker)
 
@@ -55,6 +68,11 @@ The project follows the principles of **Domain-Driven Design (DDD)**. Each Djang
 *   Git
 
 ### Steps
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/davidstephaneguigui/revisetech.git
+cd revisetech
 
 1. **Clone the repository:**
 ```bash

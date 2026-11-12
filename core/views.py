@@ -61,10 +61,24 @@ def dashboard_home(request):
 
 @login_required
 def help_page(request):
-    """
-    Display the general help and documentation page.
-    """
-    return render(request, 'core/help.html')
+    context = {}
+    user = request.user
+    
+    # Détection du rôle pour adapter l'aide
+    if user.groups.filter(name='Administrateur').exists():
+        context['role'] = 'Administrateur'
+    elif user.groups.filter(name='Superviseur').exists():
+        context['role'] = 'Superviseur'
+    elif user.groups.filter(name='Référent').exists():
+        context['role'] = 'Référent'
+    elif user.groups.filter(name='Concepteur').exists():
+        context['role'] = 'Concepteur'
+    elif user.groups.filter(name='Enseignant').exists():
+        context['role'] = 'Enseignant'
+    else:
+        context['role'] = 'Élève'
+
+    return render(request, 'core/help.html', context)
 
 
 @login_required

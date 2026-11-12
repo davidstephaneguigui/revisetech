@@ -1,47 +1,119 @@
 {% extends 'base_dashboard.html' %}
+{% load static %}
 
-{% block title %}Aide et Documentation - Revisetech{% endblock %}
+{% block title %}Centre d'aide - Revisetech{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-2">
-    <div class="col-12 col-lg-10">
-        
-        <h3 class="mb-4 fw-bold text-muted">Centre d'aide</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Centre d'aide</h3>
+        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="bi bi-house"></i> Accueil
+        </a>
+    </div>
 
+    <!-- AIDE ÉLÈVE -->
+    {% if role == 'Élève' %}
         <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
             <div class="card-body p-4">
-                <h4 class="fw-bold" style="color: #6a1b9a;">Qu'est-ce que Revisetech ?</h4>
-                <p class="text-muted mt-3">
-                    Revisetech est un LMS (Learning Management System) conçu spécifiquement pour la filière STI2D. Il permet aux enseignants de proposer des séquences de révision interactives aux élèves, tout en garantissant la qualité pédagogique grâce à un système de validation par les pairs.
-                </p>
+                <h4 class="fw-bold text-primary mb-3">Comment utiliser ton espace de révision ?</h4>
                 
-                <hr class="my-4">
-                
-                <h5 class="fw-bold">Les différents rôles :</h5>
-                <ul class="list-group list-group-flush mt-3">
-                    <li class="list-group-item px-0">
-                        <strong>🎒 Élève :</strong> Consulte ses cours, réalise des quiz et suit sa progression.
-                    </li>
-                    <li class="list-group-item px-0">
-                        <strong>🏫 Enseignant :</strong> Gère ses classes, y affecte des séquences publiées et suit les résultats de ses élèves.
-                    </li>
-                    <li class="list-group-item px-0">
-                        <strong>🛠️ Concepteur :</strong> Crée le contenu pédagogique (séquences, activités, questions).
-                    </li>
-                    <li class="list-group-item px-0">
-                        <strong>📝 Référent :</strong> Valide la qualité pédagogique des contenus proposés par les concepteurs.
-                    </li>
-                    <li class="list-group-item px-0">
-                        <strong>🔍 Superviseur :</strong> Supervise les séquences validées et les publie officiellement pour les enseignants.
-                    </li>
-                </ul>
+                <h5 class="fw-bold mt-4">1. Rejoindre une classe</h5>
+                <p>Si tu n'as pas encore accès aux cours, demande un <strong>code d'invitation</strong> à ton professeur. Sur ton tableau de bord, clique sur "Rejoindre une classe" et saisis ce code.</p>
 
-                <div class="alert alert-info mt-4 mb-0">
-                    <strong>Besoin d'aide supplémentaire ?</strong> Contactez votre administrateur ou votre référent numérique.
-                </div>
+                <h5 class="fw-bold mt-4">2. Suivre un cours ou faire un quiz</h5>
+                <p>Sur ta page d'accueil, clique sur une matière pour voir les chapitres. Ensuite, navigue de séquence en séance pour trouver les activités. Une activité avec l'icône Quiz se fait directement en ligne : tu réponds aux questions une par une et tu obtiens ton score à la fin.</p>
+
+                <h5 class="fw-bold mt-4">3. Consulter tes résultats et ta progression</h5>
+                <p>Dans le menu, la section "Ma progression" te permet de voir tes moyennes par matière et les badges que tu as gagnés. Plus tu réussis tes quiz, plus tu progresses !</p>
             </div>
         </div>
 
-    </div>
-</div>
+    <!-- AIDE ENSEIGNANT -->
+    {% elif role == 'Enseignant' %}
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-primary mb-3">Guide de l'Enseignant</h4>
+                <p>Votre espace vous permet de gérer vos classes et d'adapter les contenus du programme.</p>
+                
+                <h5 class="fw-bold mt-4">Gérer vos classes</h5>
+                <p>Créez une classe depuis votre tableau de bord. Un code d'invitation unique sera généré : distribuez-le à vos élèves pour qu'ils puissent vous rejoindre. Vous pouvez ensuite associer des séquences du programme à cette classe.</p>
+
+                <h5 class="fw-bold mt-4">Suivre les résultats</h5>
+                <p>Cliquez sur une classe puis sur un élève pour voir le détail de ses résultats, ses moyennes par matière et les suggestions que vous lui avez envoyées.</p>
+
+                <h5 class="fw-bold mt-4">Liberté pédagogique</h5>
+                <p>Lors de la préparation d'une séance, vous pouvez activer ou désactiver les activités proposées par les Concepteurs, les réorganiser, ou même créer vos propres <strong>activités locales</strong>. Si vous créez une activité qui vous semble pertinente pour tous, vous pouvez la proposer aux Concepteurs via le bouton "Proposer".</p>
+            </div>
+        </div>
+
+    <!-- AIDE CONCEPTEUR -->
+    {% elif role == 'Concepteur' %}
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-primary mb-3">Guide du Concepteur</h4>
+                <p>Votre atelier est dédié à la création de contenus pédagogiques.</p>
+                
+                <h5 class="fw-bold mt-4">Créer une séquence</h5>
+                <p>Utilisez le bouton "Nouvelle séquence" pour créer un brouillon dans un chapitre. Remplissez ensuite les objectifs et le plan prévisionnel des séances. Une fois prêt, soumettez l'intention au Référent.</p>
+
+                <h5 class="fw-bold mt-4">Remplir le contenu</h5>
+                <p>Lorsque l'intention est validée, vous pouvez ajouter les vraies séances, les activités (cours, TP, quiz) et soumettre le contenu final au Référent.</p>
+
+                <h5 class="fw-bold mt-4">Gérer les propositions</h5>
+                <p>Si des enseignants proposent des activités locales, vous les retrouverez dans l'onglet "Propositions". Vous pouvez les accepter pour les intégrer au programme global.</p>
+            </div>
+        </div>
+
+    <!-- AIDE RÉFÉRENT -->
+    {% elif role == 'Référent' %}
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-primary mb-3">Guide du Référent</h4>
+                <p>Votre rôle est de valider la qualité du travail des Concepteurs.</p>
+
+                <h5 class="fw-bold mt-4">Valider les intentions</h5>
+                <p>Dans votre file d'attente, les séquences "En attente" sont des intentions. Lisez le plan prévisionnel et validez-le (ou rejetez-le avec un commentaire) pour permettre au Concepteur de commencer la rédaction.</p>
+
+                <h5 class="fw-bold mt-4">Valider les contenus</h5>
+                <p>Une fois le contenu rédigé, il apparaît dans votre file d'attente. Lisez attentivement les activités et les quiz. Si tout est bon, validez-le pour qu'il puisse être publié par le Superviseur.</p>
+                
+                <h5 class="fw-bold mt-4">Second avis</h5>
+                <p>Si le Superviseur vous demande un second avis sur une séquence, vous la retrouverez dans votre onglet "Second avis". Vous pourrez confirmer ou infirmer l'avis du premier référent.</p>
+            </div>
+        </div>
+
+    <!-- AIDE SUPERVISEUR -->
+    {% elif role == 'Superviseur' %}
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-primary mb-3">Guide du Superviseur</h4>
+                <p>Vous gérez la publication finale et le suivi global des séquences.</p>
+
+                <h5 class="fw-bold mt-4">Publier les séquences</h5>
+                <p>Lorsqu'un Référent a validé un contenu, la séquence apparaît dans "À publier". Vous pouvez la lire une dernière fois, puis cliquer sur "Publier" pour la rendre accessible aux enseignants et aux élèves.</p>
+
+                <h5 class="fw-bold mt-4">Demander un second avis</h5>
+                <p>Si vous avez un doute sur la validation d'un contenu, vous pouvez demander l'avis d'un autre Référent. La séquence sera suspendue jusqu'à la réception de ce second avis.</p>
+
+                <h5 class="fw-bold mt-4">Suivi et dépublication</h5>
+                <p>La page "Suivi des apprentissages" vous donne des statistiques d'utilisation. Si une séquence pose problème, vous pouvez la dépublier à tout moment depuis l'onglet "Publiées".</p>
+            </div>
+        </div>
+
+    <!-- AIDE ADMINISTRATEUR -->
+    {% elif role == 'Administrateur' %}
+        <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-primary mb-3">Guide de l'Administrateur</h4>
+                <p>Vous êtes le garant du bon fonctionnement technique de la plateforme.</p>
+
+                <h5 class="fw-bold mt-4">Interface d'administration</h5>
+                <p>Utilisez le bouton "Admin" sur votre tableau de bord pour accéder à l'interface Django Admin. Vous pouvez y gérer les utilisateurs, les groupes (rôles) et les matières.</p>
+
+                <h5 class="fw-bold mt-4">Maintenance</h5>
+                <p>C'est également depuis l'admin que vous pouvez intervenir en cas d'erreur de contenu, ou pour vérifier que les séquences sont bien liées aux bonnes classes.</p>
+            </div>
+        </div>
+    {% endif %}
+
 {% endblock %}

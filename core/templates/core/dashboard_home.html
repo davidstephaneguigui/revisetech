@@ -8,183 +8,151 @@
         <h4 class="text-muted">Espace {{ role }}</h4>
     </div>
 
-    <div id="react-root" class="mb-4"></div>
-
     <div class="row justify-content-center g-4">
 
         {% if role == 'Concepteur' %}
-            <!-- Concepteur -->
+            <!-- Intentions -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}?status=DRAFT" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=INTENTIONS" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
-                        <h5 class="fw-bold text-dark">Brouillons</h5>
-                        {% if drafts > 0 %}
-                            <h2 class="display-5 fw-bold text-warning mb-0">{{ drafts }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">À proposer</p>
+                        <h5 class="fw-bold text-dark">Intentions</h5>
+                        <h2 class="display-5 fw-bold text-intention mb-0">{{ intentions_count }}</h2>
+                        <p class="text-muted small mb-0">Brouillons & Soumises</p>
                     </div>
                 </a>
             </div>
+
+            <!-- En cours -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}?status=VALIDATED" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=IN_PROGRESS" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">En cours</h5>
-                        {% if in_progress > 0 %}
-                            <h2 class="display-5 fw-bold text-warning mb-0">{{ in_progress }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">En rédaction</p>
+                        <h2 class="display-5 fw-bold text-in-progress mb-0">{{ in_progress_count }}</h2>
+                        <p class="text-muted small mb-0">Rédaction & En attente</p>
                     </div>
                 </a>
             </div>
+
+            <!-- Validées -->
             <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'designer_dashboard' %}?status=PENDING" class="text-decoration-none">
+                <a href="{% url 'designer_dashboard' %}?status=VALIDATED" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-2">⏳</div>
+                        <div class="fs-1 mb-2">✅</div>
                         <h5 class="fw-bold text-dark">Validées</h5>
-                        {% if validated > 0 %}
-                            <h2 class="display-5 fw-bold text-success mb-0">{{ validated }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">En attente de validation</p>
+                        <h2 class="display-5 fw-bold text-validated mb-0">{{ validated_count }}</h2>
+                        <p class="text-muted small mb-0">Prêtes à publier</p>
                     </div>
                 </a>
             </div>
+
+            <!-- Publiées -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'designer_dashboard' %}?status=PUBLISHED" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        {% if published > 0 %}
-                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
+                        <h2 class="display-5 fw-bold text-published mb-0">{{ published_count }}</h2>
                         <p class="text-muted small mb-0">Visibles par les élèves</p>
                     </div>
                 </a>
             </div>
 
         {% elif role == 'Référent' %}
-            <!-- Référent -->
+            <!-- Intentions -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'referee_dashboard' %}?section=intentions" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📝</div>
                         <h5 class="fw-bold text-dark">Intentions</h5>
-                        {% if pending_intentions > 0 %}
-                            <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_intentions }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
+                        <h2 class="display-5 fw-bold text-intention mb-0">{{ pending_intentions }}</h2>
                         <p class="text-muted small mb-0">À valider</p>
                     </div>
                 </a>
             </div>
+
+            <!-- Contenus -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'referee_dashboard' %}?section=contents" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">Contenus</h5>
-                        {% if pending_contents > 0 %}
-                            <h2 class="display-5 fw-bold text-danger mb-0">{{ pending_contents }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
+                        <h2 class="display-5 fw-bold text-in-progress mb-0">{{ pending_contents }}</h2>
                         <p class="text-muted small mb-0">À valider</p>
                     </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'referee_dashboard' %}?section=second_review" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-2">👀</div>
-                        <h5 class="fw-bold text-dark">Second avis</h5>
-                        {% if second_reviews > 0 %}
-                            <h2 class="display-5 fw-bold text-danger mb-0">{{ second_reviews }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">Demandés</p>
-                    </div>
-                </a>
-            </div>
+
+            <!-- Publiées -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'referee_dashboard' %}?section=published" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🚀</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        {% if published > 0 %}
-                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
+                        <h2 class="display-5 fw-bold text-published mb-0">{{ published }}</h2>
                         <p class="text-muted small mb-0">En ligne</p>
                     </div>
                 </a>
             </div>
 
+            <!-- Suivi -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'apprenticeship_stats' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📊</div>
+                        <h5 class="fw-bold text-dark">Suivi des apprentissages</h5>
+                        <h2 class="display-5 fw-bold text-primary mb-0 mt-3">➔</h2>
+                        <p class="text-muted small mb-0">Statistiques</p>
+                    </div>
+                </a>
+            </div>
+
         {% elif role == 'Superviseur' %}
-            <!-- Superviseur -->
+            <!-- Projets en cours -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'supervisor_dashboard' %}?section=in_preparation" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">🛠️</div>
                         <h5 class="fw-bold text-dark">Projets</h5>
-                        {% if in_preparation > 0 %}
-                            <h2 class="display-5 fw-bold text-warning mb-0">{{ in_preparation }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">En rédaction</p>
+                        <h2 class="display-5 fw-bold text-in-progress mb-0">{{ in_preparation }}</h2>
+                        <p class="text-muted small mb-0">En cours</p>
                     </div>
                 </a>
             </div>
+
+            <!-- À publier (Vert, car validé) -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'supervisor_dashboard' %}?section=to_publish" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">📖</div>
                         <h5 class="fw-bold text-dark">À publier</h5>
-                        {% if to_publish > 0 %}
-                            <h2 class="display-5 fw-bold text-danger mb-0">{{ to_publish }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">Validés par le référent</p>
+                        <h2 class="display-5 fw-bold text-validated mb-0">{{ to_publish }}</h2>
+                        <p class="text-muted small mb-0">Prêts</p>
                     </div>
                 </a>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <a href="{% url 'supervisor_dashboard' %}?section=second_reviews" class="text-decoration-none">
-                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
-                        <div class="fs-1 mb-2">👀</div>
-                        <h5 class="fw-bold text-dark">2ème avis</h5>
-                        {% if second_reviews > 0 %}
-                            <h2 class="display-5 fw-bold text-danger mb-0">{{ second_reviews }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
-                        <p class="text-muted small mb-0">Demandés</p>
-                    </div>
-                </a>
-            </div>
+
+            <!-- Publiées -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'supervisor_dashboard' %}?section=published" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
                         <div class="fs-1 mb-2">✅</div>
                         <h5 class="fw-bold text-dark">Publiées</h5>
-                        {% if published > 0 %}
-                            <h2 class="display-5 fw-bold text-success mb-0">{{ published }}</h2>
-                        {% else %}
-                            <h2 class="display-5 fw-bold text-secondary mb-0">0</h2>
-                        {% endif %}
+                        <h2 class="display-5 fw-bold text-published mb-0">{{ published }}</h2>
                         <p class="text-muted small mb-0">En ligne</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Suivi -->
+            <div class="col-12 col-md-6 col-lg-3">
+                <a href="{% url 'apprenticeship_stats' %}" class="text-decoration-none">
+                    <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">
+                        <div class="fs-1 mb-2">📊</div>
+                        <h5 class="fw-bold text-dark">Suivi des apprentissages</h5>
+                        <h2 class="display-5 fw-bold text-primary mb-0 mt-3">➔</h2>
+                        <p class="text-muted small mb-0">Statistiques</p>
                     </div>
                 </a>
             </div>
@@ -220,7 +188,7 @@
                 </a>
             </div>
             
-            <!-- LA NOUVELLE CARTE "MES PRÉPARATIONS" -->
+            <!-- La nouvelle carte "Mes préparations" -->
             <div class="col-12 col-md-6 col-lg-3">
                 <a href="{% url 'teacher_preparations' %}" class="text-decoration-none">
                     <div class="card shadow-sm border-0 h-100 text-center py-4" style="border-radius: 16px;">

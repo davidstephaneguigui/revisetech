@@ -1,0 +1,79 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Suivi des apprentissages - Revisetech{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Suivi des apprentissages</h3>
+        <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary rounded-pill">
+            <i class="bi bi-house"></i> Accueil
+        </a>
+    </div>
+
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> Cette page vous donne une vision globale de l'utilisation et de la réussite des séquences publiées. Les graphiques interactifs arriveront prochainement.
+    </div>
+
+    <!-- Cartes de chiffres clés -->
+    <div class="row g-4 mb-5">
+        <!-- Élèves Actifs -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center py-4" style="border-radius: 16px;">
+                <div class="fs-1 mb-2">👨‍🎓</div>
+                <h5 class="fw-bold text-dark">Élèves actifs</h5>
+                <h2 class="display-5 fw-bold text-primary mb-0">{{ active_students }}</h2>
+                <p class="text-muted small mb-0">Ont réalisé au moins un quiz</p>
+            </div>
+        </div>
+
+        <!-- Quiz réalisés -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center py-4" style="border-radius: 16px;">
+                <div class="fs-1 mb-2">📝</div>
+                <h5 class="fw-bold text-dark">Quiz réalisés</h5>
+                <h2 class="display-5 fw-bold text-info mb-0">{{ total_results }}</h2>
+                <p class="text-muted small mb-0">Total des soumissions</p>
+            </div>
+        </div>
+
+        <!-- Moyenne Globale -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center py-4" style="border-radius: 16px;">
+                <div class="fs-1 mb-2">📊</div>
+                <h5 class="fw-bold text-dark">Moyenne globale</h5>
+                {% if global_average >= 4 %}
+                    <h2 class="display-5 fw-bold text-success mb-0">{{ global_average|floatformat:"-1" }}/5</h2>
+                {% elif global_average >= 2.5 %}
+                    <h2 class="display-5 fw-bold text-warning mb-0">{{ global_average|floatformat:"-1" }}/5</h2>
+                {% elif global_average > 0 %}
+                    <h2 class="display-5 fw-bold text-danger mb-0">{{ global_average|floatformat:"-1" }}/5</h2>
+                {% else %}
+                    <h2 class="display-5 fw-bold text-secondary mb-0">-</h2>
+                {% endif %}
+                <p class="text-muted small mb-0">Sur l'ensemble des quiz</p>
+            </div>
+        </div>
+
+        <!-- Séquences publiées -->
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="card shadow-sm border-0 text-center py-4" style="border-radius: 16px;">
+                <div class="fs-1 mb-2">🚀</div>
+                <h5 class="fw-bold text-dark">Séquences</h5>
+                <h2 class="display-5 fw-bold text-published mb-0">{{ total_sequences }}</h2>
+                <p class="text-muted small mb-0">Actuellement en ligne</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emplacement pour les futurs graphiques -->
+    <div class="card shadow-sm border-0" style="border-radius: 12px;">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-dark">Répartition des résultats (Bientôt disponible)</h5>
+        </div>
+        <div class="card-body text-center py-5 text-muted">
+            <i class="bi bi-bar-chart fs-1"></i>
+            <p class="mt-3">Les graphiques interactifs seront intégrés ici.</p>
+        </div>
+    </div>
+{% endblock %}

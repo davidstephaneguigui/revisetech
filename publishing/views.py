@@ -1,40 +1,50 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.contrib import messages
-from pedagogy.models import Sequence
-from accounts.decorators import is_supervisor 
 from django.contrib.auth import get_user_model
-from classroom.models import Classe
+from django.views.decorators.http import require_POST
+from django.urls import reverse
+from django.contrib import messages
+
 from classroom.utils import compute_sequence_stats
+from pedagogy.models import Chapter, Sequence
+from accounts.decorators import is_supervisor
+
 
 @login_required
 @is_supervisor
 def supervisor_dashboard(request):
-    """
-    Display the dashboard for supervisors.
-    """
-    # Sequences in preparation (intention validated, content being filled)
-    sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('-id')
-    #sequences_in_preparation = Sequence.objects.filter(status='VALIDATED').order_by('chapter__matiere__name', 'name')
-   
-    # Sequences ready for publication
-    sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=False).order_by('-id')
-    #sequences_to_publish = Sequence.objects.filter(status='CONTENT_VALIDATED').order_by('chapter__matiere__name', 'chapter__name', 'name')
+    # On met 'second_reviews' par défaut
+    open_section = request.GET.get('section', 'second_reviews')
     
-    # Published sequences
-    published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('-id')
-    #published_sequences = Sequence.objects.filter(status='PUBLISHED').order_by('chapter__matiere__name', 'chapter__name', 'name')
-    
-    # Need Second review sequences
-    second_reviews = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).order_by('-id')
+    chapters = Chapter.objects.all().order_by('name')
+    chapter_tabs = []
+
+    for chapter in chapters:
+        seqs = Sequence.objects.filter(chapter=chapter)
+        
+        # Préparation des listes selon la section
+        in_preparation = seqs.filter(status='VALIDATED') if open_section in ['', 'in_preparation'] else []
+        to_publish = seqs.filter(status='CONTENT_VALIDATED', needs_second_review=False) if open_section in ['', 'to_publish'] else []
+        second_reviews = seqs.filter(status='CONTENT_VALIDATED', needs_second_review=True) if open_section in ['', 'second_reviews'] else []
+        published = seqs.filter(status='PUBLISHED') if open_section in ['', 'published'] else []
+        
+        total_actions = len(in_preparation) + len(to_publish) + len(second_reviews)
+        
+        if total_actions > 0 or len(published) > 0:
+            chapter_tabs.append({
+                'chapter': chapter,
+                'in_preparation': in_preparation,
+                'to_publish': to_publish,
+                'second_reviews': second_reviews,
+                'published': published,
+                'total_actions': total_actions
+            })
+
+    chapter_tabs = sorted(chapter_tabs, key=lambda x: x['total_actions'], reverse=True)
 
     context = {
-        'sequences_in_preparation': sequences_in_preparation,
-        'sequences_to_publish': sequences_to_publish,
-        'published_sequences': published_sequences,
-        'second_reviews': second_reviews,
-        'open_section': request.GET.get('section', ''),
+        'chapter_tabs': chapter_tabs,
+        'open_section': open_section,
     }
     
     return render(request, 'publishing/supervisor_home.html', context)
@@ -74,7 +84,7 @@ def publish_sequence(request, sequence_id):
         else:
             messages.success(request, f"La séquence '{sequence.name}' a été publiée. Le chapitre est en attente de publication des autres séquences.")
             
-    return redirect('supervisor_dashboard')
+    return redirect(reverse('supervisor_dashboard') + '?section=to_publish')
 
 
 @require_POST
@@ -92,7 +102,7 @@ def request_second_review(request, sequence_id):
         sequence.save()
         messages.success(request, f"Une seconde validation a été demandée pour la séquence '{sequence.name}'.")
             
-    return redirect('supervisor_dashboard')
+    return redirect(reverse('supervisor_dashboard') + '?section=second_reviews')
 
 
 @login_required
@@ -113,7 +123,7 @@ def unpublish_sequence(request, sequence_id):
             activity.save()
             
     messages.warning(request, f"La séquence '{sequence.name}' a été dépubliée.")
-    return redirect('supervisor_dashboard')
+    return redirect(reverse('supervisor_dashboard') + '?section=published')
 
 
 @login_required
@@ -149,3 +159,31 @@ def sequence_stats(request, sequence_id):
         'classes_stats': classes_stats,
     }
     return render(request, 'publishing/sequence_stats.html', context)
+
+
+@login_required
+def supervisor_sequence_exam(request, sequence_id):
+    sequence = get_object_or_404(Sequence, id=sequence_id)
+    exam_type = request.GET.get('type', 'to_publish')
+    
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Espace Superviseur', 'url': reverse('supervisor_dashboard')},
+        {'label': sequence.name, 'url': None}
+    ]
+
+    # On récupère les référents pour la demande de second avis
+    # (On exclut le premier référent si possible, sinon on prend tous les référents)
+    User = get_user_model()
+    available_referees = User.objects.filter(groups__name='Référent')
+    if sequence.first_referee:
+        available_referees = available_referees.exclude(id=sequence.first_referee.id)
+
+    context = {
+        'sequence': sequence,
+        'exam_type': exam_type,
+        'breadcrumbs': breadcrumbs,
+        'sessions': sequence.sessions.all().order_by('order'),
+        'available_referees': available_referees,
+    }
+    return render(request, 'publishing/supervisor_sequence_exam.html', context)

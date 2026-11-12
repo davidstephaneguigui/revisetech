@@ -161,3 +161,20 @@ body {
         padding-top: 0 !important;
     }
 }
+
+/* Code couleur métier (Projet Revisetech) */
+.bg-intention { background-color: #ffc107 !important; color: #000 !important; }
+.text-intention { color: #ffc107 !important; }
+.border-intention { border-color: #ffc107 !important; }
+
+.bg-in-progress { background-color: #fd7e14 !important; color: #fff !important; }
+.text-in-progress { color: #fd7e14 !important; }
+.border-in-progress { border-color: #fd7e14 !important; }
+
+.bg-validated { background-color: #198754 !important; color: #fff !important; }
+.text-validated { color: #198754 !important; }
+.border-validated { border-color: #198754 !important; }
+
+.bg-published { background-color: #0dcaf0 !important; color: #000 !important; }
+.text-published { color: #0dcaf0 !important; }
+.border-published { border-color: #0dcaf0 !important; }

@@ -5,28 +5,20 @@ from django.urls import reverse
 from django.forms import inlineformset_factory
 from django.contrib import messages
 
-from pedagogy.models import Chapter, Sequence, Session, PlannedSession, Activity, Question, Choice
 from accounts.decorators import is_designer, is_teacher
+from pedagogy.models import Chapter, Sequence, Session, PlannedSession, Activity, Question, Choice
 from .forms import QuestionForm, ChoiceForm
 from .forms import SequenceForm, SessionForm, ActivityForm, SequenceIntentionForm, PlannedSessionForm, QuestionForm, ChoiceForm
 from .models import ActivityProposal
 
-
-from .models import ActivityProposal # <-- N'oublie pas cet import en haut du fichier
-
-
 @login_required
 @is_designer
 def designer_dashboard(request):
-    """
-    Display the dashboard for designers, organized by sequence status.
-    """
-    user_sequences = Sequence.objects.filter(creator=request.user).order_by('-created_at')
+    open_status = request.GET.get('status', '')
     
     if request.method == 'POST':
         form = SequenceForm(request.POST)
         form.fields['chapter'].queryset = Chapter.objects.all()
-        
         if form.is_valid():
             sequence = form.save(commit=False)
             sequence.creator = request.user
@@ -36,20 +28,61 @@ def designer_dashboard(request):
     else:
         form = SequenceForm()
         form.fields['chapter'].queryset = Chapter.objects.all()
-    
+
+    chapters = Chapter.objects.all().order_by('name')
+    user_sequences = Sequence.objects.filter(creator=request.user).order_by('name')
+
+    # Application du filtre métier
+    if open_status == 'INTENTIONS':
+        user_sequences = user_sequences.filter(status__in=['DRAFT', 'PENDING'])
+    elif open_status == 'IN_PROGRESS':
+        user_sequences = user_sequences.filter(status__in=['VALIDATED', 'CONTENT_PENDING'])
+    elif open_status == 'VALIDATED':
+        user_sequences = user_sequences.filter(status='CONTENT_VALIDATED')
+    elif open_status == 'PUBLISHED':
+        user_sequences = user_sequences.filter(status='PUBLISHED')
+
+    chapter_tabs = []
+    for chapter in chapters:
+        seqs = user_sequences.filter(chapter=chapter)
+        if seqs.exists() or not open_status:
+            chapter_tabs.append({
+                'chapter': chapter,
+                'sequences': seqs,
+                'is_empty': seqs.count() == 0
+            })
+
     context = {
-        'drafts': user_sequences.filter(status='DRAFT'),
-        'intent_pending': user_sequences.filter(status='PENDING'),
-        'in_progress': user_sequences.filter(status='VALIDATED'),
-        'content_pending': user_sequences.filter(status='CONTENT_PENDING'),
-        'content_validated': user_sequences.filter(status='CONTENT_VALIDATED'),
-        'published': user_sequences.filter(status='PUBLISHED'),
+        'chapter_tabs': chapter_tabs,
         'form': form,
         'chapters': Chapter.objects.all(),
         'pending_proposals_count': ActivityProposal.objects.filter(status='PENDING').count(),
+        'open_status': open_status,
     }
     
     return render(request, 'authoring/designer_home.html', context)
+
+
+@login_required
+@is_designer
+def designer_chapter_detail(request, chapter_id):
+    """Niveau 2 : Liste des séquences d'un chapitre spécifique."""
+    chapter = get_object_or_404(Chapter, id=chapter_id)
+    sequences = Sequence.objects.filter(chapter=chapter, creator=request.user).order_by('name')
+    
+    breadcrumbs = [
+        {'label': 'Accueil', 'url': reverse('dashboard_home')},
+        {'label': 'Mon Atelier', 'url': reverse('designer_dashboard')},
+        {'label': chapter.name, 'url': None}
+    ]
+    
+    context = {
+        'chapter': chapter,
+        'sequences': sequences,
+        'breadcrumbs': breadcrumbs,
+        'pending_proposals_count': ActivityProposal.objects.filter(status='PENDING').count(),
+    }
+    return render(request, 'authoring/designer_chapter_detail.html', context)
 
 
 @login_required

@@ -1,0 +1,166 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Examen : {{ sequence.name }}{% endblock %}
+
+{% block content %}
+    <!-- Ligne avec Fil d'Ariane à gauche et Bouton Retour à droite -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb" class="m-0 flex-grow-1">
+            <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0 mb-0" style="border-radius: 12px;">
+                {% for step in breadcrumbs %}
+                    {% if step.label == 'Espace Référent' %}
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'referee_dashboard' %}?section={% if exam_type == 'intention' %}intentions{% elif exam_type == 'content' %}contents{% elif exam_type == 'second_review' %}second_review{% else %}published{% endif %}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">
+                                {{ step.label }}
+                            </a>
+                        </li>
+                    {% elif step.url %}
+                        <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                    {% else %}
+                        <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        
+        <a href="{% url 'referee_dashboard' %}?section={% if exam_type == 'intention' %}intentions{% elif exam_type == 'content' %}contents{% elif exam_type == 'second_review' %}second_review{% else %}published{% endif %}" class="btn btn-outline-secondary rounded-pill ms-3">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- COLONNE GAUCHE : LECTURE DU CONTENU -->
+        <div class="col-12 col-lg-8 mb-4">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h3 class="fw-bold text-dark">{{ sequence.name }}</h3>
+                    <p class="text-muted small">Proposé par : {{ sequence.creator.username }}</p>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
+                        <p class="mb-0">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                    </div>
+
+                    {% if exam_type == 'intention' %}
+                        <!-- VUE INTENTION : Séances prévisionnelles -->
+                        <h6 class="fw-bold text-primary mb-3">Séances prévisionnelles</h6>
+                        <ul class="list-group list-group-flush mb-4">
+                            {% for planned in planned_sessions %}
+                                <li class="list-group-item px-0 py-2">
+                                    <strong>Séance {{ planned.order }} : {{ planned.name }}</strong> 
+                                    <span class="badge bg-secondary ms-2">{{ planned.get_session_type_display }}</span><br>
+                                    <span class="text-muted small">{{ planned.objective }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 text-muted">Aucune séance prévue.</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <!-- VUE CONTENU : Séances et activités -->
+                        <h6 class="fw-bold text-primary mb-3">Contenu des séances</h6>
+                        {% for session in sessions %}
+                            <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; background-color: #f8f9fa;">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-2">Séance {{ session.order }} : {{ session.name }}</h5>
+                                    <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
+                                    
+                                    {% for activity in session.activities.all %}
+                                        <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                            <div class="card-body">
+                                                <div class="fw-bold mb-2">{{ activity.title }} <span class="badge bg-info text-dark">{{ activity.get_activity_type_display }}</span></div>
+                                                
+                                                {% if activity.content %}
+                                                    <div class="text-muted small mb-3">{{ activity.content|linebreaksbr }}</div>
+                                                {% endif %}
+
+                                                {% if activity.questions.exists %}
+                                                    <div class="bg-white p-3 rounded border mt-2">
+                                                        <h6 class="fw-bold text-secondary mb-3">Questions du quiz :</h6>
+                                                        {% for question in activity.questions.all %}
+                                                            <div class="mb-3">
+                                                                <div class="fw-bold">Q{{ forloop.counter }}. {{ question.text }}</div>
+                                                                <ul class="list-unstyled ms-3 mb-0 mt-1">
+                                                                    {% for choice in question.choices.all %}
+                                                                        <li class="{% if choice.is_correct %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                                                            {% if choice.is_correct %}✅{% else %}⬜{% endif %} {{ choice.text }}
+                                                                        </li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <p class="text-muted small">Aucune activité dans cette séance.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted">Aucune séance générée pour le moment.</p>
+                        {% endfor %}
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- COLONNE DROITE : PANNEAU FIXE D'ACTION (Sticky) -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 position-sticky" style="border-radius: 12px; top: 20px;">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark">Décision</h5>
+                </div>
+                <div class="card-body">
+                    
+                    {% if exam_type == 'intention' %}
+                        <!-- FORMULAIRE POUR L'INTENTION -->
+                        <p class="text-muted small">Validez ou rejetez l'intention (le plan prévisionnel) de cette séquence.</p>
+                        <form method="post" action="{% url 'validate_sequence' sequence.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Commentaire de validation (obligatoire)</label>
+                                <textarea name="referee_comment" class="form-control" rows="4" required placeholder="Ex: Objectifs clairs, bonne progression..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success rounded-pill">Valider l'intention</button>
+                                <button type="button" class="btn btn-outline-danger rounded-pill" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    Rejeter
+                                </button>
+                            </div>
+                        </form>
+
+                    {% elif exam_type == 'content' or exam_type == 'second_review' %}
+                        <!-- FORMULAIRE POUR LE CONTENU -->
+                        <p class="text-muted small">Validez ou rejetez le contenu final de cette séquence.</p>
+                        <form method="post" action="{% url 'validate_content' sequence.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Commentaire de validation (obligatoire)</label>
+                                <textarea name="referee_comment" class="form-control" rows="4" required placeholder="Ex: Contenu conforme, bon équilibre..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success rounded-pill">Valider le contenu</button>
+                                <button type="button" class="btn btn-outline-warning rounded-pill" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    Annuler / Rejeter
+                                </button>
+                            </div>
+                        </form>
+
+                    {% else %}
+                        <!-- LECTURE SEULE (EX: PUBLIÉ) -->
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle-fill fs-3 d-block mb-2"></i>
+                            Cette séquence est déjà publiée.
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Examen : {{ sequence.name }}{% endblock %}
+
+{% block content %}
+    <!-- Ligne avec Fil d'Ariane à gauche et Bouton Retour à droite -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <nav aria-label="breadcrumb" class="m-0 flex-grow-1">
+            <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0 mb-0" style="border-radius: 12px;">
+                {% for step in breadcrumbs %}
+                    {% if step.label == 'Espace Superviseur' %}
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'supervisor_dashboard' %}?section={{ exam_type }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">
+                                {{ step.label }}
+                            </a>
+                        </li>
+                    {% elif step.url %}
+                        <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                    {% else %}
+                        <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        
+        <a href="{% url 'supervisor_dashboard' %}?section={{ exam_type }}" class="btn btn-outline-secondary rounded-pill ms-3">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- COLONNE GAUCHE : LECTURE DU CONTENU -->
+        <div class="col-12 col-lg-8 mb-4">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h3 class="fw-bold text-dark">{{ sequence.name }}</h3>
+                    <p class="text-muted small">Proposé par : {{ sequence.creator.username }}</p>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-primary">Objectifs de la séquence</h6>
+                        <p class="mb-0">{{ sequence.objectives|linebreaksbr|default:"Non renseigné" }}</p>
+                    </div>
+
+                    <h6 class="fw-bold text-primary mb-3">Contenu des séances</h6>
+                    {% for session in sessions %}
+                        <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; background-color: #f8f9fa;">
+                            <div class="card-body">
+                                <h5 class="fw-bold mb-2">Séance {{ session.order }} : {{ session.name }}</h5>
+                                <p class="text-muted small mb-3"><strong>Objectif :</strong> {{ session.objective }}</p>
+                                
+                                {% for activity in session.activities.all %}
+                                    <div class="card mb-2 border-0 shadow-sm" style="border-left: 3px solid #6a1b9a;">
+                                        <div class="card-body">
+                                            <div class="fw-bold mb-2">{{ activity.title }} <span class="badge bg-info text-dark">{{ activity.get_activity_type_display }}</span></div>
+                                            
+                                            {% if activity.content %}
+                                                <div class="text-muted small mb-3">{{ activity.content|linebreaksbr }}</div>
+                                            {% endif %}
+
+                                            {% if activity.questions.exists %}
+                                                <div class="bg-white p-3 rounded border mt-2">
+                                                    <h6 class="fw-bold text-secondary mb-3">Questions du quiz :</h6>
+                                                    {% for question in activity.questions.all %}
+                                                        <div class="mb-3">
+                                                            <div class="fw-bold">Q{{ forloop.counter }}. {{ question.text }}</div>
+                                                            <ul class="list-unstyled ms-3 mb-0 mt-1">
+                                                                {% for choice in question.choices.all %}
+                                                                    <li class="{% if choice.is_correct %}text-success fw-bold{% else %}text-muted{% endif %}">
+                                                                        {% if choice.is_correct %}✅{% else %}⬜{% endif %} {{ choice.text }}
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted small">Aucune activité dans cette séance.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">Aucune séance générée pour le moment.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- COLONNE DROITE : PANNEAU FIXE D'ACTION (Sticky) -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 position-sticky" style="border-radius: 12px; top: 20px;">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-dark">Décision du Superviseur</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Commentaire du Référent -->
+                    {% if sequence.referee_comment %}
+                        <div class="alert alert-success mb-4">
+                            <strong><i class="bi bi-chat-left-text"></i> Avis du Référent :</strong><br>
+                            {{ sequence.referee_comment|linebreaksbr }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mb-4">
+                            Aucun commentaire de référent disponible.
+                        </div>
+                    {% endif %}
+
+                    <!-- Actions selon le type -->
+                    {% if exam_type == 'to_publish' %}
+                        <p class="text-muted small">Cette séquence a été validée par le référent. Vous pouvez la publier.</p>
+                        <div class="d-grid gap-2">
+                            <form method="post" action="{% url 'publish_sequence' sequence.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success rounded-pill w-100" onclick="return confirm('Êtes-vous sûr de vouloir publier cette séquence ?');">
+                                    <i class="bi bi-rocket-takeoff"></i> Publier la séquence
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-warning rounded-pill w-100" data-bs-toggle="modal" data-bs-target="#secondReviewModal">
+                                <i class="bi bi-eye"></i> Demander un second avis
+                            </button>
+                        </div>
+
+                    {% elif exam_type == 'second_review' %}
+                        <div class="alert alert-info">
+                            En attente du second avis d'un autre référent.
+                        </div>
+
+                    {% elif exam_type == 'published' %}
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle-fill fs-3 d-block mb-2"></i>
+                            Cette séquence est déjà publiée.
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'sequence_stats' sequence.id %}" class="btn btn-outline-primary rounded-pill">
+                                <i class="bi bi-bar-chart"></i> Voir les statistiques
+                            </a>
+                            <form method="post" action="{% url 'unpublish_sequence' sequence.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger rounded-pill w-100" onclick="return confirm('Êtes-vous sûr de vouloir dépublier cette séquence ? Les élèves n\'y auront plus accès.');">
+                                    <i class="bi bi-eye-slash"></i> Dépublier la séquence
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale pour demander un second avis -->
+    <div class="modal fade" id="secondReviewModal" tabindex="-1" aria-labelledby="secondReviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px;">
+                <form method="post" action="{% url 'request_second_review' sequence.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="secondReviewModalLabel">Demander un second avis</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            La demande sera envoyée à un autre référent. Le premier référent ({{ sequence.first_referee.username|default:"Inconnu" }}) ne recevra pas la demande.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Choisir le référent</label>
+                            <select name="referee_id" class="form-select" required>
+                                <option value="">-- Sélectionnez un référent --</option>
+                                {% for ref in available_referees %}
+                                    <option value="{{ ref.id }}">{{ ref.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-warning rounded-pill px-4">Envoyer la demande</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

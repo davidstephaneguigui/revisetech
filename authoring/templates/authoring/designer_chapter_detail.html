@@ -1,0 +1,75 @@
+{% extends 'base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ chapter.name }} - Revisetech{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-white p-3 rounded shadow-sm border-0" style="border-radius: 12px;">
+            {% for step in breadcrumbs %}
+                {% if step.url %}
+                    <li class="breadcrumb-item"><a href="{{ step.url }}" class="text-decoration-none fw-bold" style="color: #6a1b9a;">{{ step.label }}</a></li>
+                {% else %}
+                    <li class="breadcrumb-item active fw-bold text-muted" aria-current="page">{{ step.label }}</li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold text-muted">Séquences : {{ chapter.name }}</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-12">
+            <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Séquence</th>
+                                    <th class="text-center">Statut</th>
+                                    <th class="text-end pe-4">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for seq in sequences %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <strong>{{ seq.name }}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if seq.status == 'DRAFT' %}
+                                                <span class="badge bg-warning text-dark">Brouillon</span>
+                                            {% elif seq.status == 'PENDING' %}
+                                                <span class="badge bg-danger">Intention en attente</span>
+                                            {% elif seq.status == 'VALIDATED' %}
+                                                <span class="badge bg-warning text-dark">En cours</span>
+                                            {% elif seq.status == 'CONTENT_PENDING' %}
+                                                <span class="badge bg-danger">Contenu en attente</span>
+                                            {% elif seq.status == 'CONTENT_VALIDATED' %}
+                                                <span class="badge bg-success">Validée</span>
+                                            {% elif seq.status == 'PUBLISHED' %}
+                                                <span class="badge bg-success">Publiée</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ seq.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            <a href="{% url 'manage_sequence' seq.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Gérer</a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">Aucune séquence dans ce chapitre.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

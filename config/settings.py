@@ -158,5 +158,6 @@ DJANGO_VITE = {
 
 # Indiquer à Django où chercher les fichiers statiques de React
 STATICFILES_DIRS = [
+    BASE_DIR / "static", 
     BASE_DIR / "frontend" / "dist",
 ]

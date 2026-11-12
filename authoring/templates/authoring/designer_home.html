@@ -1,308 +1,136 @@
 {% extends 'base_dashboard.html' %}
 {% load static %}
 
-{% block title %}Espace Concepteur - Revisetech{% endblock %}
+{% block title %}Mon Atelier - Revisetech{% endblock %}
 
 {% block top_menu %}
     <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'designer_dashboard' %}active{% endif %}" href="{% url 'designer_dashboard' %}">Tableau de bord</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#addSequenceModal">➕ Nouvelle séquence</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'designer_dashboard' %}active{% endif %}" href="{% url 'designer_dashboard' %}">Mon Atelier</a>
     </li>
 {% endblock %}
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0 fw-bold text-muted">Espace Concepteur</h3>
-        <a href="{% url 'designer_proposals' %}" class="btn btn-warning rounded-pill px-4 shadow-sm">
-            <i class="bi bi-inbox"></i> Propositions d'activités
-            {% if pending_proposals_count > 0 %}
-                <span class="badge bg-danger ms-2">{{ pending_proposals_count }}</span>
-            {% endif %}
-        </a>
+        <h3 class="mb-0 fw-bold text-muted">
+            Mon Atelier
+            {% if open_status == 'INTENTIONS' %}- Intentions{% endif %}
+            {% if open_status == 'IN_PROGRESS' %}- En cours{% endif %}
+            {% if open_status == 'VALIDATED' %}- Validées{% endif %}
+            {% if open_status == 'PUBLISHED' %}- Publiées{% endif %}
+        </h3>
+        <div class="d-flex gap-2">
+            <!-- Les boutons existants -->
+            <a href="{% url 'designer_proposals' %}" class="btn btn-warning rounded-pill px-4 shadow-sm">
+                <i class="bi bi-inbox"></i> Propositions
+                {% if pending_proposals_count > 0 %}
+                    <span class="badge bg-danger ms-2">{{ pending_proposals_count }}</span>
+                {% endif %}
+            </a>
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addSequenceModal">
+                + Nouvelle séquence
+            </button>
+            <a href="{% url 'dashboard_home' %}" class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-house"></i> Accueil
+            </a>
+        </div>
     </div>
 
-    <!-- Messages -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Les Onglets des Chapitres -->
+    <ul class="nav nav-tabs mb-4" id="chaptersTab" role="tablist">
+        {% for tab in chapter_tabs %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if forloop.first %}active{% endif %} fw-bold" 
+                        id="tab-{{ tab.chapter.id }}" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#content-{{ tab.chapter.id }}" 
+                        type="button" role="tab">
+                    📘 {{ tab.chapter.name }}
+                </button>
+            </li>
+        {% empty %}
+            <li class="nav-item"><span class="nav-link disabled">Aucun chapitre disponible</span></li>
+        {% endfor %}
+    </ul>
+
+    <!-- Le Contenu des Onglets -->
+    <div class="tab-content" id="chaptersTabContent">
+        {% for tab in chapter_tabs %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                 id="content-{{ tab.chapter.id }}" role="tabpanel">
+                
+                <div class="card shadow-sm border-0" style="border-radius: 12px;">
+                    <div class="card-body p-0">
+                        {% if tab.is_empty %}
+                            <div class="p-5 text-center text-muted">
+                                <h5>Aucune séquence dans cette catégorie pour ce chapitre</h5>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-4">Séquence</th>
+                                            <th class="text-center">Statut</th>
+                                            <th class="text-end pe-4">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for seq in tab.sequences %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <strong>{{ seq.name }}</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if seq.status == 'DRAFT' %}
+                                                        <span class="badge bg-intention">Brouillon</span>
+                                                    {% elif seq.status == 'PENDING' %}
+                                                        <span class="badge bg-intention">Intention en attente</span>
+                                                    {% elif seq.status == 'VALIDATED' %}
+                                                        <span class="badge bg-in-progress">En cours</span>
+                                                    {% elif seq.status == 'CONTENT_PENDING' %}
+                                                        <span class="badge bg-in-progress">Contenu en attente</span>
+                                                    {% elif seq.status == 'CONTENT_VALIDATED' %}
+                                                        <span class="badge bg-validated">Validée</span>
+                                                    {% elif seq.status == 'PUBLISHED' %}
+                                                        <span class="badge bg-published">Publiée</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">{{ seq.get_status_display }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end pe-4">
+                                                    <a href="{% url 'manage_sequence' seq.id %}?from_status={{ open_status }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Gérer</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
             </div>
         {% endfor %}
-    {% endif %}
-
-    <!-- SECTION 1: Drafts -->
-    <div class="card mb-4 border-0 {% if drafts %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseDrafts').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>Séquences à proposer</span>
-                {% if drafts %}
-                    <span class="badge bg-warning text-dark rounded-pill fs-6">{{ drafts|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapseDrafts" class="collapse {% if open_section == 'DRAFT' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in drafts %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-warning text-dark rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- SECTION 2: Intent Pending -->
-    <div class="card mb-4 border-0 {% if intent_pending %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseIntentPending').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>Intentions en attente</span>
-                {% if intent_pending %}
-                    <span class="badge bg-danger rounded-pill fs-6">{{ intent_pending|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapseIntentPending" class="collapse {% if open_section == 'PENDING' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in intent_pending %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-danger rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 3: In Progress -->
-    <div class="card mb-4 border-0 {% if in_progress %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseInProgress').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>En cours</span>
-                {% if in_progress %}
-                    <span class="badge bg-warning text-dark rounded-pill fs-6">{{ in_progress|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapseInProgress" class="collapse {% if open_section == 'VALIDATED' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in in_progress %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-warning text-dark rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 4: Content Pending -->
-    <div class="card mb-4 border-0 {% if content_pending %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseContentPending').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>En attente de validation</span>
-                {% if content_pending %}
-                    <span class="badge bg-danger rounded-pill fs-6">{{ content_pending|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapseContentPending" class="collapse {% if open_section == 'CONTENT_PENDING' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in content_pending %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-danger rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 5: Content Validated -->
-    <div class="card mb-4 border-0 {% if content_validated %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapseContentValidated').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>Séquences validées</span>
-                {% if content_validated %}
-                    <span class="badge bg-success rounded-pill fs-6">{{ content_validated|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapseContentValidated" class="collapse {% if open_section == 'CONTENT_VALIDATED' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in content_validated %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            <span class="badge bg-success rounded-pill ms-2">{{ seq.get_status_display }}</span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% empty %}
-                        <div class="col-12"><p class="text-muted mb-0">Aucune séquence dans cette catégorie.</p></div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION 6: Published -->
-    <div class="card mb-4 border-0 {% if published %}shadow bg-white{% else %}bg-light text-muted opacity-75 shadow-none{% endif %}" style="border-radius: 12px;">
-        <div class="card-header bg-white border-0 pt-3 pb-0" onclick="document.getElementById('collapsePublished').classList.toggle('show');" style="cursor: pointer;">
-            <h5 class="mb-3 d-flex justify-content-between align-items-center fw-bold">
-                <span>Séquences publiées</span>
-                {% if published %}
-                    <span class="badge bg-success rounded-pill fs-6">{{ published|length }}</span>
-                {% else %}
-                    <span class="badge bg-secondary rounded-pill fs-6">0</span>
-                {% endif %}
-            </h5>
-        </div>
-        <div id="collapsePublished" class="collapse {% if open_section == 'PUBLISHED' %}show{% endif %}">
-            <div class="card-body">
-                <div class="row">
-                    {% for seq in published %}
-                        <div class="col-12 mb-3">
-                            <a href="{% url 'manage_sequence' seq.id %}" class="text-decoration-none">
-                                <div class="card h-100 shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {{ seq.chapter.matiere.color_hex }} !important;">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h5 class="fw-bold text-dark mb-0">{{ seq.name }}</h5>
-                                            
-                                            <!-- Badge cliquable avec stopPropagation pour ne pas ouvrir le lien de la carte -->
-                                            <span class="badge bg-success rounded-pill ms-2" role="button" 
-                                                onclick="event.preventDefault(); event.stopPropagation();" 
-                                                data-bs-toggle="modal" data-bs-target="#classesModalDes{{ seq.id }}">
-                                                <i class="bi bi-people-fill"></i> {{ seq.classes.count }} classe{{ seq.classes.count|pluralize }}
-                                            </span>
-                                        </div>
-                                        <p class="text-muted small mb-0">{{ seq.chapter.name }} ({{ seq.chapter.matiere.name }})</p>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- Modal (placée en dehors du lien <a> pour éviter les conflits) -->
-                            <div class="modal fade" id="classesModalDes{{ seq.id }}" tabindex="-1" aria-labelledby="classesModalLabelDes{{ seq.id }}" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content" style="border-radius: 16px;">
-                                        <div class="modal-header border-0">
-                                            <h5 class="modal-title fw-bold" id="classesModalLabelDes{{ seq.id }}">Classes utilisant cette séquence</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <ul class="list-group list-group-flush">
-                                                {% for classe in seq.classes.all %}
-                                                    <li class="list-group-item px-0">
-                                                        <strong>{{ classe.name }}</strong> <span class="text-muted small">({{ classe.level }} - {{ classe.specialty }})</span>
-                                                    </li>
-                                                {% empty %}
-                                                    <li class="list-group-item px-0 text-muted">Aucune classe n'utilise cette séquence.</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                        <div class="modal-footer border-0">
-                                            <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Fermer</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal : Nouvelle séquence -->
-    <div class="modal fade" id="addSequenceModal" tabindex="-1" aria-labelledby="addSequenceModalLabel" aria-hidden="true">
+    <!-- Modal Nouvelle Séquence (inchangé) -->
+    <div class="modal fade" id="addSequenceModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: 16px;">
-                <form method="post" action="{% url 'create_sequence' %}">
+                <form method="post" action="{% url 'designer_dashboard' %}">
                     {% csrf_token %}
                     <div class="modal-header border-0">
-                        <h5 class="modal-title fw-bold" id="addSequenceModalLabel">Nouvelle séquence</h5>
+                        <h5 class="modal-title fw-bold">Nouvelle séquence</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="id_name" class="form-label fw-bold">Nom de la séquence</label>
-                            <input type="text" name="name" id="id_name" class="form-control" required>
+                            <label class="form-label fw-bold">Nom de la séquence</label>
+                            <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="id_chapter" class="form-label fw-bold">Chapitre</label>
-                            <select name="chapter" id="id_chapter" class="form-select" required>
+                            <label class="form-label fw-bold">Chapitre</label>
+                            <select name="chapter" class="form-select" required>
                                 {% for chapter in chapters %}
                                     <option value="{{ chapter.id }}">{{ chapter.name }} ({{ chapter.matiere.name }})</option>
                                 {% endfor %}

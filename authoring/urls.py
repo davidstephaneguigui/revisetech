@@ -18,4 +18,5 @@ urlpatterns = [
     path('proposals/', views.designer_proposals, name='designer_proposals'),
     path('proposals/<int:proposal_id>/<str:action>/', views.handle_proposal, name='handle_proposal'),
     path('activity-bank/', views.activity_bank, name='activity_bank'),
+    path('chapter/<int:chapter_id>/', views.designer_chapter_detail, name='designer_chapter_detail'),
 ]

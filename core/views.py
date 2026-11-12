@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from pedagogy.models import Sequence
+
+from pedagogy.models import Chapter, Sequence
 from classroom.models import Classe, Suggestion
 from learning.models import Result
 
@@ -21,23 +22,25 @@ def dashboard_home(request):
         context['role'] = 'Superviseur'
         context['in_preparation'] = Sequence.objects.filter(status='VALIDATED').count()
         context['to_publish'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=False).count()
-        context['second_reviews'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).count()
         context['published'] = Sequence.objects.filter(status='PUBLISHED').count()
+        # Ligne second_reviews supprimée
 
     elif user.groups.filter(name='Référent').exists():
         context['role'] = 'Référent'
         context['pending_intentions'] = Sequence.objects.filter(status='PENDING').count()
         context['pending_contents'] = Sequence.objects.filter(status='CONTENT_PENDING').count()
-        context['second_reviews'] = Sequence.objects.filter(status='CONTENT_VALIDATED', needs_second_review=True).count()
         context['published'] = Sequence.objects.filter(status='PUBLISHED').count()
+        # Ligne second_reviews supprimée
 
     elif user.groups.filter(name='Concepteur').exists():
         context['role'] = 'Concepteur'
         user_sequences = Sequence.objects.filter(creator=user)
-        context['drafts'] = user_sequences.filter(status='DRAFT').count()
-        context['in_progress'] = user_sequences.filter(status='VALIDATED').count()
-        context['validated'] = user_sequences.filter(status__in=['PENDING', 'CONTENT_PENDING', 'CONTENT_VALIDATED']).count()
-        context['published'] = user_sequences.filter(status='PUBLISHED').count()
+        
+        # On regroupe les statuts selon la logique métier
+        context['intentions_count'] = user_sequences.filter(status__in=['DRAFT', 'PENDING']).count()
+        context['in_progress_count'] = user_sequences.filter(status__in=['VALIDATED', 'CONTENT_PENDING']).count()
+        context['validated_count'] = user_sequences.filter(status='CONTENT_VALIDATED').count()
+        context['published_count'] = user_sequences.filter(status='PUBLISHED').count()
 
     elif user.groups.filter(name='Enseignant').exists():
         context['role'] = 'Enseignant'
@@ -62,3 +65,39 @@ def help_page(request):
     Display the general help and documentation page.
     """
     return render(request, 'core/help.html')
+
+
+@login_required
+def apprenticeship_stats(request):
+    if not (request.user.groups.filter(name__in=['Référent', 'Superviseur']).exists()):
+        return redirect('dashboard_home')
+
+    # 1. Total des quiz réalisés
+    total_results = Result.objects.count()
+
+    # 2. Nombre d'élèves actifs (distinct)
+    User = get_user_model()
+    active_students = User.objects.filter(results__isnull=False).distinct().count()
+
+    # 3. Moyenne globale (Option B : total points obtenus / total points possibles)
+    all_results = Result.objects.all()
+    total_obtained = sum(r.score for r in all_results)
+    total_possible = sum(r.max_score for r in all_results)
+    
+    if total_possible > 0:
+        global_average = (total_obtained / total_possible) * 5
+    else:
+        global_average = 0
+
+    # 4. Statistiques générales (déjà présentes)
+    total_sequences = Sequence.objects.filter(status='PUBLISHED').count()
+    total_chapters = Chapter.objects.count()
+
+    context = {
+        'total_results': total_results,
+        'active_students': active_students,
+        'global_average': round(global_average, 1),
+        'total_sequences': total_sequences,
+        'total_chapters': total_chapters,
+    }
+    return render(request, 'core/apprenticeship_stats.html', context)

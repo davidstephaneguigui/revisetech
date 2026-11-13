@@ -151,16 +151,17 @@ LOGIN_REDIRECT_URL = 'dashboard_home'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
 
+
 # Configuration de django-vite
 DJANGO_VITE = {
     "default": {
-        "dev_mode": DEBUG, # Utilise le serveur Vite en dev, et le manifest en prod
-        "manifest_path": BASE_DIR / "frontend" / "dist" / "manifest.json",
+        "dev_mode": DEBUG,
+        "manifest_path": BASE_DIR.parent / "frontend" / "dist" / "manifest.json",
     }
 }
 
 # Indiquer à Django où chercher les fichiers statiques de React
 STATICFILES_DIRS = [
-    BASE_DIR / "static", 
-    BASE_DIR / "frontend" / "dist",
+    BASE_DIR / "static",
+    BASE_DIR.parent / "frontend" / "dist",
 ]

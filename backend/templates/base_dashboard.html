@@ -53,7 +53,7 @@
                                 <div class="d-flex flex-column w-100 gap-2 d-lg-none">
                                     <!-- Ligne 1 : Aide et Identifiant -->
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <a class="nav-link text-muted px-0 py-0 small" href="{% url 'help_page' %}">❓ Aide</a>
+                                        <a class="nav-link text-muted px-0 py-0 small" href="{% url 'help_page' %}">❓ {% trans "Aide" %}</a>
                                         <!-- Sélecteur de langue -->
                                         <form action="{% url 'set_language' %}" method="post" class="d-inline-block me-3">
                                             {% csrf_token %}
@@ -86,7 +86,7 @@
                                         </a>
                                         <form action="{% url 'logout' %}" method="post" class="m-0">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 small">Déconnexion</button>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 small">{% trans "Déconnexion" %}</button>
                                         </form>
                                     </div>
                                     {% endif %}
@@ -123,7 +123,7 @@
                                             <span class="text-dark fw-bold">{{ user.username }}</span>
                                             <form action="{% url 'logout' %}" method="post" class="m-0">
                                                 {% csrf_token %}
-                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Déconnexion</button>
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">{% trans "Déconnexion" %}</button>
                                             </form>
                                         </div>
                                     {% endif %}

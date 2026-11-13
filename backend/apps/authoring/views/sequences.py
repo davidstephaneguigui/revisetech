@@ -3,20 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from apps.accounts.decorators import is_designer
-from apps.pedagogy.models import (
-    Chapter,
-    PlannedSession,
-    Sequence,
-)
+from apps.pedagogy.models import Chapter, PlannedSession, Sequence
 
-from ..forms import (
-    PlannedSessionForm,
-    SequenceIntentionForm,
-    SessionForm,
-)
+from ..forms import PlannedSessionForm, SequenceIntentionForm, SessionForm
 from ..models import ActivityProposal
 
 
@@ -99,9 +92,9 @@ def manage_sequence(request, sequence_id):
                 seq = intention_form.save(commit=False)
                 if 'submit_intention' in request.POST:
                     seq.status = 'PENDING'
-                    messages.success(request, "La séquence a été soumise pour validation.")
+                    messages.success(request, _("La séquence a été soumise pour validation."))
                 else:
-                    messages.success(request, "Les caractéristiques ont été enregistrées.")
+                    messages.success(request, _("Les caractéristiques ont été enregistrées."))
                 seq.save()
                 planned_sessions_formset.save()
                 return redirect('manage_sequence', sequence_id=sequence.id)
@@ -152,9 +145,9 @@ def delete_sequence(request, sequence_id):
     
     if sequence.status == 'DRAFT':
         sequence.delete()
-        messages.success(request, "La séquence a été supprimée définitivement.")
+        messages.success(request, _("La séquence a été supprimée définitivement."))
         return redirect('designer_dashboard')
     else:
-        messages.error(request, "Vous ne pouvez pas supprimer une séquence qui est déjà engagée dans le processus de validation.")
+        messages.error(request, _("Vous ne pouvez pas supprimer une séquence qui est déjà engagée dans le processus de validation."))
         return redirect('manage_sequence', sequence_id=sequence.id)
 

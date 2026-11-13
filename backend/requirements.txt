@@ -2,5 +2,6 @@ asgiref==3.13.0
 Django==6.1.2
 django-vite==3.2.0
 python-dotenv==1.2.4
+ruff==0.17.5
 sqlparse==0.6.0
 tzdata==2026.5

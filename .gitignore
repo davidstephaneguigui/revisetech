@@ -39,3 +39,7 @@ db.sqlite3
 .DS_Store
 .vscode/
 .idea/
+
+# Journaux de développement
+logs
+*.tex

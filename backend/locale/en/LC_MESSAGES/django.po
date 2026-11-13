@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 18:37+0000\n"
+"POT-Creation-Date: 2026-11-13 20:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,29 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: templates/base_dashboard.html:98
+
+#: apps/authoring/views/sequences.py:95
+msgid "La séquence a été soumise pour validation."
+msgstr "The sequence has been submitted for validation."
+
+#: apps/authoring/views/sequences.py:97
+msgid "Les caractéristiques ont été enregistrées."
+msgstr "The characteristics have been saved."
+
+#: apps/authoring/views/sequences.py:148
+msgid "La séquence a été supprimée définitivement."
+msgstr "The sequence has been permanently deleted.."
+
+#: apps/authoring/views/sequences.py:151
+msgid ""
+"Vous ne pouvez pas supprimer une séquence qui est déjà engagée dans le "
+"processus de validation."
+msgstr "You cannot delete a sequence that is already involved in the validation process."
+
+#: templates/base_dashboard.html:56 templates/base_dashboard.html:98
 msgid "Aide"
 msgstr "Help"
+
+#: templates/base_dashboard.html:89 templates/base_dashboard.html:126
+msgid "Déconnexion"
+msgstr "Logout"

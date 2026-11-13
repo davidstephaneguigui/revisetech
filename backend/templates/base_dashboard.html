@@ -1,5 +1,6 @@
 {% load django_vite %}
 {% load static %}
+{% load i18n %}
 {% load auth_extras %}
 
 <!DOCTYPE html>
@@ -53,6 +54,20 @@
                                     <!-- Ligne 1 : Aide et Identifiant -->
                                     <div class="d-flex justify-content-between align-items-center">
                                         <a class="nav-link text-muted px-0 py-0 small" href="{% url 'help_page' %}">❓ Aide</a>
+                                        <!-- Sélecteur de langue -->
+                                        <form action="{% url 'set_language' %}" method="post" class="d-inline-block me-3">
+                                            {% csrf_token %}
+                                            <input name="next" type="hidden" value="{{ request.path }}">
+                                            <select name="language" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                                                {% get_current_language as LANGUAGE_CODE %}
+                                                {% get_available_languages as LANGUAGES %}
+                                                {% for lang_code, lang_name in LANGUAGES %}
+                                                    <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
+                                                        {{ lang_name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </form>
                                         {% if user.is_authenticated %}
                                             <span class="text-dark fw-bold small">{{ user.username }}</span>
                                         {% endif %}
@@ -79,7 +94,21 @@
 
                                 <!-- VERSION DESKTOP (1 ligne, taille normale) -->
                                 <div class="d-none d-lg-flex align-items-center justify-content-between w-100">
-                                    <a class="nav-link text-muted px-0" href="{% url 'help_page' %}">❓ Aide</a>
+                                    <div class="d-flex align-items-center gap-4">
+                                        <a class="nav-link text-muted px-0" href="{% url 'help_page' %}">❓ {%trans "Aide" %}</a>
+                                        
+                                        <!-- Sélecteur de langue (Switch FR / EN) -->
+                                        <form action="{% url 'set_language' %}" method="post" class="m-0">
+                                            {% csrf_token %}
+                                            <input name="next" type="hidden" value="{{ request.path }}">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                {% get_current_language as LANGUAGE_CODE %}
+                                                <button type="submit" name="language" value="fr" class="btn {% if LANGUAGE_CODE == 'fr' %}btn-primary{% else %}btn-outline-secondary{% endif %}" style="border-radius: 20px 0 0 20px;">FR</button>
+                                                <button type="submit" name="language" value="en" class="btn {% if LANGUAGE_CODE == 'en' %}btn-primary{% else %}btn-outline-secondary{% endif %}" style="border-radius: 0 20px 20px 0;">EN</button>
+                                            </div>
+                                        </form>
+                                    </div>
+
                                     {% if user.is_authenticated %}
                                         <div class="d-flex align-items-center gap-3">
                                             <a href="{% url 'suggestion_list' %}" class="text-decoration-none position-relative" style="color: #333;">

@@ -6,34 +6,6 @@
     <div class="text-center mt-4 mb-5">
         <h1 class="fw-bold" style="color: #6a1b9a;">Bienvenue {{ user.username }}</h1>
         <h4 class="text-muted mb-4">Espace {{ role }}</h4>
-        
-        <!-- TEXTE DE PRÉSENTATION PAR RÔLE -->
-        <div class="mx-auto text-muted" style="max-width: 800px; font-size: 1.1rem; text-align: justify;">
-            {% if role == 'Élève' %}
-                <p>Bienvenue dans ton espace de révision ! Ici, tu peux accéder aux cours et aux quiz préparés par tes professeurs pour la ou les classes auxquelles tu es inscrit.</p>
-                <p>N'hésite pas à consulter tes résultats et ta progression pour voir tes points forts et les notions à retravailler. Si ton professeur t'a laissé une suggestion personnalisée, tu la retrouveras sur ton tableau de bord.</p>
-            
-            {% elif role == 'Enseignant' %}
-                <p>Votre rôle est de guider vos élèves tout au long de l'année. Depuis cet espace, vous gérez vos classes et suivez les résultats détaillés de chaque élève. </p>
-                <p>Vous disposez également d'une grande liberté pédagogique : vous pouvez sélectionner, réorganiser ou créer des activités locales pour vos séances. Toutes les ressources partagées par vos collègues sont également accessibles via la Banque des activités.</p>
-
-            {% elif role == 'Concepteur' %}
-                <p>Vous êtes l'auteur des contenus pédagogiques. Votre atelier vous permet de créer des séquences, de définir les intentions (le plan préalable) et de rédiger le contenu final.</p>
-                <p>Une fois votre travail prêt, vous le soumettez aux Référents pour validation. Vous pouvez également retrouver et approuver les activités locales proposées par les enseignants pour les intégrer au programme officiel.</p>
-
-            {% elif role == 'Référent' %}
-                <p>Vous êtes le garant de la qualité pédagogique de la plateforme. Votre mission est de relire les intentions et les contenus rédigés par les Concepteurs.</p>
-                <p>Vous pouvez les valider pour confirmer leur pertinence, ou les rejeter en laissant un commentaire constructif pour guider les auteurs. Vous avez également la possibilité de donner un second avis sur les séquences demandées par le Superviseur.</p>
-
-            {% elif role == 'Superviseur' %}
-                <p>Vous êtes le garant du bon déroulement du cycle de vie des séquences. Votre rôle consiste à suivre l'avancement des projets de rédaction et à publier les séquences une fois qu'elles sont validées par les Référents.</p>
-                <p>Vous pouvez également demander un second avis ou dépublier une séquence si nécessaire, tout en gardant un œil sur les statistiques globales d'utilisation.</p>
-
-            {% elif role == 'Administrateur' %}
-                <p>Vous avez la charge technique de la plateforme. Vous gérez les comptes utilisateurs, l'attribution des rôles, ainsi que les paramètres globaux de l'application.</p>
-                <p>Vous pouvez intervenir directement via l'interface d'administration Django pour corriger des erreurs ou configurer de nouvelles matières. Votre but est de garantir la stabilité et la sécurité du système pour tous les autres utilisateurs.</p>
-            {% endif %}
-        </div>
     </div>
 
     <div class="row justify-content-center g-4">

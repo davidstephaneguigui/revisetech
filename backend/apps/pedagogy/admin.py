@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Matiere, Chapter, Sequence, Session, Activity, Question, Choice
+
+from .models import Activity, Chapter, Choice, Matiere, Question, Sequence, Session
+
 
 @admin.register(Matiere)
 class MatiereAdmin(admin.ModelAdmin):

@@ -1,4 +1,5 @@
 from django import template
+
 from apps.classroom.models import Suggestion
 
 register = template.Library()

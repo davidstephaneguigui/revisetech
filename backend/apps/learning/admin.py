@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Result, Badge
+
+from .models import Badge, Result
+
 
 @admin.register(Result)
 class ResultAdmin(admin.ModelAdmin):

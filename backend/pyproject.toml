@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# "I" active le tri des imports (isort), "F" supprime les imports inutilisés
+select = ["I", "F"]
+
+[tool.ruff.lint.isort]
+# 1. Bibliothèques tierces (Django, Vite, etc.)
+known-third-party = ["django", "django_vite", "dotenv"]
+
+# 2. Tes applications locales (tout ce qui commence par "apps.")
+known-first-party = ["apps"]

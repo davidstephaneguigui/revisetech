@@ -1,7 +1,7 @@
-from django.core.exceptions import PermissionDenied
 from functools import wraps
-from django.contrib.auth.views import redirect_to_login
 
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import PermissionDenied
 
 # Define the role hierarchy.
 # A role inherits all the permissions of the roles listed below it.

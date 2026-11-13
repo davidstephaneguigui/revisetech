@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 
-from apps.pedagogy.models import Chapter, Sequence
 from apps.classroom.models import Classe, Suggestion
 from apps.learning.models import Result
+from apps.pedagogy.models import Chapter, Sequence
 
 
 @login_required

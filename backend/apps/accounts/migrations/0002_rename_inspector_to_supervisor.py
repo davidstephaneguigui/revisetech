@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def rename_group(apps, schema_editor):
     Group = apps.get_model('auth', 'Group')
     Group.objects.filter(name='Inspecteur').update(name='Superviseur')

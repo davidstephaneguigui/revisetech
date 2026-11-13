@@ -1,5 +1,6 @@
 from django import forms
-from .models import Sequence, Chapter, Session, Activity
+
+from .models import Activity, Chapter, Sequence, Session
 
 
 class ChapterForm(forms.ModelForm):

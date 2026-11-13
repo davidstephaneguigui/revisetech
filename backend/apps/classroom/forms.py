@@ -1,5 +1,7 @@
 from django import forms
-from apps.pedagogy.models import Matiere, Sequence, Activity
+
+from apps.pedagogy.models import Activity, Matiere, Sequence
+
 from .models import Classe, Suggestion
 
 

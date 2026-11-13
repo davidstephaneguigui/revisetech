@@ -1,13 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from apps.pedagogy.models import Matiere, Sequence, Activity, Choice
 from apps.classroom.models import Suggestion
-from .models import Result, Badge
+from apps.pedagogy.models import Activity, Choice, Matiere, Sequence
 
-import json
+from .models import Badge, Result
 
 
 @login_required

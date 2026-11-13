@@ -1,12 +1,13 @@
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
 from django.db.models import Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from apps.accounts.decorators import get_user_roles
 from apps.classroom.models import ActivitySelection, Suggestion
-from apps.learning.models import Result, Badge
-from .models import Matiere, Chapter, Sequence, Session, Activity, Choice
+from apps.learning.models import Badge, Result
+
+from .models import Activity, Chapter, Choice, Matiere, Sequence, Session
 
 
 def can_view_unpublished(user):

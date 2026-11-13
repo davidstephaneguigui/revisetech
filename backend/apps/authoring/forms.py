@@ -1,5 +1,6 @@
 from django import forms
-from apps.pedagogy.models import Sequence, Session, Activity, PlannedSession, Question, Choice
+
+from apps.pedagogy.models import Activity, Choice, PlannedSession, Question, Sequence, Session
 
 
 class SequenceIntentionForm(forms.ModelForm):

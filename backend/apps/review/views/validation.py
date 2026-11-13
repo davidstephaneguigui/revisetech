@@ -1,12 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from apps.accounts.decorators import is_designer, is_referee
-from apps.pedagogy.models import Chapter, Sequence, Session
+from apps.pedagogy.models import Sequence, Session
 
 from ..forms import DevalidationForm
 

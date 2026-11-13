@@ -1,30 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from apps.accounts.decorators import is_designer, is_teacher
+from apps.accounts.decorators import is_teacher
 from apps.pedagogy.models import (
     Activity,
-    Chapter,
-    Choice,
-    PlannedSession,
-    Question,
-    Sequence,
-    Session,
 )
 
-from ..forms import (
-    ActivityForm,
-    ChoiceForm,
-    PlannedSessionForm,
-    QuestionForm,
-    SequenceForm,
-    SequenceIntentionForm,
-    SessionForm,
-)
 from ..models import ActivityProposal
 
 

@@ -12,3 +12,8 @@ known-third-party = ["django", "django_vite", "dotenv"]
 
 # 2. Tes applications locales (tout ce qui commence par "apps.")
 known-first-party = ["apps"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore le wildcard import (F403) et les noms non définis (F405) 
+# dans les fichiers __init__.py des dossiers views/
+"**/views/__init__.py" = ["F403", "F405"]

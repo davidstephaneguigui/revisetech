@@ -1,3 +1,3 @@
-from .dashboard import *
 from .actions import *
+from .dashboard import *
 from .examination import *

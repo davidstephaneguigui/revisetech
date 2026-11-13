@@ -1,25 +1,19 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
 
 from apps.accounts.decorators import is_teacher
 from apps.classroom.utils import compute_sequence_stats
-from apps.learning.models import Result
-from apps.pedagogy.models import Activity, Sequence, Session
+from apps.pedagogy.models import Sequence
 
 from ..forms import (
     AddSequenceToClassForm,
     AddStudentForm,
-    ClasseForm,
     JoinClassForm,
-    LocalActivityForm,
-    SuggestionForm,
 )
-from ..models import ActivitySelection, Classe, SessionCompletion, Suggestion
+from ..models import Classe, SessionCompletion
 from ..utils import get_student_global_score
 
 

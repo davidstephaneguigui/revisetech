@@ -25,15 +25,15 @@ Including another URLconf
 
 
 urlpatterns = [
-    path('', include('core.urls')),
+    path('', include('apps.core.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('admin/', admin.site.urls),
-    path('designer/', include('authoring.urls')),
-    path('eleve/', include('learning.urls')),
-    path('', include('accounts.urls')),
-    path('', include('classroom.urls')),
-    path('', include('pedagogy.urls')),
-    path('review/', include('review.urls')),
-    path('publishing/', include('publishing.urls')),
+    path('designer/', include('apps.authoring.urls')),
+    path('eleve/', include('apps.learning.urls')),
+    path('', include('apps.accounts.urls')),
+    path('', include('apps.classroom.urls')),
+    path('', include('apps.pedagogy.urls')),
+    path('review/', include('apps.review.urls')),
+    path('publishing/', include('apps.publishing.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

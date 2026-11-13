@@ -39,15 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_vite',
-    'accounts',
-    'authoring',
-    'classroom',
-    'core',
-    'learning',
-    'pedagogy',
-    'publishing',
-    'review',
+    
+    # Applications du projet (in apps/)
+    'apps.accounts',
+    'apps.authoring',
+    'apps.classroom',
+    'apps.core',
+    'apps.learning',
+    'apps.pedagogy',
+    'apps.publishing',
+    'apps.review',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

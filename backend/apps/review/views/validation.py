@@ -19,31 +19,30 @@ def validate_sequence(request, sequence_id):
     """
     sequence = get_object_or_404(Sequence, id=sequence_id)
     
-    if request.user.groups.filter(name='Référent').exists():
-        if sequence.status == 'PENDING':
-            # Get the comment from the form
-            comment = request.POST.get('referee_comment', '')
-            if comment:
-                sequence.referee_comment = comment
-                
-            sequence.status = 'VALIDATED'
-            sequence.needs_second_review = False # Reset the flag
-            sequence.save()
+    if sequence.status == 'PENDING':
+        # Get the comment from the form
+        comment = request.POST.get('referee_comment', '')
+        if comment:
+            sequence.referee_comment = comment
             
-            # Generate or update real Sessions from PlannedSessions
-            planned_sessions = sequence.planned_sessions.all().order_by('order')
-            for planned in planned_sessions:
-                Session.objects.update_or_create(
-                    sequence=sequence,
-                    order=planned.order,
-                    defaults={
-                        'name': planned.name,
-                        'objective': planned.objective,
-                        'session_type': planned.session_type,
-                    }
-                )
-            
-            messages.success(request, f"L'intention de la séquence '{sequence.name}' a été validée. Le squelette des séances a été généré.")
+        sequence.status = 'VALIDATED'
+        sequence.needs_second_review = False # Reset the flag
+        sequence.save()
+        
+        # Generate or update real Sessions from PlannedSessions
+        planned_sessions = sequence.planned_sessions.all().order_by('order')
+        for planned in planned_sessions:
+            Session.objects.update_or_create(
+                sequence=sequence,
+                order=planned.order,
+                defaults={
+                    'name': planned.name,
+                    'objective': planned.objective,
+                    'session_type': planned.session_type,
+                }
+            )
+        
+        messages.success(request, f"L'intention de la séquence '{sequence.name}' a été validée. Le squelette des séances a été généré.")
     
     return redirect(reverse('referee_dashboard') + '?section=intentions')
 

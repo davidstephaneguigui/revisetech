@@ -41,5 +41,5 @@ db.sqlite3
 .idea/
 
 # Journaux de développement
-logs
-*.tex
+logs/
+misc/

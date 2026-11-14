@@ -5,10 +5,11 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from apps.classroom.models import Suggestion
+from apps.classroom.models import ActivitySelection, Suggestion
 from apps.pedagogy.models import Activity, Choice, Matiere, Sequence
+from apps.pedagogy.views.activities import can_view_unpublished
 
-from .models import Badge, Result
+from ..models import Badge, Result
 
 
 @login_required
@@ -61,15 +62,34 @@ def student_progression(request):
 def api_submit_quiz(request, activity_id):
     try:
         data = json.loads(request.body)
-        answers = data.get('answers', {}) # Dictionnaire {question_id: choice_id}
+        answers = data.get('answers', {}) 
         
         activity = get_object_or_404(Activity, id=activity_id)
-        questions = activity.questions.all()
         
+        # --- SÉCURITÉ 2.3 : Même logique que activity_detail ---
+        if not can_view_unpublished(request.user) and activity.status != 'PUBLISHED':
+            return JsonResponse({'status': 'error', 'message': 'Quiz non disponible.'}, status=403)
+            
+        if not can_view_unpublished(request.user):
+            student_classes = request.user.student_classes.all()
+            
+            if activity.is_local:
+                if activity.classe not in student_classes:
+                    return JsonResponse({'status': 'error', 'message': 'Vous n\'avez pas accès à cette activité.'}, status=403)
+            else:
+                is_selected = ActivitySelection.objects.filter(
+                    classe__in=student_classes, 
+                    activity=activity, 
+                    is_used=True
+                ).exists()
+                if not is_selected:
+                    return JsonResponse({'status': 'error', 'message': 'Vous n\'avez pas accès à cette activité.'}, status=403)
+        
+        # --- Suite inchangée ---
+        questions = activity.questions.all()
         score = 0
         max_score = questions.count()
         
-        # Calcul du score
         for q in questions:
             selected_choice_id = answers.get(str(q.id))
             if selected_choice_id:
@@ -80,7 +100,6 @@ def api_submit_quiz(request, activity_id):
                 except Choice.DoesNotExist:
                     pass
 
-        # Enregistrement du résultat en base
         Result.objects.create(
             student=request.user,
             activity=activity,
@@ -88,7 +107,6 @@ def api_submit_quiz(request, activity_id):
             max_score=max_score
         )
 
-        # --- LOGIQUE DES BADGES (reprise de l'ancienne vue) ---
         if activity.sessions.exists():
             sequence = activity.sessions.first().sequence
             sequence_quizzes = Activity.objects.filter(sessions__sequence=sequence, activity_type='QUIZ').distinct()
@@ -115,5 +133,5 @@ def api_submit_quiz(request, activity_id):
 
         return JsonResponse({'status': 'success', 'score': score, 'max_score': max_score})
         
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Une erreur est survenue lors de la soumission du quiz.'}, status=400)       

@@ -63,8 +63,9 @@ def request_second_review(request, sequence_id):
     return redirect(reverse('supervisor_dashboard') + '?section=second_reviews')
 
 
-@login_required
 @require_POST
+@login_required
+@is_supervisor
 def unpublish_sequence(request, sequence_id):
     sequence = get_object_or_404(Sequence, id=sequence_id)
     

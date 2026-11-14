@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from apps.accounts.decorators import is_supervisor
 from apps.classroom.utils import compute_sequence_stats
 from apps.pedagogy.models import Sequence
 
@@ -43,6 +44,7 @@ def sequence_stats(request, sequence_id):
 
 
 @login_required
+@is_supervisor
 def supervisor_sequence_exam(request, sequence_id):
     sequence = get_object_or_404(Sequence, id=sequence_id)
     exam_type = request.GET.get('type', 'to_publish')

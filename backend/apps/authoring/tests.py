@@ -67,7 +67,6 @@ class SequenceTests(RevisetechTestCase):
         sequence.refresh_from_db()
         self.assertEqual(sequence.status, "DRAFT")
 
-    @expectedFailure
     def test_published_sequence_cannot_be_resubmitted_as_intention(self):
         """Rapport 3.3 : une séquence publiée peut être renvoyée en PENDING."""
         sequence = self.make_sequence(status="PUBLISHED")
@@ -125,7 +124,6 @@ class SessionTests(RevisetechTestCase):
         response = self.client.post(reverse("delete_session", args=[self.first.id]))
         self.assertEqual(response.status_code, 404)
 
-    @expectedFailure
     def test_moving_a_session_swaps_it_with_its_neighbour(self):
         """Rapport 3.2 : l'échange des numéros enfreint la contrainte d'unicité."""
         self.client.post(reverse("move_session", args=[self.second.id, "up"]))

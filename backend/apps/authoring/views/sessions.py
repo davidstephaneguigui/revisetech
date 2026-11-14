@@ -75,20 +75,32 @@ def move_session(request, session_id, direction):
     """
     Moves a session up or down by swapping its order with its neighbor.
     """
+    from django.db import transaction
+    
     session = get_object_or_404(Session, id=session_id, sequence__creator=request.user)
     
     if direction == 'up':
-        # Find the session with the next smaller order
         neighbor = Session.objects.filter(sequence=session.sequence, order__lt=session.order).order_by('-order').first()
     else:
-        # Find the session with the next larger order
         neighbor = Session.objects.filter(sequence=session.sequence, order__gt=session.order).order_by('order').first()
     
     if neighbor:
-        # Swap orders
-        session.order, neighbor.order = neighbor.order, session.order
-        session.save()
-        neighbor.save()
+        with transaction.atomic():
+            # On sauvegarde les ordres actuels
+            current_order = session.order
+            neighbor_order = neighbor.order
+            
+            # 1. On place la séance dans un ordre temporaire négatif (libre)
+            session.order = -1
+            session.save()
+            
+            # 2. On met le voisin à la place de la séance
+            neighbor.order = current_order
+            neighbor.save()
+            
+            # 3. On met la séance à la place du voisin
+            session.order = neighbor_order
+            session.save()
         
     return redirect('manage_sequence', sequence_id=session.sequence.id)
 
@@ -118,3 +130,4 @@ def delete_session(request, session_id):
         messages.error(request, "Vous ne pouvez pas supprimer une séance qui a déjà été validée.")
         
     return redirect('manage_sequence', sequence_id=sequence.id)
+

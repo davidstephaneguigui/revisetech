@@ -88,15 +88,18 @@ def manage_sequence(request, sequence_id):
             intention_form = SequenceIntentionForm(request.POST, instance=sequence)
             planned_sessions_formset = PlannedSessionFormSet(request.POST, instance=sequence)
             
-            if intention_form.is_valid() and planned_sessions_formset.is_valid():
+        if intention_form.is_valid() and planned_sessions_formset.is_valid():
                 seq = intention_form.save(commit=False)
                 if 'submit_intention' in request.POST:
-                    seq.status = 'PENDING'
-                    messages.success(request, _("La séquence a été soumise pour validation."))
+                    # --- SÉCURITÉ 3.3 : Empêcher de soumettre une séquence publiée ---
+                    if sequence.status == 'PUBLISHED':
+                        messages.error(request, _("Une séquence publiée ne peut pas être soumise à nouveau. Elle doit d'abord être dépubliée."))
+                    else:
+                        seq.status = 'PENDING'
+                        messages.success(request, _("La séquence a été soumise pour validation."))
                 else:
                     messages.success(request, _("Les caractéristiques ont été enregistrées."))
                 seq.save()
-                planned_sessions_formset.save()
                 return redirect('manage_sequence', sequence_id=sequence.id)
                 
         # 2. Handle adding a new session after intention validation

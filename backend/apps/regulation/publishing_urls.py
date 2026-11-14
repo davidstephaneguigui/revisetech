@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from .views import publishing as views
 
 urlpatterns = [
     path('', views.supervisor_dashboard, name='supervisor_dashboard'),

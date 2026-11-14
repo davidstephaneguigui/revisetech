@@ -6,8 +6,7 @@ from django.views.decorators.http import require_POST
 
 from apps.accounts.decorators import is_designer, is_referee
 from apps.pedagogy.models import Sequence, Session
-
-from ..forms import DevalidationForm
+from apps.regulation.forms import DevalidationForm
 
 
 @require_POST

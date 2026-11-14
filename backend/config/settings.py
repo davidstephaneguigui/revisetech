@@ -46,8 +46,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.learning',
     'apps.pedagogy',
-    'apps.publishing',
-    'apps.review',
+    'apps.regulation',
 ]
 
 

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from .views import review as views
 
 urlpatterns = [
     path('', views.referee_dashboard, name='referee_dashboard'),

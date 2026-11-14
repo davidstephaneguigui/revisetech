@@ -5,7 +5,7 @@ from unittest import expectedFailure
 from django.urls import reverse
 
 from apps.pedagogy.models import PlannedSession
-from apps.review.models import ReviewAction
+from apps.regulation.models import ReviewAction
 from apps.testing import RevisetechTestCase
 
 JUSTIFICATION = {"reason": "ERROR", "comment": "Objectifs à préciser."}

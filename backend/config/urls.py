@@ -33,6 +33,5 @@ urlpatterns = [
     path('', include('apps.accounts.urls')),
     path('', include('apps.classroom.urls')),
     path('', include('apps.pedagogy.urls')),
-    path('review/', include('apps.review.urls')),
-    path('publishing/', include('apps.publishing.urls')),
+    path('regulation/', include('apps.regulation.urls')),   
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
